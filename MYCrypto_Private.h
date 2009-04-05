@@ -16,24 +16,32 @@
 
 /*  The iPhone simulator actually has the Mac OS X security API, not the iPhone one.
     So don't use the iPhone API when configured to run in the simulator. */
-#if TARGET_OS_IPHONE
-#if !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 #define USE_IPHONE_API 1
-#endif
-#endif
-
-#ifndef USE_IPHONE_API
+#else
 #define USE_IPHONE_API 0
 #endif
-
 
 #if USE_IPHONE_API
 typedef CFTypeRef SecKeychainAttrType;
 typedef CFTypeRef SecKeychainItemRef;
 typedef CFTypeRef SecKeychainRef;
+typedef CFTypeRef SecExternalItemType;
 #endif
 
+
+#if TARGET_IPHONE_SIMULATOR
+@interface MYKeychain (Private)
+- (id) initWithKeychainRef: (SecKeychainRef)keychainRef;
+@property (readonly) SecKeychainRef keychainRef, keychainRefOrDefault;
+@property (readonly) CSSM_CSP_HANDLE CSPHandle;
+@property (readonly) NSString* path;
+@end
+#endif
+
+
 @interface MYKeychainItem (Private);
+- (id) initWithKeychainItemRef: (MYKeychainItemRef)itemRef;
 - (NSData*) _getContents: (OSStatus*)outError;
 - (NSString*) stringValueOfAttribute: (SecKeychainAttrType)attr;
 - (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
@@ -46,8 +54,10 @@ typedef CFTypeRef SecKeychainRef;
 
 
 @interface MYKey (Private)
+- (id) initWithKeyData: (NSData*)data;
 - (id) _initWithKeyData: (NSData*)data
             forKeychain: (SecKeychainRef)keychain;
+@property (readonly) SecExternalItemType keyType;
 #if !USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
@@ -89,21 +99,11 @@ typedef CFTypeRef SecKeychainRef;
 @end
 
 
-#if TARGET_OS_IPHONE && !USE_IPHONE_API
+#if TARGET_IPHONE_SIMULATOR
 @interface MYCertificate (Private)
 - (id) initWithCertificateData: (NSData*)data
                           type: (CSSM_CERT_TYPE) type
                       encoding: (CSSM_CERT_ENCODING) encoding;
-@end
-#endif
-
-
-#if TARGET_OS_IPHONE && !USE_IPHONE_API
-@interface MYKeychain (Private)
-- (id) initWithKeychainRef: (SecKeychainRef)keychainRef;
-@property (readonly) SecKeychainRef keychainRef, keychainRefOrDefault;
-@property (readonly) CSSM_CSP_HANDLE CSPHandle;
-@property (readonly) NSString* path;
 @end
 #endif
 

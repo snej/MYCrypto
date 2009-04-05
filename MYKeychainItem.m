@@ -54,6 +54,11 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return CFHash(_itemRef);
 }
 
+- (NSString*) description {
+    return $sprintf(@"%@[%p]", [self class], _itemRef);     //FIX: Can we do anything better?
+}
+
+
 - (NSArray*) _itemList {
     return $array((id)_itemRef);
 }

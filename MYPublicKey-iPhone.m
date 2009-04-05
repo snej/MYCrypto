@@ -13,6 +13,7 @@
 
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
+#import <CommonCrypto/CommonDigest.h>
 
 
 @implementation MYPublicKey

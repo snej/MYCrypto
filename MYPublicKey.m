@@ -94,8 +94,9 @@ static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key);
 - (BOOL) verifySignature: (NSData*)signature ofData: (NSData*)data {
     Assert(data);
     Assert(signature);
-    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1(data.bytes,data.length, digest);
+    uint8_t digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(data.bytes,data.length, digest);
+    
     CSSM_CC_HANDLE ccHandle = cssmCreateSignatureContext(self.keyRef);
     if (!ccHandle) return NO;
     CSSM_DATA original = {data.length, (void*)data.bytes};

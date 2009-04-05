@@ -67,10 +67,6 @@
     return name ?[(id)CFMakeCollectable(name) autorelease] :nil;
 }
 
-- (NSArray*) emailAddresses {
-    return nil; //FIX UNIMPLEMENTED
-}
-
 
 @end
 

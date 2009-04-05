@@ -13,30 +13,53 @@
     Each specific type of digest has its own concrete subclass. */
 @interface MYDigest : NSObject <NSCoding, NSCopying>
 {
+    @private
     void *_rawDigest;
 }
 
+/** Initializes a MYDigest from an existing raw digest.
+    MYDigest itself is abstract, so this must be called on a subclass instance. */
 - (id) initWithRawDigest: (const void*)rawDigest length: (size_t)length;
 
+/** Wraps an existing digest, stored in an NSData object, in a MYDigest object. */
 + (MYDigest*) digestFromDigestData: (NSData*)digestData;
+
+/** Wraps an existing digest, expressed as a hex string, in a MYDigest object. */
 + (MYDigest*) digestFromHexString: (NSString*)hexString;
 
+/** Computes a cryptographic digest of the given data. */
 + (MYDigest*) digestOfData: (NSData*)data;
+
+/** Computes a cryptographic digest of the given data. */
 + (MYDigest*) digestOfBytes: (const void*)bytes length: (size_t)length;
 
-- (NSComparisonResult) compare: (MYDigest*)other;
-
+/** Returns the digest as an NSData object. */
 @property (readonly) NSData *asData;
-@property (readonly) NSString *hexString, *abbreviatedHexString;
 
+/** Returns the digest as a hex string. */
+@property (readonly) NSString *hexString;
+
+/** Returns the first 8 digits (32 bits) of the digest's hex string, followed by "..."
+    This is intended only for use in log messages or object descriptions, since
+    32 bits isn't nearly enough to provide any useful uniqueness. */
+@property (readonly) NSString *abbreviatedHexString;
+
+/** The algorithm that created this digest. */
 @property (readonly) uint32_t /*CSSM_ALGORITHMS*/ algorithm;
+
+/** The length (in bytes, not bits!) of this digest. */
 @property (readonly) size_t length;
+
+/** A pointer to the raw bytes of digest data. */
 @property (readonly) const void* bytes;
 
+/** The algorithm used by this subclass. (Abstract method.) */
 + (uint32_t /*CSSM_ALGORITHMS*/) algorithm;
+
+/** The length of digests created by this subclass. (Abstract method.) */
 + (size_t) length;
 
-/** Primitive digest generation method; abstract of course. */
+/** Primitive digest generation method. (Abstract.) */
 + (void) computeDigest: (void*)dstDigest ofBytes: (const void*)bytes length: (size_t)length;
 
 @end

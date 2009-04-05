@@ -17,6 +17,7 @@
 
 /** An X.509 certificate. */
 @interface MYCertificate : MYKeychainItem {
+    @private
     SecCertificateRef _certificateRef;
 }
 
@@ -33,7 +34,7 @@
                       encoding: (CSSM_CERT_ENCODING) encoding;
 #endif
 
-/** The Keychain object reference for this key. */
+/** The Keychain object reference for this certificate. */
 @property (readonly) SecCertificateRef certificateRef;
 
 /** The certificate's data. */
@@ -42,10 +43,13 @@
 /** The certificate's public key. */
 @property (readonly) MYPublicKey *publicKey;
 
+/** The name of the subject (owner) of the certificate. */
 @property (readonly) NSString *commonName;
-@property (readonly) NSArray *emailAddresses;
 
 #if !TARGET_OS_IPHONE
+/** The list (if any) of the subject's email addresses. */
+@property (readonly) NSArray *emailAddresses;
+
 /** Finds the current 'preferred' certificate for the given name string. */
 + (MYCertificate*) preferredCertificateForName: (NSString*)name;
 

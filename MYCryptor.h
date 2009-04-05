@@ -10,9 +10,12 @@
 #import <CommonCrypto/CommonCryptor.h>
 
 
-/** Symmetric encryption: a Cocoa wrapper for CommonCrypto/commonCryptor.h */
+/** Symmetric encryption: a simple Cocoa wrapper for CommonCrypto/commonCryptor.h.
+    Provides a streaming interface for encrypting/decrypting data.
+    This class will probably be merged into or integrated with MYSymmetricKey. */
 @interface MYCryptor : NSObject
 {
+    @private
     NSData *_key;
     CCOperation _operation;
     CCAlgorithm _algorithm;
@@ -24,9 +27,11 @@
     size_t _outputExtraBytes;
 }
 
-/** CommonCryptor.h defines key size and size-range constants, like kCCKeySizeAES128 */
+/** Returns a block of cryptographically-random data, suitable for use as a symmetric key.
+    (CommonCryptor.h defines constants for key sizes and size-ranges, like kCCKeySizeAES128.) */
 + (NSData*) randomKeyOfLength: (size_t)length;
 
+/** Converts a passphrase into a block of data of the given size, suitable for use as a symmetric key. */
 + (NSData*) keyOfLength: (size_t)lengthInBits fromPassphrase: (NSString*)passphrase;
 
 /** Creates a MYCryptor configured to encrypt data. */
@@ -37,21 +42,22 @@
 - (id) initDecryptorWithKey: (NSData*)key
                   algorithm: (CCAlgorithm)algorithm;
 
-/** Setting this property tells the cryptor to send its output to the stream,
-    instead of accumulating itself in the outputData property. */
-@property (retain) NSOutputStream *outputStream;
-
 /** The encryption/decryption key; same as the 'key' parameter to the initializer. */
 @property (readonly) NSData *key;
 
 /** The cipher to use; initial value is the 'algorithm' parameter to the initializer.
-    You can change this before the first call to -addData:, but not after. */
+    You can change this <i>before</i> the first call to -addData:, but not after. */
 @property CCAlgorithm algorithm;
 
 /** Block-mode cipher options; you can set flags to enable PKCS7 padding or ECB mode
     (default is CBC.)
-    You can change this before the first call to -addData:, but not after. */
+    You can change this <i>before</i> the first call to -addData:, but not after. */
 @property CCOptions options;
+
+/** Setting this property tells the cryptor to send its output to the stream,
+    instead of accumulating it in the outputData property.
+    You can change this <i>before</i> the first call to -addData:, but not after. */
+@property (retain) NSOutputStream *outputStream;
 
 /** The error state, if any, of this cryptor.
     After -addData: or -finish: returns NO, check this property. */

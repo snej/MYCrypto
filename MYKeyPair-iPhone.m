@@ -9,6 +9,8 @@
 
 #import "MYKeyPair.h"
 #import "MYCrypto_Private.h"
+#import <CommonCrypto/CommonDigest.h>
+
 
 #if USE_IPHONE_API
 
@@ -49,7 +51,9 @@
 }
 
 
-@synthesize privateKeyRef=_privateKey;
+- (SecKeyRef) privateKeyRef {
+    return _privateKey;
+}
 
 
 - (NSData*) decryptData: (NSData*)data {

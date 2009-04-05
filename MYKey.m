@@ -19,11 +19,7 @@
 
 
 - (id) initWithKeyRef: (SecKeyRef)key {
-    self = [super initWithKeychainItemRef: (SecKeychainItemRef)key];
-    if (self) {
-        _key = key;     // superclass has already CFRetained it
-    }
-    return self;
+    return [super initWithKeychainItemRef: (SecKeychainItemRef)key];
 }
 
 - (id) _initWithKeyData: (NSData*)data
@@ -34,10 +30,7 @@
         [self release];
         return nil;
     }
-    self = [super initWithKeychainItemRef: (SecKeychainItemRef)key];
-    if (self) {
-        _key = key;
-    }
+    self = [self initWithKeyRef: key];
     CFRelease(key);
     return self;
 }
@@ -47,32 +40,24 @@
 }
 
 
-- (NSString*) description {
-    return $sprintf(@"%@[%p]", [self class], _key);     //FIX: Can we do anything better?
-}
-
-
 - (SecExternalItemType) keyType {
     AssertAbstractMethod();
 }
 
 
-@synthesize keyRef=_key;
-
-
-- (MYKey*) asKey {
-    return self;
+- (SecKeyRef) keyRef {
+    return (SecKeyRef) self.keychainItemRef;
 }
 
 - (const CSSM_KEY*) cssmKey {
     const CSSM_KEY *cssmKey = NULL;
-    Assert(check(SecKeyGetCSSMKey(_key, &cssmKey), @"SecKeyGetCSSMKey"), @"Failed to get CSSM_KEY");
+    Assert(check(SecKeyGetCSSMKey(self.keyRef, &cssmKey), @"SecKeyGetCSSMKey"), @"Failed to get CSSM_KEY");
     return cssmKey;
 }
 
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM {
     CFDataRef data = NULL;
-    if (check(SecKeychainItemExport(_key, format, (withPEM ?kSecItemPemArmour :0), NULL, &data),
+    if (check(SecKeychainItemExport(self.keyRef, format, (withPEM ?kSecItemPemArmour :0), NULL, &data),
               @"SecKeychainItemExport"))
         return [(id)CFMakeCollectable(data) autorelease];
     else

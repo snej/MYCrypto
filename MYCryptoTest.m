@@ -29,7 +29,9 @@ TestCase(MYKeychain) {
     kc = [MYKeychain allKeychains];
     Log(@"All-keychains = %@", kc);
     CAssert(kc);
+#if !USE_IPHONE_API
     CAssertEq(kc.path,nil);
+#endif
 }
 
 

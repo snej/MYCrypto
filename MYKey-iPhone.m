@@ -20,11 +20,7 @@
 
 
 - (id) initWithKeyRef: (SecKeyRef)key {
-    self = [super initWithKeychainItemRef: (SecKeychainItemRef)key];
-    if (self) {
-        _key = key;     // superclass has already CFRetained it
-    }
-    return self;
+    return [super initWithKeychainItemRef: (SecKeychainItemRef)key];
 }
 
 
@@ -32,7 +28,7 @@
             forKeychain: (SecKeychainRef)keychain
 {
     NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyType, (id)kSecAttrKeyTypeRSA},
+                                {(id)kSecAttrKeyClass, (id)self.keyType},
                                 {(id)kSecValueData, data},
                                 {(id)kSecAttrIsPermanent, $object(keychain!=nil)},
                                 {(id)kSecReturnRef, $true} );
@@ -48,11 +44,6 @@
 }
 
 
-- (NSString*) description {
-    return $sprintf(@"%@[%p]", [self class], _key);     //FIX: Can we do anything better?
-}
-
-
 - (SecExternalItemType) keyType {
     AssertAbstractMethod();
 }
@@ -60,8 +51,8 @@
 
 - (NSData*) keyData {
     NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyType, (id)self.keyType},
-                                {(id)kSecMatchItemList, $array((id)_key)},
+                                {(id)kSecAttrKeyClass, (id)self.keyType},
+                                {(id)kSecMatchItemList, $array((id)self.keyRef)},
                                 {(id)kSecReturnData, $true} );
     CFDataRef data;
     if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching"))
@@ -71,18 +62,15 @@
 }
 
 
-@synthesize keyRef=_key;
-
-
-- (MYKey*) asKey {
-    return self;
+- (SecKeyRef) keyRef {
+    return (SecKeyRef) self.keychainItemRef;
 }
 
 
 - (id) _attribute: (CFTypeRef)attribute {
     NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyType, (id)self.keyType},
-                                {(id)kSecMatchItemList, $array((id)_key)},
+                                {(id)kSecAttrKeyClass, (id)self.keyType},
+                                {(id)kSecMatchItemList, $array((id)self.keyRef)},
                                 {(id)kSecReturnAttributes, $true} );
     CFDictionaryRef attrs;
     if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
@@ -97,7 +85,7 @@
     if (!value)
         value = (id)[NSNull null];
     NSDictionary *query = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyType, (id)self.keyType},
+                                {(id)kSecAttrKeyClass, (id)self.keyType},
                                 {(id)kSecMatchItemList, self._itemList} );
     NSDictionary *attrs = $dict( {(id)attribute, value} );
     return check(SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attrs), @"SecItemUpdate");

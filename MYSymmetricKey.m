@@ -37,29 +37,56 @@ static const CSSM_ALGORITHMS kCSSMAlgorithms[] = {
 @implementation MYSymmetricKey
 
 
-+ (MYSymmetricKey*) _generateSymmetricKeyOfSize: (unsigned)keySizeInBits
-                                      algorithm: (CCAlgorithm)algorithm
-                                     inKeychain: (MYKeychain*)keychain
+- (id) _initWithKeyData: (NSData*)keyData
+              algorithm: (CCAlgorithm)algorithm
+             inKeychain: (MYKeychain*)keychain
 {
     Assert(algorithm <= kCCAlgorithmRC4);
+    Assert(keyData);
     SecKeyRef keyRef = NULL;
-    
 #if USE_IPHONE_API
-    NSData *keyBits = [MYCryptor randomKeyOfLength: (keySizeInBits+7)/8];
+    unsigned keySizeInBits = keyData.length / 8;
     NSDictionary *keyAttrs = $dict( {(id)kSecClass, (id)kSecClassKey},
+                                    {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
                                     {(id)kSecAttrKeyType, $object(kCSSMAlgorithms[algorithm])},
                                     {(id)kSecAttrKeySizeInBits, $object(keySizeInBits)},
                                     {(id)kSecAttrEffectiveKeySize, $object(keySizeInBits)},
                                     {(id)kSecAttrIsPermanent, keychain ?$true :$false},
-                                    {(id)kSecValueData, keyBits} );
-    if (!check(SecItemAdd((CFDictionaryRef)keyAttrs, (CFTypeRef*)&keyRef), @"SecItemAdd"))
+                                    {(id)kSecValueData, keyData} );
+    if (!check(SecItemAdd((CFDictionaryRef)keyAttrs, (CFTypeRef*)&keyRef), @"SecItemAdd")) {
+        [self release];
         return nil;
-    
+    }
 #else
+    Assert(NO,@"Unimplemented"); //FIX
+#endif
+    self = [self initWithKeyRef: keyRef];
+    CFRelease(keyRef);
+    return self;
+}
+
+- (id) initWithKeyData: (NSData*)keyData
+             algorithm: (CCAlgorithm)algorithm
+{
+    return [self _initWithKeyData: keyData algorithm: algorithm inKeychain: nil];
+}
+
++ (MYSymmetricKey*) _generateSymmetricKeyOfSize: (unsigned)keySizeInBits
+                                      algorithm: (CCAlgorithm)algorithm
+                                     inKeychain: (MYKeychain*)keychain
+{
+#if USE_IPHONE_API
+    return [[[self alloc] _initWithKeyData: [MYCryptor randomKeyOfLength: (keySizeInBits+7)/8]
+                                 algorithm: algorithm
+                                inKeychain: keychain]
+                    autorelease];
+#else
+    Assert(algorithm <= kCCAlgorithmRC4);
     CSSM_KEYATTR_FLAGS flags = CSSM_KEYATTR_EXTRACTABLE;
     if (keychain)
         flags |= CSSM_KEYATTR_PERMANENT | CSSM_KEYATTR_SENSITIVE | CSSM_KEYATTR_EXTRACTABLE;
     CSSM_KEYUSE usage = CSSM_KEYUSE_ANY;
+    SecKeyRef keyRef = NULL;
     if (!check(SecKeyGenerate(keychain.keychainRefOrDefault,    // nil kc generates a transient key
                               kCSSMAlgorithms[algorithm],
                               keySizeInBits, 
@@ -67,8 +94,8 @@ static const CSSM_ALGORITHMS kCSSMAlgorithms[] = {
                @"SecKeyGenerate")) {
         return nil;
     }
-#endif
     return [[[self alloc] initWithKeyRef: keyRef] autorelease];
+#endif
 }
 
 + (MYSymmetricKey*) generateSymmetricKeyOfSize: (unsigned)keySizeInBits

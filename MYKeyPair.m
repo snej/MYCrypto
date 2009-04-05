@@ -170,7 +170,9 @@
 }
 
 
-@synthesize privateKeyRef=_privateKey;
+- (SecKeyRef) privateKeyRef {
+    return _privateKey;
+}
 
 
 - (NSData*) decryptData: (NSData*)data {
@@ -180,8 +182,9 @@
 
 - (NSData*) signData: (NSData*)data {
     Assert(data);
-    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1(data.bytes,data.length, digest);
+    uint8_t digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(data.bytes,data.length, digest);
+    
     NSData *signature = nil;
     CSSM_CC_HANDLE ccHandle = cssmCreateSignatureContext(_privateKey);
     if (!ccHandle) return nil;
