@@ -1,0 +1,11 @@
+//
+//  MYCrypto.xcconfig
+//  MYCrypto
+//
+//  Created by Jens Alfke on 3/28/09.
+//  Copyright 2009 Jens Alfke. All rights reserved.
+//
+
+#include "../MYUtilities/MYUtilities.xcconfig"
+
+GCC_PREFIX_HEADER = ../MYUtilities/MYUtilities_Prefix.pch

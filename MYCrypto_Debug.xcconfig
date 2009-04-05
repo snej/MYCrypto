@@ -1,0 +1,13 @@
+//
+//  MYCrypto_Debug.xcconfig
+//  MYCrypto
+//
+//  Created by Jens Alfke on 3/28/09.
+//  Copyright 2009 Jens Alfke. All rights reserved.
+//
+
+#include "MYCrypto.xcconfig"
+
+GCC_PREPROCESSOR_DEFINITIONS = DEBUG=1
+GCC_OPTIMIZATION_LEVEL = 0
+COPY_PHASE_STRIP = NO
