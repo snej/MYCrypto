@@ -47,6 +47,7 @@
 		27A42D410F858ED80063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
 		27A42ECC0F8689D30063D362 /* MYCertGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertGen.h; sourceTree = "<group>"; };
 		27A42ECD0F8689D30063D362 /* MYCertGen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertGen.m; sourceTree = "<group>"; };
+		27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptoConfig.h; sourceTree = "<group>"; };
 		27CFF4B10F7E8535000B418E /* MYCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertificate.h; sourceTree = "<group>"; };
 		27CFF4B20F7E8535000B418E /* MYCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificate.m; sourceTree = "<group>"; };
 		27CFF4B30F7E8535000B418E /* MYCryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptor.h; sourceTree = "<group>"; };
@@ -80,6 +81,7 @@
 		27E820710F7EA6260019BE60 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		27E822A00F81C5660019BE60 /* MYKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKey.h; sourceTree = "<group>"; };
 		27E822A10F81C5660019BE60 /* MYKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKey.m; sourceTree = "<group>"; };
+		27EAF0390F8B2D700091AF95 /* README.textile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.textile; sourceTree = "<group>"; };
 		8DD76FA10486AA7600D96B5E /* MYCrypto */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MYCrypto; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -118,6 +120,8 @@
 				27CFF4B20F7E8535000B418E /* MYCertificate.m */,
 				27CFF4B30F7E8535000B418E /* MYCryptor.h */,
 				27CFF4B40F7E8535000B418E /* MYCryptor.m */,
+				27CFF4BF0F7E8535000B418E /* MYDigest.h */,
+				27CFF4C00F7E8535000B418E /* MYDigest.m */,
 				27E822A00F81C5660019BE60 /* MYKey.h */,
 				27E822A10F81C5660019BE60 /* MYKey.m */,
 				27CFF4B50F7E8535000B418E /* MYKeychain.h */,
@@ -130,8 +134,7 @@
 				27CFF4BD0F7E8535000B418E /* MYPublicKey.m */,
 				27A42D400F858ED80063D362 /* MYSymmetricKey.h */,
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
-				27CFF4BF0F7E8535000B418E /* MYDigest.h */,
-				27CFF4C00F7E8535000B418E /* MYDigest.m */,
+				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
 				27CFF4BE0F7E8535000B418E /* MYCrypto_Private.h */,
 				27A42CBE0F8578B40063D362 /* MYCryptoTest.m */,
 				27CFF5210F7E94DF000B418E /* MYCrypto_main.m */,
@@ -139,6 +142,7 @@
 				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
 				27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */,
 				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
+				27EAF0390F8B2D700091AF95 /* README.textile */,
 			);
 			name = Source;
 			sourceTree = "<group>";

@@ -9,7 +9,7 @@
 
 #import "MYCrypto_Private.h"
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
@@ -72,7 +72,7 @@
                                 {(id)kSecAttrKeyClass, (id)self.keyType},
                                 {(id)kSecMatchItemList, $array((id)self.keyRef)},
                                 {(id)kSecReturnAttributes, $true} );
-    CFDictionaryRef attrs;
+    CFDictionaryRef attrs = NULL;
     if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
         return nil;
     CFTypeRef rawValue = CFDictionaryGetValue(attrs,attribute);
@@ -112,7 +112,7 @@
 @end
 
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API
 
 
 

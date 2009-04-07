@@ -19,11 +19,12 @@
 
     // Override point for customization after application launch
     [window makeKeyAndVisible];
-    
+    /*
     static const char *testArgs[] = {"MYCrypto", "Test_All"};
     int argc = 2;
     const char **argv = testArgs;
     RunTestCases(argc,argv);
+     */
 }
 
 

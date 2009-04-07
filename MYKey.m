@@ -11,7 +11,7 @@
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 
 
 #pragma mark -
@@ -51,8 +51,30 @@
 
 - (const CSSM_KEY*) cssmKey {
     const CSSM_KEY *cssmKey = NULL;
-    Assert(check(SecKeyGetCSSMKey(self.keyRef, &cssmKey), @"SecKeyGetCSSMKey"), @"Failed to get CSSM_KEY");
+    Assert(check(SecKeyGetCSSMKey(self.keyRef, &cssmKey), @"SecKeyGetCSSMKey"), 
+           @"Failed to get CSSM_KEY");
     return cssmKey;
+}
+
+- (const CSSM_CSP_HANDLE) cssmCSPHandle {
+    CSSM_CSP_HANDLE cspHandle = 0;
+    Assert(check(SecKeyGetCSPHandle(self.keyRef, &cspHandle), @"SecKeyGetCSPHandle"),
+           @"Failed to get CSSM_CSP_HANDLE");
+    return cspHandle;
+}
+
+- (const CSSM_ACCESS_CREDENTIALS*) cssmCredentialsForOperation: (CSSM_ACL_AUTHORIZATION_TAG)operation
+                                                          type: (SecCredentialType)type
+                                                         error: (NSError**)outError
+{
+    const CSSM_ACCESS_CREDENTIALS *credentials = NULL;
+    OSStatus err = SecKeyGetCredentials(self.keyRef,
+                                        operation,
+                                        type,
+                                        &credentials);
+    if (!MYReturnError(outError, err,NSOSStatusErrorDomain, @"Couldn't get credentials for key"))
+        return NULL;
+    return credentials;
 }
 
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM {
@@ -111,8 +133,9 @@ SecKeyRef importKey(NSData *data,
     
     params->version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
     params->flags |= kSecKeyImportOnlyOne;
+    params->keyAttributes |= CSSM_KEYATTR_EXTRACTABLE;
     if (keychain) {
-        params->keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT;
+        params->keyAttributes |= CSSM_KEYATTR_PERMANENT;
         if (type==kSecItemTypeSessionKey)
             params->keyUsage = CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_DECRYPT;
         else if (type==kSecItemTypePublicKey)
@@ -132,7 +155,7 @@ SecKeyRef importKey(NSData *data,
 }    
 
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API
 
 
 

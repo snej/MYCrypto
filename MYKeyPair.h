@@ -30,7 +30,13 @@
     verifySignature:ofData: method. */
 - (NSData*) signData: (NSData*)data;
 
+
+/** @name Mac-Only
+ *  Functionality not available on iPhone. 
+ */
+//@{
 #if !TARGET_OS_IPHONE
+
 /** Exports the private key as a data blob, so that it can be stored as a backup, or transferred
     to another computer. Since the key is sensitive, it must be exported in encrypted form
     using a user-chosen passphrase. This method will display a standard alert panel, run by
@@ -39,21 +45,7 @@
     (This is a convenient shorthand for the full exportPrivateKeyInFormat... method.
     It uses OpenSSL format, wrapped with PEM, and a default title and prompt for the alert.) */
 - (NSData*) exportPrivateKey;
-#endif
 
-@end
-
-
-
-@interface MYKeyPair (Expert)
-
-/** Creates a MYKeyPair object from existing Keychain key references. */
-- (id) initWithPublicKeyRef: (SecKeyRef)publicKey privateKeyRef: (SecKeyRef)privateKey;
-
-/** The underlying Keychain key reference for the private key. */
-@property (readonly) SecKeyRef privateKeyRef;
-
-#if !TARGET_OS_IPHONE
 /** Exports the private key as a data blob, so that it can be stored as a backup, or transferred
     to another computer. Since the key is sensitive, it must be exported in encrypted form
     using a user-chosen passphrase. This method will display a standard alert panel, run by
@@ -66,8 +58,24 @@
     @param prompt  An optional prompt message to display in the alert panel. */
 - (NSData*) exportPrivateKeyInFormat: (SecExternalFormat)format
                              withPEM: (BOOL)withPEM
-                          alertTitle: (NSString*)title
+                          alertTitle: (NSString*)alertTitle
                          alertPrompt: (NSString*)prompt;
+
 #endif
+//@}
+
+
+/** @name Expert
+ *  Advanced functionality.
+ */
+//@{
+
+/** Creates a MYKeyPair object from existing Keychain key references. */
+- (id) initWithPublicKeyRef: (SecKeyRef)publicKey privateKeyRef: (SecKeyRef)privateKey;
+
+/** The underlying Keychain key reference for the private key. */
+@property (readonly) SecKeyRef privateKeyRef;
+
+//@}
 
 @end

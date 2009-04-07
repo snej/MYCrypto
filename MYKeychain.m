@@ -10,7 +10,7 @@
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 
 
 @interface MYKeyEnumerator : NSEnumerator
@@ -95,6 +95,12 @@
 {
     if (_keychain) CFRelease(_keychain);
     [super dealloc];
+}
+
+- (void) finalize
+{
+    if (_keychain) CFRelease(_keychain);
+    [super finalize];
 }
 
 
@@ -321,7 +327,7 @@
 }
 
 - (MYKeyPair*) generateRSAKeyPairOfSize: (unsigned)keySize {
-    return [MYKeyPair _generateRSAKeyPairOfSize: keySize inKeychain: self.keychainRefOrDefault];
+    return [MYKeyPair _generateRSAKeyPairOfSize: keySize inKeychain: self];
 }
 
 
@@ -365,6 +371,13 @@
     [_keychain release];
     if (_search) CFRelease(_search);
     [super dealloc];
+}
+
+- (void) finalize
+{
+    [_keychain release];
+    if (_search) CFRelease(_search);
+    [super finalize];
 }
 
 
@@ -416,7 +429,7 @@
 @end
 
 
-#endif !USE_IPHONE_API
+#endif !MYCRYPTO_USE_IPHONE_API
 
 
 

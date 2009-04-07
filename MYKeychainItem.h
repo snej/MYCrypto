@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
+#import "MYCryptoConfig.h"
 @class MYKeychain;
 
 
@@ -15,7 +16,7 @@
 extern NSString* const MYCSSMErrorDomain;
 
 
-#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
+#if MYCRYPTO_USE_IPHONE_API
 typedef CFTypeRef MYKeychainItemRef;
 #else
 typedef SecKeychainItemRef MYKeychainItemRef;

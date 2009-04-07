@@ -57,6 +57,7 @@
 		276FB34A0F856CA400CB326E /* MYCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificate.m; sourceTree = "<group>"; };
 		27A430130F87C6D50063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
 		27A430150F87C6DB0063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
+		27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptoConfig.h; sourceTree = "<group>"; };
 		27E8230C0F81D56E0019BE60 /* MYCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertificate.h; sourceTree = "<group>"; };
 		27E8230E0F81D56E0019BE60 /* MYCryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptor.h; sourceTree = "<group>"; };
 		27E8230F0F81D56E0019BE60 /* MYCryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptor.m; sourceTree = "<group>"; };
@@ -128,6 +129,7 @@
 		27E8230B0F81D56E0019BE60 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */,
 				27E8230C0F81D56E0019BE60 /* MYCertificate.h */,
 				276FB34A0F856CA400CB326E /* MYCertificate.m */,
 				273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */,

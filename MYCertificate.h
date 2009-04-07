@@ -27,13 +27,6 @@
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data;
 
-#if !TARGET_OS_IPHONE
-/** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
-- (id) initWithCertificateData: (NSData*)data
-                          type: (CSSM_CERT_TYPE) type
-                      encoding: (CSSM_CERT_ENCODING) encoding;
-#endif
-
 /** The Keychain object reference for this certificate. */
 @property (readonly) SecCertificateRef certificateRef;
 
@@ -46,7 +39,18 @@
 /** The name of the subject (owner) of the certificate. */
 @property (readonly) NSString *commonName;
 
+
+/** @name Mac-Only
+ *  Functionality not available on iPhone. 
+ */
+//@{
 #if !TARGET_OS_IPHONE
+
+/** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
+- (id) initWithCertificateData: (NSData*)data
+                          type: (CSSM_CERT_TYPE) type
+                      encoding: (CSSM_CERT_ENCODING) encoding;
+
 /** The list (if any) of the subject's email addresses. */
 @property (readonly) NSArray *emailAddresses;
 
@@ -55,6 +59,8 @@
 
 /** Associates the receiver as the preferred certificate for the given name string. */
 - (BOOL) setPreferredCertificateForName: (NSString*)name;
+
 #endif
+//@}
 
 @end

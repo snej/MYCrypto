@@ -6,6 +6,7 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
+#import "MYCryptoConfig.h"
 #import "MYKeychain.h"
 #import "MYKey.h"
 #import "MYSymmetricKey.h"
@@ -14,15 +15,8 @@
 #import "Test.h"
 #import <Security/Security.h>
 
-/*  The iPhone simulator actually has the Mac OS X security API, not the iPhone one.
-    So don't use the iPhone API when configured to run in the simulator. */
-#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
-#define USE_IPHONE_API 1
-#else
-#define USE_IPHONE_API 0
-#endif
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 typedef CFTypeRef SecKeychainAttrType;
 typedef CFTypeRef SecKeychainItemRef;
 typedef CFTypeRef SecKeychainRef;
@@ -30,7 +24,7 @@ typedef CFTypeRef SecExternalItemType;
 #endif
 
 
-#if TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_IPHONE && !MYCRYPTO_USE_IPHONE_API
 @interface MYKeychain (Private)
 - (id) initWithKeychainRef: (SecKeychainRef)keychainRef;
 @property (readonly) SecKeychainRef keychainRef, keychainRefOrDefault;
@@ -58,7 +52,7 @@ typedef CFTypeRef SecExternalItemType;
 - (id) _initWithKeyData: (NSData*)data
             forKeychain: (SecKeychainRef)keychain;
 @property (readonly) SecExternalItemType keyType;
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
 #endif
@@ -81,7 +75,7 @@ typedef CFTypeRef SecExternalItemType;
 
 @interface MYKeyPair (Private)
 + (MYKeyPair*) _generateRSAKeyPairOfSize: (unsigned)keySize
-                            inKeychain: (SecKeychainRef)keychain;
+                            inKeychain: (MYKeychain*)keychain;
 - (id) _initWithPublicKeyData: (NSData*)pubKeyData 
                privateKeyData: (NSData*)privKeyData
                   forKeychain: (SecKeychainRef)keychain
@@ -99,7 +93,7 @@ typedef CFTypeRef SecExternalItemType;
 @end
 
 
-#if TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_IPHONE && !MYCRYPTO_USE_IPHONE_API
 @interface MYCertificate (Private)
 - (id) initWithCertificateData: (NSData*)data
                           type: (CSSM_CERT_TYPE) type
@@ -113,7 +107,7 @@ NSData* _crypt(SecKeyRef key, NSData *data, CCOperation op);
 #undef check
 BOOL check(OSStatus err, NSString *what);
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 BOOL checkcssm(CSSM_RETURN err, NSString *what);
 
 SecKeyRef importKey(NSData *data, 

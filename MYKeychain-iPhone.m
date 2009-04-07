@@ -9,7 +9,7 @@
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 
 
 @interface MYKeyEnumerator : NSEnumerator
@@ -208,8 +208,8 @@
     if (!_results)
         return nil;
     MYKeychainItem *next = nil;
-    for (; next==nil && _index < CFArrayGetCount(_results); _index++) {
-        CFTypeRef found = CFArrayGetValueAtIndex(_results, _index); 
+    while (next==nil && _index < CFArrayGetCount(_results)) {
+        CFTypeRef found = CFArrayGetValueAtIndex(_results, _index++); 
         if (_itemClass == kSecAttrKeyClassPrivate) {
             MYSHA1Digest *digest = [MYPublicKey _digestOfKey: (SecKeyRef)found];
             if (digest) {
@@ -224,16 +224,12 @@
                     //Warn(@"Couldn't find matching public key for private key!");
                 }
             }
-            break;
         } else if (_itemClass == kSecAttrKeyClassPublic) {
             next = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
-            break;
         } else if (_itemClass == kSecAttrKeyClassSymmetric) {
             next = [[[MYSymmetricKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
-            break;
         } else if (_itemClass == kSecClassCertificate) {
             next = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
-            break;
         }
         CFRelease(found);
     }
@@ -243,7 +239,7 @@
 
 @end
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API
 
 
 /*

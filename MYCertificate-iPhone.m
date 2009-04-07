@@ -9,7 +9,7 @@
 #import "MYCertificate.h"
 #import "MYCrypto_Private.h"
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 
 
 @implementation MYCertificate
@@ -70,4 +70,4 @@
 
 @end
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API

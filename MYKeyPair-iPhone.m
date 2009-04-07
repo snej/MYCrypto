@@ -12,13 +12,13 @@
 #import <CommonCrypto/CommonDigest.h>
 
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 
 
 @implementation MYKeyPair
 
 
-+ (MYKeyPair*) _generateKeyPairOfSize: (unsigned)keySize inKeychain: (MYKeychain*)keychain {
++ (MYKeyPair*) _generateRSAKeyPairOfSize: (unsigned)keySize inKeychain: (MYKeychain*)keychain {
     Assert( keySize == 512 || keySize == 1024 || keySize == 2048, @"Unsupported key size %u", keySize );
     SecKeyRef pubKey=NULL, privKey=NULL;
     OSStatus err;
@@ -82,4 +82,4 @@
 @end
 
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API

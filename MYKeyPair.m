@@ -10,7 +10,7 @@
 #import "MYCrypto_Private.h"
 #import <CommonCrypto/CommonDigest.h>
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 
 
 #pragma mark -
@@ -19,11 +19,14 @@
 
 
 + (MYKeyPair*) _generateRSAKeyPairOfSize: (unsigned)keySize
-                            inKeychain: (SecKeychainRef)keychain {
+                            inKeychain: (MYKeychain*)keychain {
     Assert( keySize == 512 || keySize == 1024 || keySize == 2048, @"Unsupported key size %u", keySize );
     SecKeyRef pubKey=NULL, privKey=NULL;
     OSStatus err;
-    err = SecKeyCreatePair(keychain, CSSM_ALGID_RSA, keySize, 0LL,
+    err = SecKeyCreatePair(keychain.keychainRefOrDefault,
+                           CSSM_ALGID_RSA, 
+                           keySize,
+                           0LL,
                            CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY,        // public key
                            CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT,
                            CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN,          // private key
@@ -101,6 +104,12 @@
 {
     if (_privateKey) CFRelease(_privateKey);
     [super dealloc];
+}
+
+- (void) finalize
+{
+    if (_privateKey) CFRelease(_privateKey);
+    [super finalize];
 }
 
 
@@ -209,7 +218,7 @@
 @end
 
 
-#endif !USE_IPHONE_API
+#endif !MYCRYPTO_USE_IPHONE_API
 
 
 

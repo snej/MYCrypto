@@ -9,7 +9,7 @@
 #import "MYPublicKey.h"
 #import "MYCrypto_Private.h"
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
@@ -185,7 +185,7 @@ static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key)
         return 0;
 }
 
-#endif !USE_IPHONE_API
+#endif !MYCRYPTO_USE_IPHONE_API
 
 
 

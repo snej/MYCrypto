@@ -9,7 +9,7 @@
 #import "MYPublicKey.h"
 #import "MYCrypto_Private.h"
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
@@ -36,15 +36,19 @@
 }
 
 
-
-- (MYSHA1Digest*) publicKeyDigest {
-    NSData *digestData = [self _attribute: kSecAttrApplicationLabel];
++ (MYSHA1Digest*) _digestOfKey: (SecKeyRef)key {
+    NSData *digestData = [MYKeychainItem _getAttribute: kSecAttrApplicationLabel ofItem: key];
     if (digestData)
         return (MYSHA1Digest*) [MYSHA1Digest digestFromDigestData: digestData];
     else {
-        Warn(@"MYKeyPair: public key didn't have digest attribute");
+        Warn(@"MYKeyPair: public keyref %p didn't have digest attribute", key);
         return nil;
     }
+}
+
+
+- (MYSHA1Digest*) publicKeyDigest {
+    return [[self class] _digestOfKey: self.keyRef];
 }
 
 
@@ -94,4 +98,4 @@ NSData* _crypt(SecKeyRef key, NSData *data, CCOperation op) {
         return [NSData dataWithBytesNoCopy: outputBuf length: outputLength freeWhenDone: YES];
 }
 
-#endif USE_IPHONE_API
+#endif MYCRYPTO_USE_IPHONE_API

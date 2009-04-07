@@ -10,9 +10,9 @@
 #import <CommonCrypto/CommonCryptor.h>
 
 
-/** Symmetric encryption: a simple Cocoa wrapper for CommonCrypto/commonCryptor.h.
-    Provides a streaming interface for encrypting/decrypting data.
-    This class will probably be merged into or integrated with MYSymmetricKey. */
+/** Symmetric encryption: a streaming interface for encrypting/decrypting data.
+    This is a simple Cocoa wrapper for CommonCrypto/commonCryptor.h. It will probably be
+    merged into, or integrated with, MYSymmetricKey. */
 @interface MYCryptor : NSObject
 {
     @private
@@ -27,12 +27,26 @@
     size_t _outputExtraBytes;
 }
 
-/** Returns a block of cryptographically-random data, suitable for use as a symmetric key.
-    (CommonCryptor.h defines constants for key sizes and size-ranges, like kCCKeySizeAES128.) */
-+ (NSData*) randomKeyOfLength: (size_t)length;
+/** Returns a randomly-generated symmetric key of the desired length (in bits).
+ *  @param lengthInBits  The length of the desired key, in bits (not bytes).
+ */
++ (NSData*) randomKeyOfLength: (size_t)lengthInBits;
 
-/** Converts a passphrase into a block of data of the given size, suitable for use as a symmetric key. */
-+ (NSData*) keyOfLength: (size_t)lengthInBits fromPassphrase: (NSString*)passphrase;
+/** Converts a passphrase into a symmetric key of the desired length (in bits).
+ *  The same passphrase (and salt) will always return the same key, so you can use this method
+ *  to encrypt and decrypt data using a user-entered passphrase, without having to store the key
+ *  itself in the keychain.
+ *  @param lengthInBits  The length of the desired key, in bits (not bytes).
+ *  @param passphrase  The user-entered passphrase.
+ *  @param salt  An arbitrary value whose description will be appended to the passphrase before
+ *          hashing, to perturb the resulting bits. The purpose of this is to make it harder for
+ *          an attacker to brute-force the key using a precompiled list of digests of common
+ *          passwords. Changing the salt changes the key, so you need to pass the same value when
+ *          re-deriving the key as you did when first generating it.
+ */
++ (NSData*) keyOfLength: (size_t)lengthInBits
+         fromPassphrase: (NSString*)passphrase
+                   salt: (id)salt;
 
 /** Creates a MYCryptor configured to encrypt data. */
 - (id) initEncryptorWithKey: (NSData*)key

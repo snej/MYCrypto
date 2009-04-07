@@ -25,4 +25,7 @@
 /** The key's algorithm. */
 @property (readonly) CCAlgorithm algorithm;
 
+/** The key's size/length, in bits. */
+@property (readonly) unsigned keySizeInBits;
+
 @end

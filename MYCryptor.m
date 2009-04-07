@@ -10,7 +10,7 @@
 #import "MYDigest.h"
 #import "Test.h"
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 #import <Security/SecRandom.h>
 #else
 #import "MYCrypto_Private.h"
@@ -21,7 +21,7 @@
 
 NSString* const CryptorErrorDomain = @"CCCryptor";
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, void *dstBytes);
 #endif
 
@@ -35,25 +35,31 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 @implementation MYCryptor
 
 
-+ (NSData*) randomKeyOfLength: (size_t)length {
-    NSParameterAssert(length<100000);
-    uint8_t *bytes = malloc(length);
++ (NSData*) randomKeyOfLength: (size_t)lengthInBits {
+    size_t lengthInBytes = (lengthInBits + 7)/8;
+    NSParameterAssert(lengthInBytes<100000);
+    uint8_t *bytes = malloc(lengthInBytes);
     if (!bytes) return nil;
-#if USE_IPHONE_API
-    BOOL ok = SecRandomCopyBytes(kSecRandomDefault, length,bytes) >= 0;
+#if MYCRYPTO_USE_IPHONE_API
+    BOOL ok = SecRandomCopyBytes(kSecRandomDefault, lengthInBytes,bytes) >= 0;
 #else
-    BOOL ok = generateRandomBytes([[MYKeychain defaultKeychain] CSPHandle], length, bytes);
+    BOOL ok = generateRandomBytes([[MYKeychain defaultKeychain] CSPHandle], lengthInBytes, bytes);
 #endif
     if (ok)
-        return [NSData dataWithBytesNoCopy: bytes length: length freeWhenDone: YES];
+        return [NSData dataWithBytesNoCopy: bytes length: lengthInBytes freeWhenDone: YES];
     else {
         free(bytes);
         return nil;
     }
 }
 
-+ (NSData*) keyOfLength: (size_t)lengthInBits fromPassphrase: (NSString*)passphrase
++ (NSData*) keyOfLength: (size_t)lengthInBits
+         fromPassphrase: (NSString*)passphrase
+                   salt: (id)salt
 {
+    Assert(passphrase);
+    Assert(salt);
+    passphrase = $sprintf(@"MYCrypto|%@|%@", passphrase, salt);
     size_t lengthInBytes = (lengthInBits + 7)/8;
     MYDigest *digest = [[passphrase dataUsingEncoding: NSUTF8StringEncoding] my_SHA256Digest];
     if (lengthInBytes <= digest.length)
@@ -93,6 +99,13 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
     [_output autorelease];
     [_outputStream release];
     [super dealloc];
+}
+
+- (void) finalize
+{
+    if (_cryptor)
+        CCCryptorRelease(_cryptor);
+    [super finalize];
 }
 
 
@@ -248,7 +261,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 
 
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, void *dstBytes) {
     // Adapted from code in Keychain.framework's KeychainUtils.m by Wade Tregaskis.
     CSSM_CC_HANDLE ccHandle;
@@ -268,7 +281,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 
 TestCase(MYCryptor) {
     // Encryption:
-    NSData *key = [MYCryptor randomKeyOfLength: kCCKeySizeAES256];
+    NSData *key = [MYCryptor randomKeyOfLength: 256];
     Log(@"Key = %@",key);
     MYCryptor *enc = [[MYCryptor alloc] initEncryptorWithKey: key algorithm: kCCAlgorithmAES128];
     CAssert(enc);
@@ -292,7 +305,7 @@ TestCase(MYCryptor) {
     CAssertEqual(decrypted, @"This is a test. This is only a test.");
     
     // Encryption to stream:
-    key = [MYCryptor randomKeyOfLength: kCCKeySizeAES256];
+    key = [MYCryptor randomKeyOfLength: 256];
     Log(@"Key = %@",key);
     enc = [[MYCryptor alloc] initEncryptorWithKey: key algorithm: kCCAlgorithmAES128];
     CAssert(enc);

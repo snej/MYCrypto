@@ -37,6 +37,12 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     [super dealloc];
 }
 
+- (void) finalize
+{
+    if (_itemRef) CFRelease(_itemRef);
+    [super finalize];
+}
+
 - (id) copyWithZone: (NSZone*)zone {
     // As keys are immutable, it's not necessary to make copies of them. This makes it more efficient
     // to use instances as NSDictionary keys or store them in NSSets.
@@ -63,7 +69,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return $array((id)_itemRef);
 }
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 - (CFDictionaryRef) asQuery {
     return (CFDictionaryRef) $dict( {(id)kSecClass, (id)kSecClassKey},//FIX
                                     {(id)kSecMatchItemList, self._itemList} );
@@ -72,7 +78,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 
 - (MYKeychain*) keychain {
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
     return [MYKeychain defaultKeychain];
 #else
     MYKeychain *keychain = nil;
@@ -88,7 +94,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 }
 
 - (BOOL) removeFromKeychain {
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
     return check(SecItemDelete(self.asQuery), @"SecItemDelete");
 #else
     return check(SecKeychainItemDelete((SecKeychainItemRef)_itemRef), @"SecKeychainItemDelete");
@@ -102,7 +108,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 - (NSData*) _getContents: (OSStatus*)outError {
     NSData *contents = nil;
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 #else
 	UInt32 length = 0;
     void *bytes = NULL;
@@ -117,7 +123,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 + (NSData*) _getAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
     NSData *value = nil;
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
     NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassKey},
                                 {(id)kSecMatchItemList, $array((id)item)},
                                 {(id)kSecReturnAttributes, $true} );
@@ -171,7 +177,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 + (BOOL) _setAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item
            stringValue: (NSString*)stringValue
 {
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
     id value = stringValue ?(id)stringValue :(id)[NSNull null];
     NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassKey},
                                 {(id)kSecAttrKeyType, (id)attr},
@@ -200,7 +206,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 BOOL check(OSStatus err, NSString *what) {
     if (err) {
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
         if (err < -2000000000)
             return checkcssm(err,what);
 #endif
@@ -210,7 +216,7 @@ BOOL check(OSStatus err, NSString *what) {
         return YES;
 }
 
-#if !USE_IPHONE_API
+#if !MYCRYPTO_USE_IPHONE_API
 BOOL checkcssm(CSSM_RETURN err, NSString *what) {
     if (err != CSSM_OK) {
         Warn(@"MYCrypto error, %@: %@", what, MYErrorName(MYCSSMErrorDomain,err));

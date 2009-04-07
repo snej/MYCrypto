@@ -11,7 +11,7 @@
 #import "MYCrypto_Private.h"
 
 
-#if USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
 enum {
     CSSM_ALGID_SHA1 = 8,
     CSSM_ALGID_SHA256 = 0x80000000 + 14
@@ -51,6 +51,12 @@ enum {
 {
     if(_rawDigest) free(_rawDigest);
     [super dealloc];
+}
+
+- (void) finalize
+{
+    if(_rawDigest) free(_rawDigest);
+    [super finalize];
 }
 
 

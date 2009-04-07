@@ -28,6 +28,7 @@
 /** Abstract superclass for keys.
     Concrete subclasses are MYSymmetricKey and MYPublicKey. */
 @interface MYKey : MYKeychainItem
+{ }
 
 /** The key's raw data. */
 @property (readonly) NSData *keyData;
@@ -42,17 +43,32 @@
     that it can be read and modified by any other app that can access this key. */
 @property (copy) NSString *alias;
 
+
+/** @name Mac-Only
+ *  Functionality not available on iPhone. 
+ */
+//@{
 #if !TARGET_OS_IPHONE
+
 /** The user-visible comment (kSecKeyApplicationTag) associated with this key in the Keychain.
-    The user can edit this, so don't expect it to be immutable. */
+ The user can edit this, so don't expect it to be immutable. */
 @property (copy) NSString *comment;
+
+/** Converts the key into a data blob in one of several standard formats, suitable for storing in
+    a file or sending over the network.
+    @param format  The data format: kSecFormatOpenSSL, kSecFormatSSH, kSecFormatBSAFE or kSecFormatSSHv2.
+    @param withPEM  YES if the data should be encoded in PEM format, which converts into short lines
+        of printable ASCII characters, suitable for sending in email. */
+- (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
+
 #endif
-
-@end
-
+//@}
 
 
-@interface MYKey (Expert)
+/** @name Expert
+ *  Advanced methods. 
+ */
+//@{
 
 /** Creates a MYKey object for an existing Keychain key reference.
     This is abstract -- must be called on a MYSymmetricKey or MYPublicKey, as appropriate. */
@@ -65,12 +81,26 @@
 /** The underlying CSSM_KEY structure; used with low-level crypto APIs. */
 @property (readonly) const struct cssm_key* cssmKey;
 
-/** Converts the key into a data blob in one of several standard formats, suitable for storing in
-    a file or sending over the network.
-    @param format  The data format: kSecFormatOpenSSL, kSecFormatSSH, kSecFormatBSAFE or kSecFormatSSHv2.
-    @param withPEM  YES if the data should be encoded in PEM format, which converts into short lines
-        of printable ASCII characters, suitable for sending in email. */
-- (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
+/** The underlying CSSM_CSP_HANDLE structure; used with low-level crypto APIs. */
+@property (readonly) intptr_t /*CSSM_CSP_HANDLE*/ cssmCSPHandle;
+
+/** Gets CSSM authorization credentials for a specified operation, such as
+    CSSM_ACL_AUTHORIZATION_ENCRYPT. This pointer is necessary for creating some CSSM operation
+    contexts.
+    @param operation  The type of operation you are going to perform (see the enum values in
+            cssmType.h.)
+    @param type  Specifies whether the operation should be allowed to present a UI. You'll usually
+            want to pass kSecCredentialTypeDefault.
+    @param outError  Will be set to point to an NSError on failure, or nil on success.
+            Pass nil if you don't care about the specific error.
+    @return  The access credentials, or NULL on failure. 
+            This pointer is valid for as long as you have a reference
+            to the key object. Do not free or delete it. */
+- (const CSSM_ACCESS_CREDENTIALS*) cssmCredentialsForOperation: (CSSM_ACL_AUTHORIZATION_TAG)operation
+                                                          type: (SecCredentialType)type
+                                                         error: (NSError**)outError;
+
 #endif
+//@}
 
 @end
