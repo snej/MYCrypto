@@ -50,10 +50,8 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 }
 
 - (BOOL) isEqual: (id)obj {
-    // Require the objects to be of the same class, so that a MYPublicKey will not be equal to a
-    // MYKeyPair with the same public key.
-    return (obj == self) || 
-           ([obj class] == [self class] && CFEqual(_itemRef, [obj keychainItemRef]));
+    return (obj == self) ||
+           ([obj isKindOfClass: [MYKeychainItem class]] && CFEqual(_itemRef, [obj keychainItemRef]));
 }
 
 - (NSUInteger) hash {

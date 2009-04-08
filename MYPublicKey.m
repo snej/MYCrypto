@@ -8,15 +8,9 @@
 
 #import "MYPublicKey.h"
 #import "MYCrypto_Private.h"
-
-#if !MYCRYPTO_USE_IPHONE_API
-
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
 #import <CommonCrypto/CommonDigest.h>
-
-
-static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key);
 
 
 #pragma mark -
@@ -30,8 +24,13 @@ static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key);
 }
 
 - (SecExternalItemType) keyType {
+#if MYCRYPTO_USE_IPHONE_API
+    return kSecAttrKeyClassPublic;
+#else
     return kSecItemTypePublicKey;
+#endif
 }
+
 - (NSUInteger)hash {
     return self.publicKeyDigest.hash;
 }
@@ -40,64 +39,38 @@ static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key);
     return $sprintf(@"%@[%@]", [self class], self.publicKeyDigest.abbreviatedHexString);
 }
 
-- (MYPublicKey*) asPublicKey {
-    return self;
-}
-
-
-+ (MYSHA1Digest*) _digestOfKey: (SecKeyRef)key {
-    Assert(key);
-    MYSHA1Digest *digest = nil;
-    CSSM_DATA *keyDigest = NULL;
-    CSSM_CC_HANDLE context = cssmCreatePassThroughContext(key);
-    if (context) {
-        if (checkcssm(CSSM_CSP_PassThrough(context, CSSM_APPLECSP_KEYDIGEST, NULL, (void**)&keyDigest),
-                      @"CSSM_CSP_PassThrough")) {
-            if (keyDigest && keyDigest->Data) {
-                digest = [[[MYSHA1Digest alloc] initWithRawDigest: keyDigest->Data
-                                                           length: keyDigest->Length] autorelease];
-            }
-        } else {
-            // Note - CSSM_CSP_PassThrough fails on a couple of private keys I've seen; it seems to
-            // be ones that are either expired or don't have a matching public key at all (?)
-            Warn(@"Failed to get digest of SecKeyRef %p (name='%@' appTag='%@')", key,
-                 [self _getStringAttribute: kSecKeyPrintName ofItem: (SecKeychainItemRef)key],
-                 [self _getStringAttribute: kSecKeyApplicationTag ofItem: (SecKeychainItemRef)key]);
-            NSData *digestData = [self _getAttribute: kSecKeyLabel ofItem: (SecKeychainItemRef)key];
-            if (digestData) {
-                digest = (MYSHA1Digest*) [MYSHA1Digest digestFromDigestData: digestData];
-                if (!digest)
-                    Warn(@"Digest property of key %p was invalid SHA-1: %@", key,digestData);
-            }
-        }
-        CSSM_DeleteContext(context);
-    }
-    return digest;
-}
-
 - (MYSHA1Digest*) publicKeyDigest {
     if (!_digest)
-        _digest = [[[self class] _digestOfKey: self.keyRef] retain];
+        _digest = [[self _keyDigest] retain];
     return _digest;
 }
 
+#if !MYCRYPTO_USE_IPHONE_API
 - (NSData*) keyData {
     return [self exportKeyInFormat: kSecFormatOpenSSL withPEM: NO];
 }
+#endif
 
 
 - (NSData*) encryptData: (NSData*)data {
-    return _crypt(self.keyRef,data,kCCEncrypt);
+    return [self _crypt: data operation: YES];
 }
 
 
 - (BOOL) verifySignature: (NSData*)signature ofData: (NSData*)data {
     Assert(data);
     Assert(signature);
-    uint8_t digest[CC_SHA256_DIGEST_LENGTH];
-    CC_SHA256(data.bytes,data.length, digest);
     
-    CSSM_CC_HANDLE ccHandle = cssmCreateSignatureContext(self.keyRef);
+#if MYCRYPTO_USE_IPHONE_API
+    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1(data.bytes,data.length, digest);
+    OSStatus err = SecKeyRawVerify(self.keyRef, kSecPaddingPKCS1SHA1,
+                                   digest,sizeof(digest), //data.bytes, data.length,
+                                   signature.bytes, signature.length);
+    return err==noErr;
+    
+#else
+    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA256WithRSA];
     if (!ccHandle) return NO;
     CSSM_DATA original = {data.length, (void*)data.bytes};
     CSSM_DATA sig = {signature.length, (void*)signature.bytes};
@@ -108,84 +81,11 @@ static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key);
     if (cssmErr != CSSMERR_CSP_VERIFY_FAILED)
         Warn(@"CSSM error verifying signature: %u", MYErrorName(MYCSSMErrorDomain,cssmErr));
     return NO;
+#endif
 }
 
 
 @end
-
-
-
-
-#pragma mark -
-#pragma mark UTILITY FUNCTIONS:
-
-
-NSData* _crypt(SecKeyRef key, NSData *data, CCOperation op) {
-    CAssert(data);
-    const CSSM_KEY* cssmKey;
-    const CSSM_ACCESS_CREDENTIALS *credentials;
-    CSSM_CSP_HANDLE cspHandle;
-    CSSM_CC_HANDLE ccHandle;
-    if (!check(SecKeyGetCSSMKey(key, &cssmKey), @"GetCSSMKey")
-            || !check(SecKeyGetCredentials(key, CSSM_ACL_AUTHORIZATION_SIGN, kSecCredentialTypeWithUI,
-                                           &credentials), @"GetCredentials")
-            || !check(SecKeyGetCSPHandle(key, &cspHandle), @"GetCSPHandle")
-        
-            || !checkcssm(CSSM_CSP_CreateAsymmetricContext(cspHandle, CSSM_ALGID_RSA,
-                                                               credentials, cssmKey,
-                                                               CSSM_PADDING_PKCS1, &ccHandle),
-                          @"CSSM_CSP_CreateAsymmetricContext"))
-        return nil;
-    
-    CSSM_DATA original = {data.length, (void*)data.bytes};
-    CSSM_DATA result = {};
-    size_t outputLength;
-    BOOL ok;
-    if (op==kCCEncrypt)
-        ok = checkcssm(CSSM_EncryptData(ccHandle, &original, 1, &result, 1, &outputLength, &result),
-                       @"CSSM_EncryptData");
-    else
-        ok = checkcssm(CSSM_DecryptData(ccHandle, &original, 1, &result, 1, &outputLength, &result),
-                       @"CSSM_DecryptData");
-    CSSM_DeleteContext(ccHandle);
-    return ok ?[NSData dataWithBytesNoCopy: result.Data length: outputLength freeWhenDone: YES] :nil;
-}
-
-
-CSSM_CC_HANDLE cssmCreateSignatureContext(SecKeyRef key) 
-{
-    const CSSM_KEY* cssmKey;
-    const CSSM_ACCESS_CREDENTIALS *credentials;
-    CSSM_CSP_HANDLE cspHandle;
-    CSSM_CC_HANDLE ccHandle;
-    if (check(SecKeyGetCSSMKey(key, &cssmKey), @"GetCSSMKey")
-            && check(SecKeyGetCredentials(key, CSSM_ACL_AUTHORIZATION_SIGN, kSecCredentialTypeWithUI,
-                               &credentials), @"GetCredentials")
-            && check(SecKeyGetCSPHandle(key, &cspHandle), @"GetCSPHandle")
-            && checkcssm(CSSM_CSP_CreateSignatureContext(cspHandle, CSSM_ALGID_SHA1WithRSA, 
-                                                          credentials,
-                                                          cssmKey, &ccHandle),
-                         @"CSSM_CSP_CreateSignatureContext") )
-        return ccHandle;
-    else
-        return 0;
-}
-
-static CSSM_CC_HANDLE cssmCreatePassThroughContext(SecKeyRef key) 
-{
-    const CSSM_KEY* cssmKey;
-    CSSM_CSP_HANDLE cspHandle;
-    CSSM_CC_HANDLE ccHandle;
-    if (check(SecKeyGetCSSMKey(key, &cssmKey), @"GetCSSMKey")
-            && check(SecKeyGetCSPHandle(key, &cspHandle), @"GetCSPHandle")
-            && checkcssm(CSSM_CSP_CreatePassThroughContext(cspHandle, cssmKey, &ccHandle), 
-                          @"CSSM_CSP_CreatePassThroughContext") )
-        return ccHandle;
-    else
-        return 0;
-}
-
-#endif !MYCRYPTO_USE_IPHONE_API
 
 
 

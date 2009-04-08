@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MYCryptoConfig.h"
-@class MYSymmetricKey, MYPublicKey, MYKeyPair, MYCertificate, MYSHA1Digest;
+@class MYSymmetricKey, MYPublicKey, MYPrivateKey, MYCertificate, MYSHA1Digest;
 
 
 /** A Keychain, a secure database of cryptographic keys.
@@ -77,16 +77,16 @@
         to break, but operate more slowly and generate larger signatures.
         2048 is a good default choice. You could use 1024 if the data and signatures won't need
         to stay secure for years; or you could use 4096 if you're extremely paranoid. */
-- (MYKeyPair*) generateRSAKeyPairOfSize: (unsigned)keySize;
+- (MYPrivateKey*) generateRSAKeyPairOfSize: (unsigned)keySize;
 
 /** Looks up an existing key-pair whose public key has the given digest.
     Returns nil if there is no such key-pair in the keychain.
     (This method does not look for public keys embedded in certificates, only 'bare' keys.) */
-- (MYKeyPair*) keyPairWithDigest: (MYSHA1Digest*)pubKeyDigest;
+- (MYPrivateKey*) privateKeyWithDigest: (MYSHA1Digest*)pubKeyDigest;
 
 /** Enumerates all key-pairs in the keychain.
     (This method does not find keys embedded in certificates, only 'bare' keys.) */
-- (NSEnumerator*) enumerateKeyPairs;
+- (NSEnumerator*) enumeratePrivateKeys;
 
 
 #pragma mark -
@@ -109,14 +109,14 @@
     of both the public and private keys.
     Since the private key data is wrapped (encrypted), the Security agent will prompt the user to enter
     the passphrase. */
-- (MYKeyPair*) importPublicKey: (NSData*)pubKeyData 
+- (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
                     privateKey: (NSData*)privKeyData;
 
 /** Imports a key-pair into the keychain, given the external representations
     of both the public and private keys.
     Since the private key data is wrapped (encrypted), the Security agent will prompt the user to enter
     the passphrase. You can specify the title and prompt message for this alert panel. */
-- (MYKeyPair*) importPublicKey: (NSData*)pubKeyData 
+- (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
                     privateKey: (NSData*)privKeyData
                     alertTitle: (NSString*)title
                    alertPrompt: (NSString*)prompt;

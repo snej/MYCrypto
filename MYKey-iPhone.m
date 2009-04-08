@@ -109,6 +109,35 @@
 }
 
 
+
+
+/** Asymmetric encryption/decryption; used by MYPublicKey and MYPrivateKey. */
+- (NSData*) _crypt: (NSData*)data operation: (BOOL)operation {
+    CAssert(data);
+    size_t dataLength = data.length;
+    SecKeyRef key = self.keyRef;
+    size_t outputLength = MAX(dataLength, SecKeyGetBlockSize(key));
+    void *outputBuf = malloc(outputLength);
+    if (!outputBuf) return nil;
+    OSStatus err;
+    if (operation)
+        err = SecKeyEncrypt(key, kSecPaddingNone,//PKCS1, 
+                            data.bytes, dataLength,
+                            outputBuf, &outputLength);
+    else
+        err = SecKeyDecrypt(key, kSecPaddingNone,//PKCS1, 
+                            data.bytes, dataLength,
+                            outputBuf, &outputLength);
+    if (err) {
+        free(outputBuf);
+        Warn(@"%scrypting failed (%i)", (operation ?"En" :"De"), err);
+        // Note: One of the errors I've seen is -9809, which is errSSLCrypto (SecureTransport.h)
+        return nil;
+    } else
+        return [NSData dataWithBytesNoCopy: outputBuf length: outputLength freeWhenDone: YES];
+}
+
+
 @end
 
 

@@ -90,7 +90,7 @@ enum {
     if( !cStr || strlen(cStr)!=2*length )
         return nil;
     uint8_t digest[length];
-    for( int i=0; i<length; i++ ) {
+    for( size_t i=0; i<length; i++ ) {
         if( sscanf(cStr, "%2hhx", &digest[i]) != 1 )
             return nil;
         cStr += 2;
@@ -158,7 +158,7 @@ enum {
     size_t length = self.length;
     char out[2*length+1];
     char *dst = &out[0];
-    for( int i=0; i<length; i+=1 )
+    for( size_t i=0; i<length; i+=1 )
         dst += sprintf(dst,"%02X", bytes[i]);
     return [[[NSString alloc] initWithBytes: out length: 2*length encoding: NSASCIIStringEncoding]
             autorelease];

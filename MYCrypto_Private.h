@@ -10,7 +10,8 @@
 #import "MYKeychain.h"
 #import "MYKey.h"
 #import "MYSymmetricKey.h"
-#import "MYKeyPair.h"
+#import "MYPublicKey.h"
+#import "MYPrivateKey.h"
 #import "MYCertificate.h"
 #import "Test.h"
 #import <Security/Security.h>
@@ -52,9 +53,13 @@ typedef CFTypeRef SecExternalItemType;
 - (id) _initWithKeyData: (NSData*)data
             forKeychain: (SecKeychainRef)keychain;
 @property (readonly) SecExternalItemType keyType;
+@property (readonly) MYSHA1Digest* _keyDigest;
+- (NSData*) _crypt: (NSData *)data operation: (BOOL) op;    // YES to encrypt, NO to decrypt
 #if !MYCRYPTO_USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
+- (CSSM_CC_HANDLE) _createSignatureContext: (CSSM_ALGORITHMS)algorithm;
+- (CSSM_CC_HANDLE) _createPassThroughContext;
 #endif
 @property (readonly) NSArray* _itemList;
 @end
@@ -68,27 +73,26 @@ typedef CFTypeRef SecExternalItemType;
 
 
 @interface MYPublicKey (Private)
-+ (MYSHA1Digest*) _digestOfKey: (SecKeyRef)key;
 - (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
 @end
 
 
-@interface MYKeyPair (Private)
-+ (MYKeyPair*) _generateRSAKeyPairOfSize: (unsigned)keySize
-                            inKeychain: (MYKeychain*)keychain;
-- (id) _initWithPublicKeyData: (NSData*)pubKeyData 
-               privateKeyData: (NSData*)privKeyData
-                  forKeychain: (SecKeychainRef)keychain
-                   alertTitle: (NSString*)title
-                  alertPrompt: (NSString*)prompt;
-- (id) _initWithPublicKeyData: (NSData*)pubKeyData 
-               privateKeyData: (NSData*)privKeyData
-                  forKeychain: (SecKeychainRef)keychain 
-                   passphrase: (NSString*)passphrase;
+@interface MYPrivateKey (Private)
++ (MYPrivateKey*) _generateRSAKeyPairOfSize: (unsigned)keySize
+                                 inKeychain: (MYKeychain*)keychain;
+- (id) _initWithKeyData: (NSData*)privKeyData 
+          publicKeyData: (NSData*)pubKeyData
+            forKeychain: (SecKeychainRef)keychain 
+             alertTitle: (NSString*)title
+            alertPrompt: (NSString*)prompt;
+- (id) _initWithKeyData: (NSData*)privKeyData 
+          publicKeyData: (NSData*)pubKeyData
+            forKeychain: (SecKeychainRef)keychain 
+             passphrase: (NSString*)passphrase;
 #if !TARGET_OS_IPHONE
-- (NSData*) _exportPrivateKeyInFormat: (SecExternalFormat)format
-                              withPEM: (BOOL)withPEM
-                           passphrase: (NSString*)passphrase;
+- (NSData*) _exportKeyInFormat: (SecExternalFormat)format
+                       withPEM: (BOOL)withPEM
+                    passphrase: (NSString*)passphrase;
 #endif
 @end
 
@@ -102,8 +106,6 @@ typedef CFTypeRef SecExternalItemType;
 #endif
 
 
-NSData* _crypt(SecKeyRef key, NSData *data, CCOperation op);
-
 #undef check
 BOOL check(OSStatus err, NSString *what);
 
@@ -114,5 +116,4 @@ SecKeyRef importKey(NSData *data,
                     SecExternalItemType type,
                     SecKeychainRef keychain,
                     SecKeyImportExportParameters *params /*non-null*/);
-CSSM_CC_HANDLE cssmCreateSignatureContext(SecKeyRef key);
 #endif

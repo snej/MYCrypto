@@ -6,7 +6,8 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
-#import "MYKeyPair.h"
+#import "MYPublicKey.h"
+#import "MYPrivateKey.h"
 #import "MYKeychain.h"
 #import "MYDigest.h"
 #import "MYCrypto_Private.h"
@@ -44,10 +45,10 @@ TestCase(EnumerateKeys) {
         Log(@"Found %@ -- name=%@", key, key.name);
     }
     
-    e = [[MYKeychain allKeychains] enumerateKeyPairs];
+    e = [[MYKeychain allKeychains] enumeratePrivateKeys];
     Log(@"Key-Pair Enumerator = %@", e);
     CAssert(e);
-    for (MYKeyPair *key in e) {
+    for (MYPrivateKey *key in e) {
         Log(@"Found %@ -- name=%@", key, key.name);
     }
     
@@ -153,32 +154,25 @@ TestCase(MYSymmetricKey) {
 #pragma mark KEY-PAIRS:
 
 
-TestCase(KeyPair) {
+TestCase(MYPrivateKey) {
     RequireTestCase(MYKeychain);
     
     Log(@"Generating key pair...");
-    MYKeyPair *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
+    MYPrivateKey *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
+    Log(@"...created { %@ , %@ }.", pair, pair.publicKey);
     CAssert(pair);
     CAssert(pair.keyRef);
-    CAssert(pair.privateKeyRef);
-    Log(@"...created pair.");
+    MYPublicKey *publicKey = pair.publicKey;
+    CAssert(publicKey.keyRef);
     
     @try{
-        [pair setName: @"Test KeyPair Label"];
-        CAssertEqual(pair.name, @"Test KeyPair Label");
-#if !TARGET_OS_IPHONE
-        [pair setComment: @"This key-pair was generated automatically by a test case."];
-        CAssertEqual(pair.comment, @"This key-pair was generated automatically by a test case.");
-#endif
-        [pair setAlias: @"TestCase@mooseyard.com"];
-        CAssertEqual(pair.alias, @"TestCase@mooseyard.com");
-        
-        NSData *pubKeyData = pair.keyData;
+        NSData *pubKeyData = publicKey.keyData;
         Log(@"Public key = %@ (%u bytes)",pubKeyData,pubKeyData.length);
         CAssert(pubKeyData);
         
-        MYSHA1Digest *pubKeyDigest = pair.publicKeyDigest;
+        MYSHA1Digest *pubKeyDigest = publicKey.publicKeyDigest;
         Log(@"Public key digest = %@",pubKeyDigest);
+        CAssertEqual(pair.publicKeyDigest, pubKeyDigest);
         
         Log(@"SHA1 of pub key = %@", pubKeyData.my_SHA1Digest.asData);
         
@@ -186,10 +180,22 @@ TestCase(KeyPair) {
         NSData *sig = [pair signData: data];
         Log(@"Signature = %@ (%u bytes)",sig,sig.length);
         CAssert(sig);
-        CAssert( [pair verifySignature: sig ofData: data] );
+        CAssert( [publicKey verifySignature: sig ofData: data] );
+        
+        [pair setName: @"Test KeyPair Label"];
+        CAssertEqual(pair.name, @"Test KeyPair Label");
+        CAssertEqual(publicKey.name, @"Test KeyPair Label");
+#if !TARGET_OS_IPHONE
+        [pair setComment: @"This key-pair was generated automatically by a test case."];
+        CAssertEqual(pair.comment, @"This key-pair was generated automatically by a test case.");
+        CAssertEqual(publicKey.comment, @"This key-pair was generated automatically by a test case.");
+#endif
+        [pair setAlias: @"TestCase@mooseyard.com"];
+        CAssertEqual(pair.alias, @"TestCase@mooseyard.com");
+        CAssertEqual(publicKey.alias, @"TestCase@mooseyard.com");
         
         // Test creating a standalone public key:
-        MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: pair.keyRef];
+        MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: publicKey.keyRef];
         CAssert( [pub verifySignature: sig ofData: data] );
         Log(@"Verified signature.");
 
@@ -233,14 +239,14 @@ TestCase(KeyPair) {
 static void testKeyPairExportWithPrompt(BOOL withPrompt) {
     MYKeychain *keychain = [MYKeychain allKeychains];
     Log(@"Generating key pair...");
-    MYKeyPair *pair = [keychain generateRSAKeyPairOfSize: 512];
+    MYPrivateKey *pair = [keychain generateRSAKeyPairOfSize: 512];
     CAssert(pair);
     CAssert(pair.keyRef);
-    CAssert(pair.privateKeyRef);
+    CAssert(pair.publicKey.keyRef);
     Log(@"...created pair.");
     
     @try{
-        NSData *pubKeyData = pair.keyData;
+        NSData *pubKeyData = pair.publicKey.keyData;
         CAssert(pubKeyData.length >= 512/8);
         [pair setName: @"Test KeyPair Label"];
         CAssertEqual(pair.name, @"Test KeyPair Label");
@@ -256,11 +262,11 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
         NSString *passphrase = @"passphrase";
         NSData *privKeyData;
         if (withPrompt)
-            privKeyData = [pair exportPrivateKey];
+            privKeyData = [pair exportKey];
         else
-            privKeyData = [pair _exportPrivateKeyInFormat: kSecFormatWrappedOpenSSL
-                                                  withPEM: YES
-                                               passphrase: passphrase];
+            privKeyData = [pair _exportKeyInFormat: kSecFormatWrappedOpenSSL
+                                          withPEM: YES
+                                       passphrase: passphrase];
         Log(@"Exported data = %@ (%u bytes)", privKeyData,privKeyData.length);
         CAssert(privKeyData);
         [privKeyData writeToFile: @"ExportedPrivKey" atomically: YES];
@@ -270,11 +276,11 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
         Log(@"Looking up public key of pair in keychain...");
         MYSHA1Digest *digest = pair.publicKeyDigest;
         MYPublicKey *foundKey = [keychain publicKeyWithDigest: digest];
-        CAssertEqual(foundKey, pair.asPublicKey);
-        CAssert([keychain.enumeratePublicKeys.allObjects containsObject: pair.asPublicKey]);
-        MYKeyPair *foundPair = [keychain keyPairWithDigest: digest];
+        CAssertEqual(foundKey, pair.publicKey);
+        CAssert([keychain.enumeratePublicKeys.allObjects containsObject: pair.publicKey]);
+        MYPrivateKey *foundPair = [keychain privateKeyWithDigest: digest];
         CAssertEqual(foundPair, pair);
-        CAssert([keychain.enumerateKeyPairs.allObjects containsObject: pair]);
+        CAssert([keychain.enumeratePrivateKeys.allObjects containsObject: pair]);
         
         Log(@"Removing key-pair from keychain...");
         CAssert([pair removeFromKeychain]);
@@ -287,14 +293,14 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
             pair = [keychain importPublicKey: pubKeyData 
                                   privateKey: privKeyData];
         } else {
-            pair = [[[MYKeyPair alloc] _initWithPublicKeyData: pubKeyData
-                                               privateKeyData: privKeyData
-                                                  forKeychain: keychain.keychainRefOrDefault
-                                                   passphrase: passphrase]
+            pair = [[[MYPrivateKey alloc] _initWithKeyData: privKeyData
+                                             publicKeyData: pubKeyData
+                                               forKeychain: keychain.keychainRefOrDefault
+                                                passphrase: passphrase]
                     autorelease];
         }
         CAssert(pair);
-        CAssertEqual(pair.keyData, pubKeyData);
+        CAssertEqual(pair.publicKey.keyData, pubKeyData);
 #endif
     }@finally {
         if (pair) {
@@ -308,7 +314,7 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
 
 TestCase(KeyPairExport) {
     RequireTestCase(MYKeychain);
-    RequireTestCase(KeyPair);
+    RequireTestCase(MYPrivateKey);
     testKeyPairExportWithPrompt(NO);
 }
 

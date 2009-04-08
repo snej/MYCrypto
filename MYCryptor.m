@@ -57,11 +57,14 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
          fromPassphrase: (NSString*)passphrase
                    salt: (id)salt
 {
+    // This follows algorithm PBKDF1 from PKCS#5 v2.0, with Hash=SHA-256 and c=13.
     Assert(passphrase);
     Assert(salt);
     passphrase = $sprintf(@"MYCrypto|%@|%@", passphrase, salt);
     size_t lengthInBytes = (lengthInBits + 7)/8;
     MYDigest *digest = [[passphrase dataUsingEncoding: NSUTF8StringEncoding] my_SHA256Digest];
+    for (int i=0; i<12; i++)
+        digest = digest.asData.my_SHA256Digest;
     if (lengthInBytes <= digest.length)
         return [digest.asData subdataWithRange: NSMakeRange(0,lengthInBytes)];
     else
@@ -126,7 +129,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 
 - (BOOL) _outputBytes: (const void*)bytes length: (size_t)length {
     if (_outputStream) {
-        NSInteger written = [_outputStream write: bytes maxLength: length];
+        size_t written = [_outputStream write: bytes maxLength: length];
         if (written < 0) {
             self.error = _outputStream.streamError;
             if (_error)

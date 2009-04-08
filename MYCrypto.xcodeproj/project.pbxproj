@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 270B879E0F8C565000C56781 /* MYPrivateKey.m */; };
 		27A42CBF0F8578B40063D362 /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42CBE0F8578B40063D362 /* MYCryptoTest.m */; };
 		27A42D1E0F8586CE0063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E822A10F81C5660019BE60 /* MYKey.m */; };
 		27A42D420F858ED80063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42D410F858ED80063D362 /* MYSymmetricKey.m */; };
@@ -14,7 +15,6 @@
 		27CFF4C20F7E8535000B418E /* MYCryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4B40F7E8535000B418E /* MYCryptor.m */; };
 		27CFF4C30F7E8535000B418E /* MYKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4B60F7E8535000B418E /* MYKeychain.m */; };
 		27CFF4C40F7E8535000B418E /* MYKeychainItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4B80F7E8535000B418E /* MYKeychainItem.m */; };
-		27CFF4C60F7E8535000B418E /* MYKeyPair.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4BB0F7E8535000B418E /* MYKeyPair.m */; };
 		27CFF4C70F7E8535000B418E /* MYPublicKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4BD0F7E8535000B418E /* MYPublicKey.m */; };
 		27CFF4C80F7E8535000B418E /* MYDigest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4C00F7E8535000B418E /* MYDigest.m */; };
 		27CFF4D50F7E8726000B418E /* CollectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4CE0F7E8726000B418E /* CollectionUtils.m */; };
@@ -42,6 +42,9 @@
 
 /* Begin PBXFileReference section */
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
+		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
+		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
 		27A42CBE0F8578B40063D362 /* MYCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptoTest.m; sourceTree = "<group>"; };
 		27A42D400F858ED80063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27A42D410F858ED80063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
@@ -56,8 +59,6 @@
 		27CFF4B60F7E8535000B418E /* MYKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKeychain.m; sourceTree = "<group>"; };
 		27CFF4B70F7E8535000B418E /* MYKeychainItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKeychainItem.h; sourceTree = "<group>"; };
 		27CFF4B80F7E8535000B418E /* MYKeychainItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKeychainItem.m; sourceTree = "<group>"; };
-		27CFF4BA0F7E8535000B418E /* MYKeyPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKeyPair.h; sourceTree = "<group>"; };
-		27CFF4BB0F7E8535000B418E /* MYKeyPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKeyPair.m; sourceTree = "<group>"; };
 		27CFF4BC0F7E8535000B418E /* MYPublicKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPublicKey.h; sourceTree = "<group>"; };
 		27CFF4BD0F7E8535000B418E /* MYPublicKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPublicKey.m; sourceTree = "<group>"; };
 		27CFF4BE0F7E8535000B418E /* MYCrypto_Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCrypto_Private.h; sourceTree = "<group>"; };
@@ -103,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
+				270B881C0F8D055A00C56781 /* Internal */,
 				27CFF4CC0F7E86E8000B418E /* MYUtilities */,
 				C6859EA2029092E104C91782 /* Documentation */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
@@ -128,20 +130,15 @@
 				27CFF4B60F7E8535000B418E /* MYKeychain.m */,
 				27CFF4B70F7E8535000B418E /* MYKeychainItem.h */,
 				27CFF4B80F7E8535000B418E /* MYKeychainItem.m */,
-				27CFF4BA0F7E8535000B418E /* MYKeyPair.h */,
-				27CFF4BB0F7E8535000B418E /* MYKeyPair.m */,
 				27CFF4BC0F7E8535000B418E /* MYPublicKey.h */,
 				27CFF4BD0F7E8535000B418E /* MYPublicKey.m */,
+				270B879D0F8C565000C56781 /* MYPrivateKey.h */,
+				270B879E0F8C565000C56781 /* MYPrivateKey.m */,
 				27A42D400F858ED80063D362 /* MYSymmetricKey.h */,
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
-				27CFF4BE0F7E8535000B418E /* MYCrypto_Private.h */,
-				27A42CBE0F8578B40063D362 /* MYCryptoTest.m */,
-				27CFF5210F7E94DF000B418E /* MYCrypto_main.m */,
 				27A42ECC0F8689D30063D362 /* MYCertGen.h */,
 				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
-				27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */,
-				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
 				27EAF0390F8B2D700091AF95 /* README.textile */,
 			);
 			name = Source;
@@ -161,6 +158,19 @@
 				8DD76FA10486AA7600D96B5E /* MYCrypto */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		270B881C0F8D055A00C56781 /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				27CFF4BE0F7E8535000B418E /* MYCrypto_Private.h */,
+				27A42CBE0F8578B40063D362 /* MYCryptoTest.m */,
+				27CFF5210F7E94DF000B418E /* MYCrypto_main.m */,
+				27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */,
+				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
+				2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */,
+			);
+			name = Internal;
 			sourceTree = "<group>";
 		};
 		27CFF4CC0F7E86E8000B418E /* MYUtilities */ = {
@@ -198,6 +208,7 @@
 				8DD76F990486AA7600D96B5E /* Sources */,
 				8DD76F9B0486AA7600D96B5E /* Frameworks */,
 				8DD76F9E0486AA7600D96B5E /* CopyFiles */,
+				27EAF0C60F8BD4ED0091AF95 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -226,6 +237,23 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		27EAF0C60F8BD4ED0091AF95 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/csh;
+			shellScript = "doxygen\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		8DD76F990486AA7600D96B5E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -235,7 +263,6 @@
 				27CFF4C20F7E8535000B418E /* MYCryptor.m in Sources */,
 				27CFF4C30F7E8535000B418E /* MYKeychain.m in Sources */,
 				27CFF4C40F7E8535000B418E /* MYKeychainItem.m in Sources */,
-				27CFF4C60F7E8535000B418E /* MYKeyPair.m in Sources */,
 				27CFF4C70F7E8535000B418E /* MYPublicKey.m in Sources */,
 				27CFF4C80F7E8535000B418E /* MYDigest.m in Sources */,
 				27CFF4D50F7E8726000B418E /* CollectionUtils.m in Sources */,
@@ -247,6 +274,7 @@
 				27A42CBF0F8578B40063D362 /* MYCryptoTest.m in Sources */,
 				27A42D1E0F8586CE0063D362 /* MYKey.m in Sources */,
 				27A42D420F858ED80063D362 /* MYSymmetricKey.m in Sources */,
+				270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +292,7 @@
 		};
 		1DEB927608733DD40010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */;
 			buildSettings = {
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = MYCrypto;
@@ -279,7 +308,7 @@
 		};
 		1DEB927A08733DD40010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */;
+			baseConfigurationReference = 2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;

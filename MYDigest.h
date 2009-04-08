@@ -84,6 +84,7 @@ typedef struct {
 /** Create a MYSHA1Digest object given an existing raw SHA-1 digest. */
 + (MYSHA1Digest*) digestFromRawSHA1Digest: (const RawSHA1Digest*)rawDigest;
 
+/** The SHA-1 digest as a C struct */
 @property (readonly) const RawSHA1Digest* rawSHA1Digest;
 
 @end
@@ -104,6 +105,7 @@ typedef struct {
 /** Create a MYSHA256Digest object given an existing raw SHA-1 digest. */
 + (MYSHA256Digest*) digestFromRawSHA256Digest: (const RawSHA256Digest*)rawDigest;
 
+/** The SHA-256 digest as a C struct */
 @property (readonly) const RawSHA256Digest* rawSHA256Digest;
 
 @end

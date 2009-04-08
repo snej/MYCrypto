@@ -74,7 +74,7 @@
 }
 
 
-- (MYKeyPair*) keyPairWithDigest: (MYSHA1Digest*)pubKeyDigest {
+- (MYPrivateKey*) privateKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
                 $mdict({(id)kSecClass, (id)kSecClassKey},
                       {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
@@ -82,7 +82,7 @@
                       {(id)kSecReturnRef, $true})];
 }
 
-- (NSEnumerator*) enumerateKeyPairs {
+- (NSEnumerator*) enumeratePrivateKeys {
     NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
                                 {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
                                 {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
@@ -156,8 +156,8 @@
                                              algorithm: algorithm inKeychain: self];
 }
 
-- (MYKeyPair*) generateRSAKeyPairOfSize: (unsigned)keySize {
-    return [MYKeyPair _generateRSAKeyPairOfSize: keySize inKeychain: self];
+- (MYPrivateKey*) generateRSAKeyPairOfSize: (unsigned)keySize {
+    return [MYPrivateKey _generateRSAKeyPairOfSize: keySize inKeychain: self];
 }
 
 
@@ -211,19 +211,7 @@
     while (next==nil && _index < CFArrayGetCount(_results)) {
         CFTypeRef found = CFArrayGetValueAtIndex(_results, _index++); 
         if (_itemClass == kSecAttrKeyClassPrivate) {
-            MYSHA1Digest *digest = [MYPublicKey _digestOfKey: (SecKeyRef)found];
-            if (digest) {
-                MYPublicKey *publicKey = [[MYKeychain defaultKeychain] publicKeyWithDigest: digest];
-                if (publicKey)
-                    next = [[[MYKeyPair alloc] initWithPublicKeyRef: publicKey.keyRef
-                                                     privateKeyRef: (SecKeyRef)found]
-                           autorelease];
-                else {
-                    // The matching public key won't turn up if it's embedded in a certificate;
-                    // I'd have to search for certs if I wanted to look that up. Skip it for now.
-                    //Warn(@"Couldn't find matching public key for private key!");
-                }
-            }
+            next = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecAttrKeyClassPublic) {
             next = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
         } else if (_itemClass == kSecAttrKeyClassSymmetric) {

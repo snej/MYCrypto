@@ -15,8 +15,8 @@
 
 
 /** A public key, which can be used for encrypting data and verifying signatures.
-    MYPublicKeys are created as part of generating a MYKeyPair, 
-    or by being imported into a MYKeychain. */
+    MYPublicKeys are created as part of generating a key-pair, 
+    or by being imported from data into a MYKeychain. */
 @interface MYPublicKey : MYKey <MYEncryption>
 {
     @private
@@ -25,11 +25,6 @@
 
 /** The public key's SHA-1 digest. This is a convenient short (20-byte) identifier for the key. */
 @property (readonly) MYSHA1Digest *publicKeyDigest;
-
-/** Returns the receiver as a MYPublicKey.
-    If the receiver already is a MYPublicKey, this just returns self.
-    If it's a MYKeyPair, it returns a new MYPublicKey containing just the public key. */
-@property (readonly) MYPublicKey *asPublicKey;
 
 /** Encrypts a short piece of data using this key, returning the raw encrypted result.
     An RSA key can encrypt only blocks smaller than its own key size; this

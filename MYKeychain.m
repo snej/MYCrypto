@@ -229,11 +229,11 @@
 }
 
 
-- (MYKeyPair*) keyPairWithDigest: (MYSHA1Digest*)pubKeyDigest {
-    return (MYKeyPair*) [self itemOfClass: kSecPrivateKeyItemClass withDigest: pubKeyDigest];
+- (MYPrivateKey*) privateKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
+    return (MYPrivateKey*) [self itemOfClass: kSecPrivateKeyItemClass withDigest: pubKeyDigest];
 }
 
-- (NSEnumerator*) enumerateKeyPairs {
+- (NSEnumerator*) enumeratePrivateKeys {
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecPrivateKeyItemClass
                                            attributes: NULL count: 0] autorelease];
@@ -275,19 +275,19 @@
             autorelease];
 }
 
-- (MYKeyPair*) importPublicKey: (NSData*)pubKeyData 
+- (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
                     privateKey: (NSData*)privKeyData 
                     alertTitle: (NSString*)title
                    alertPrompt: (NSString*)prompt {
-    return [[[MYKeyPair alloc] _initWithPublicKeyData: pubKeyData
-                                       privateKeyData: privKeyData
-                                          forKeychain: self.keychainRefOrDefault
-                                           alertTitle: (NSString*)title
-                                          alertPrompt: (NSString*)prompt]
+    return [[[MYPrivateKey alloc] _initWithKeyData: privKeyData
+                                     publicKeyData: pubKeyData
+                                       forKeychain: self.keychainRefOrDefault
+                                        alertTitle: (NSString*)title
+                                       alertPrompt: (NSString*)prompt]
             autorelease];
 }
 
-- (MYKeyPair*) importPublicKey: (NSData*)pubKeyData 
+- (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
                     privateKey: (NSData*)privKeyData 
 {
     return [self importPublicKey: pubKeyData privateKey: privKeyData
@@ -326,8 +326,8 @@
                                              algorithm: algorithm inKeychain: self];
 }
 
-- (MYKeyPair*) generateRSAKeyPairOfSize: (unsigned)keySize {
-    return [MYKeyPair _generateRSAKeyPairOfSize: keySize inKeychain: self];
+- (MYPrivateKey*) generateRSAKeyPairOfSize: (unsigned)keySize {
+    return [MYPrivateKey _generateRSAKeyPairOfSize: keySize inKeychain: self];
 }
 
 
@@ -398,19 +398,7 @@
         
         switch (_itemClass) {
             case kSecPrivateKeyItemClass: {
-                MYSHA1Digest *digest = [MYPublicKey _digestOfKey: (SecKeyRef)found];
-                if (digest) {
-                    MYPublicKey *publicKey = [_keychain publicKeyWithDigest: digest];
-                    if (publicKey)
-                        key = [[[MYKeyPair alloc] initWithPublicKeyRef: publicKey.keyRef
-                                                         privateKeyRef: (SecKeyRef)found]
-                               autorelease];
-                    else {
-                        // The matching public key won't turn up if it's embedded in a certificate;
-                        // I'd have to search for certs if I wanted to look that up. Skip it for now.
-                        //Warn(@"Couldn't find matching public key for private key! digest=%@",digest);
-                    }
-                }
+                key = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
                 break;
             }
             case kSecCertificateItemClass:

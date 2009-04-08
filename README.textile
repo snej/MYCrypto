@@ -24,7 +24,7 @@ h3. Requirements
 * Mac OS X 10.5 or later _[has been tested on 10.5.6]_
 * iPhone OS 2.0 or later _[not yet tested; see Limitations section below]_
 * iPhone Simulator, for iPhone OS 2.0 or later
-* The MYUtilities library, which is used by MYCrypto.
+* The "MYUtilities":http://mooseyard.com/hg/hgwebdir.cgi/MYUtilities library, which is used by MYCrypto.
 * _Some understanding of security and cryptography on your part!_ Even with convenient APIs, cryptographic operations still require care and knowledge to be used safely. There are already too many "examples":http://en.wikipedia.org/wiki/Wired_Equivalent_Privacy#Flaws of insecure systems that were incorrectly assembled from secure primitives; don't add your app to that list. Please read a good overview like "??Practical Cryptography??":http://www.schneier.com/book-practical.html before attempting anything the least bit fancy.
 
 h3. Current Limitations
@@ -55,7 +55,7 @@ The class hierarchy of MYCrypto looks like this:
 ** "MYKey":Documentation/html/interfaceMYKey.html
 *** "*MYSymmetricKey*":Documentation/html/interfaceMYSymmetricKey.html
 *** "*MYPublicKey*":Documentation/html/interfaceMYPublicKey.html
-**** "*MYKeyPair*":Documentation/html/interfaceMYKeyPair.html
+*** "*MYPrivateKey*":Documentation/html/interfaceMYPrivateKey.html
 *** "*MYCertificate*":Documentation/html/interfaceMYCertificate.html
 * "MYDigest":Documentation/html/interfaceMYDigest.html
 ** "*MYSHA1Digest*":Documentation/html/interfaceMYSHA1Digest.html
@@ -72,4 +72,5 @@ h2. References
 * "??Common Security: CDSA and CSSM, Version 2??":http://www.opengroup.org/publications/catalog/c914.htm (The Open Group)
 
 * "??Practical Cryptography??":http://www.schneier.com/book-practical.html (Ferguson and Schneier)
+* "??Handbook of Applied Cryptography":http://www.cacr.math.uwaterloo.ca/hac/ (Menezes, van Oorschot, Vanstone) -- free download!
 * "??The Devil's InfoSec Dictionary??":http://www.csoonline.com/article/220527/The_Devil_s_Infosec_Dictionary (CSO Online)
