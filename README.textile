@@ -12,7 +12,7 @@ h2. Introduction
 "*Keychain*":http://developer.apple.com/documentation/Security/Conceptual/keychainServConcepts/02concepts/concepts.html#//apple_ref/doc/uid/TP30000897-CH204-TP9
 and *CSSM* APIs, which are notoriously hard to use, as well as *CommonCrypto*, which is easier but quite limited.
 
-MYCrypto gives you easy object-oriented interfaces to
+MYCrypto gives you easy object-oriented interfaces to:
 
 * Symmmetric cryptography (session keys and password-based encryption)
 * Asymmetric cryptography (public and private keys; digital signatures)

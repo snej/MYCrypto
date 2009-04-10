@@ -9,6 +9,7 @@
 #import "MYPrivateKey.h"
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
+#import "MYCertGen.h"
 #import <CommonCrypto/CommonDigest.h>
 
 
@@ -113,6 +114,12 @@
     SecKeyRef privateKey = importKey(privKeyData,kSecItemTypePrivateKey,keychain,&params);
     return [self _initWithKeyRef: privateKey publicKeyData: pubKeyData forKeychain: keychain];
 }
+
+
+- (MYIdentity*) createSelfSignedIdentityWithAttributes: (NSDictionary*)attributes {
+    return MYIdentityCreateSelfSigned(self, attributes);
+}
+
 
 #endif
 

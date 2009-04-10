@@ -74,12 +74,17 @@ typedef CFTypeRef SecExternalItemType;
 
 @interface MYPublicKey (Private)
 - (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
+#if !TARGET_OS_IPHONE
+- (CSSM_WRAP_KEY*) _unwrappedCSSMKey;
+#endif
 @end
 
 
 @interface MYPrivateKey (Private)
 + (MYPrivateKey*) _generateRSAKeyPairOfSize: (unsigned)keySize
                                  inKeychain: (MYKeychain*)keychain;
+- (id) _initWithKeyRef: (SecKeyRef)privateKey
+             publicKey: (MYPublicKey*)publicKey;
 - (id) _initWithKeyData: (NSData*)privKeyData 
           publicKeyData: (NSData*)pubKeyData
             forKeychain: (SecKeychainRef)keychain 

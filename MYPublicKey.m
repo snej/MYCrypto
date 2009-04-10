@@ -85,6 +85,42 @@
 }
 
 
+#if !TARGET_OS_IPHONE
+- (CSSM_WRAP_KEY*) _unwrappedCSSMKey {
+    const CSSM_KEY *key = self.cssmKey;
+    
+    if (key->KeyHeader.BlobType == CSSM_KEYBLOB_WRAPPED) {
+        Warn(@"Key is already wrapped.\n");
+        return NULL;
+    }
+    
+    if (key->KeyHeader.KeyClass != CSSM_KEYCLASS_PUBLIC_KEY)
+        Warn(@"Warning: Null wrapping a non-public key - this is a dangerous operation.\n");
+    
+    const CSSM_ACCESS_CREDENTIALS* credentials;
+    credentials = [self cssmCredentialsForOperation: CSSM_ACL_AUTHORIZATION_EXPORT_WRAPPED
+                                               type: kSecCredentialTypeDefault error: nil];
+    CSSM_CC_HANDLE ccHandle;
+    if (!checkcssm(CSSM_CSP_CreateSymmetricContext(self.cssmCSPHandle, 
+                                                   CSSM_ALGID_NONE, CSSM_ALGMODE_WRAP, 
+                                                   NULL, NULL, NULL, 
+                                                   CSSM_PADDING_NONE, NULL, 
+                                                   &ccHandle),
+                   @"CSSM_CSP_CreateSymmetricContext"))
+        return NULL;
+                   
+    CSSM_WRAP_KEY *result = malloc(sizeof(CSSM_WRAP_KEY));
+    if (!checkcssm(CSSM_WrapKey(ccHandle, credentials, key, NULL, result),
+                      @"CSSM_WrapKey")) {
+        free(result);
+        result = NULL;
+    }
+    CSSM_DeleteContext(ccHandle);
+    return result;
+}
+#endif
+
+
 @end
 
 

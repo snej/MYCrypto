@@ -9,12 +9,15 @@
 #import "MYKeychain.h"
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
+#import "MYIdentity.h"
+
 
 #if !MYCRYPTO_USE_IPHONE_API
 
 
 @interface MYKeyEnumerator : NSEnumerator
 {
+    @private
     MYKeychain *_keychain;
     SecKeychainSearchRef _search;
     SecItemClass _itemClass;
@@ -25,6 +28,17 @@
              attributes: (SecKeychainAttribute[])attributes 
                   count: (unsigned)count;
 @end
+
+
+@interface MYIdentityEnumerator : NSEnumerator
+{
+    @private
+    SecIdentitySearchRef _searchRef;
+}
+
+- (id) initWithKeychain: (MYKeychain*)keychain;
+@end
+
 
 
 
@@ -249,6 +263,10 @@
                                            attributes: NULL count: 0] autorelease];
 }
 
+- (NSEnumerator*) enumerateIdentities {
+    return [[[MYIdentityEnumerator alloc] initWithKeychain: self] autorelease];
+}
+
 - (NSEnumerator*) enumerateSymmetricKeys {
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecSymmetricKeyItemClass
@@ -316,6 +334,12 @@
     return [self importCertificate: data 
                               type: CSSM_CERT_X_509v3 
                           encoding: CSSM_CERT_ENCODING_BER];
+}
+
+- (BOOL) addCertificate: (MYCertificate*)certificate {
+    Assert(certificate);
+    return check(SecCertificateAddToKeychain(certificate.certificateRef, self.keychainRefOrDefault),
+                 @"SecCertificateAddToKeychain");
 }
 
 
@@ -413,6 +437,31 @@
     return key;
 }
 
+@end
+
+
+
+@implementation MYIdentityEnumerator
+
+- (id) initWithKeychain: (MYKeychain*)keychain {
+    self = [super init];
+    if (self) {
+        if (!check(SecIdentitySearchCreate(keychain.keychainRef, 0, &_searchRef),
+                   @"SecIdentitySearchCreate")) {
+            [self release];
+            return nil;
+        }
+    }
+    return self;
+}
+
+- (id) nextObject {
+    SecIdentityRef identityRef = NULL;
+    OSStatus err = SecIdentitySearchCopyNext(_searchRef, &identityRef);
+    if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
+        return nil;
+    return [[[MYIdentity alloc] initWithIdentityRef: identityRef] autorelease];
+}
 
 @end
 

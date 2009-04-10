@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 270B879E0F8C565000C56781 /* MYPrivateKey.m */; };
+		274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42ECD0F8689D30063D362 /* MYCertGen.m */; };
+		274863A20F8EF39400FE617B /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 274863A10F8EF39400FE617B /* MYIdentity.m */; };
 		27A42CBF0F8578B40063D362 /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42CBE0F8578B40063D362 /* MYCryptoTest.m */; };
 		27A42D1E0F8586CE0063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E822A10F81C5660019BE60 /* MYKey.m */; };
 		27A42D420F858ED80063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42D410F858ED80063D362 /* MYSymmetricKey.m */; };
@@ -45,6 +47,8 @@
 		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
 		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
+		274863A00F8EF39400FE617B /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
+		274863A10F8EF39400FE617B /* MYIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYIdentity.m; sourceTree = "<group>"; };
 		27A42CBE0F8578B40063D362 /* MYCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptoTest.m; sourceTree = "<group>"; };
 		27A42D400F858ED80063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27A42D410F858ED80063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
@@ -104,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
+				274861440F8D757600FE617B /* Certificate Generation */,
 				270B881C0F8D055A00C56781 /* Internal */,
 				27CFF4CC0F7E86E8000B418E /* MYUtilities */,
 				C6859EA2029092E104C91782 /* Documentation */,
@@ -124,6 +129,8 @@
 				27CFF4B40F7E8535000B418E /* MYCryptor.m */,
 				27CFF4BF0F7E8535000B418E /* MYDigest.h */,
 				27CFF4C00F7E8535000B418E /* MYDigest.m */,
+				274863A00F8EF39400FE617B /* MYIdentity.h */,
+				274863A10F8EF39400FE617B /* MYIdentity.m */,
 				27E822A00F81C5660019BE60 /* MYKey.h */,
 				27E822A10F81C5660019BE60 /* MYKey.m */,
 				27CFF4B50F7E8535000B418E /* MYKeychain.h */,
@@ -137,8 +144,6 @@
 				27A42D400F858ED80063D362 /* MYSymmetricKey.h */,
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
-				27A42ECC0F8689D30063D362 /* MYCertGen.h */,
-				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
 				27EAF0390F8B2D700091AF95 /* README.textile */,
 			);
 			name = Source;
@@ -171,6 +176,15 @@
 				2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */,
 			);
 			name = Internal;
+			sourceTree = "<group>";
+		};
+		274861440F8D757600FE617B /* Certificate Generation */ = {
+			isa = PBXGroup;
+			children = (
+				27A42ECC0F8689D30063D362 /* MYCertGen.h */,
+				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
+			);
+			name = "Certificate Generation";
 			sourceTree = "<group>";
 		};
 		27CFF4CC0F7E86E8000B418E /* MYUtilities */ = {
@@ -275,6 +289,8 @@
 				27A42D1E0F8586CE0063D362 /* MYKey.m in Sources */,
 				27A42D420F858ED80063D362 /* MYSymmetricKey.m in Sources */,
 				270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */,
+				274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */,
+				274863A20F8EF39400FE617B /* MYIdentity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,6 +319,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
 			};
 			name = Debug;
 		};
@@ -310,6 +328,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
 			};
 			name = Release;
 		};

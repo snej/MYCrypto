@@ -68,7 +68,6 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
         [self release];
         return nil;
     }
-    Log(@"SecItemAdd returned %@", keyRef);//TEMP
     Assert(keyRef, @"SecItemAdd didn't return anything");
 #else
     Assert(NO,@"Unimplemented"); //FIX

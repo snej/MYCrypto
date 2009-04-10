@@ -10,6 +10,7 @@
 #import "MYPrivateKey.h"
 #import "MYKeychain.h"
 #import "MYDigest.h"
+#import "MYIdentity.h"
 #import "MYCrypto_Private.h"
 
 
@@ -68,6 +69,19 @@ TestCase(EnumerateCerts) {
     CAssert(e);
     for (MYCertificate *cert in e) {
         //Log(@"Found %@ -- name=%@, email=%@", cert, cert.commonName, cert.emailAddresses);
+    }
+}
+
+TestCase(EnumerateIdentities) {
+    RequireTestCase(MYKeychain);
+    NSEnumerator *e = [[MYKeychain allKeychains] enumerateIdentities];
+    Log(@"Enumerator = %@", e);
+    CAssert(e);
+    for (MYIdentity *ident in e) {
+        Log(@"Found %@ -- name=%@, emails=(%@), key=%@",
+            ident, ident.commonName, 
+            [ident.emailAddresses componentsJoinedByString: @", "],
+            ident.privateKey);
     }
 }
 

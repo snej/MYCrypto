@@ -56,6 +56,9 @@
 
 #pragma mark CERTIFICATES:
 
+/** Adds a certificate to this keychain. (It must not already belong to a keychain.) */
+- (BOOL) addCertificate: (MYCertificate*)certificate;
+
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data;
 
@@ -66,6 +69,9 @@
 
 /** Enumerates all certificates in the keychain. */
 - (NSEnumerator*) enumerateCertificates;
+
+/** Enumerates all identities in the keychain. */
+- (NSEnumerator*) enumerateIdentities;
 
 #pragma mark KEY-PAIRS:
 
@@ -110,16 +116,16 @@
     Since the private key data is wrapped (encrypted), the Security agent will prompt the user to enter
     the passphrase. */
 - (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
-                    privateKey: (NSData*)privKeyData;
+                       privateKey: (NSData*)privKeyData;
 
 /** Imports a key-pair into the keychain, given the external representations
     of both the public and private keys.
     Since the private key data is wrapped (encrypted), the Security agent will prompt the user to enter
     the passphrase. You can specify the title and prompt message for this alert panel. */
 - (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
-                    privateKey: (NSData*)privKeyData
-                    alertTitle: (NSString*)title
-                   alertPrompt: (NSString*)prompt;
+                       privateKey: (NSData*)privKeyData
+                       alertTitle: (NSString*)title
+                      alertPrompt: (NSString*)prompt;
 
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data
