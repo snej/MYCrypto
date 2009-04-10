@@ -8,6 +8,8 @@
 
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
+#import "MYIdentity.h"
+
 
 #if MYCRYPTO_USE_IPHONE_API
 
@@ -104,6 +106,13 @@
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
+- (NSEnumerator*) enumerateIdentities {
+    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassIdentity},
+                                        {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
+                                        {(id)kSecReturnRef, $true});
+    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+}
+
 - (NSEnumerator*) enumerateSymmetricKeys {
     NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
                                 {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
@@ -159,7 +168,6 @@
 - (MYPrivateKey*) generateRSAKeyPairOfSize: (unsigned)keySize {
     return [MYPrivateKey _generateRSAKeyPairOfSize: keySize inKeychain: self];
 }
-
 
 
 @end
@@ -218,6 +226,8 @@
             next = [[[MYSymmetricKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
         } else if (_itemClass == kSecClassCertificate) {
             next = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
+        } else if (_itemClass == kSecClassIdentity) {
+            next = [[[MYIdentity alloc] initWithIdentityRef: (SecIdentityRef)found] autorelease];
         }
         CFRelease(found);
     }

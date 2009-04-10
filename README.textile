@@ -1,6 +1,6 @@
 h1=. MYCrypto
 
-p=. Version 0.1 -- 6 April 2009
+p=. Version 0.1 -- 9 April 2009
 
 p=. By "Jens Alfke":mailto:jens@mooseyard.com <br>
 Based in part on code by Wade Tregaskis, <br>
@@ -16,6 +16,7 @@ MYCrypto gives you easy object-oriented interfaces to:
 
 * Symmmetric cryptography (session keys and password-based encryption)
 * Asymmetric cryptography (public and private keys; digital signatures)
+* Identity certificates (for use with SSL and CMS)
 * Cryptographic digests/hashes (effectively-unique IDs for data)
 * The Keychain (a secure, encrypted storage system for keys and passwords)
 
@@ -43,7 +44,6 @@ h4. Current API limitations, to be remedied in the future:
 
 * No API for accessing passwords; fortunately there are several other utility libraries that provide this. And if your code is doing cryptographic operations, it probably needs to store the keys themselves, not passwords.
 * No bulk data encryption/decryption using public/private keys. MYKeyPair only does raw RSA crypto, which is slow and limited to small chunks of data.
-* No creating or signing certificate-requests, or creating self-signed certificates.
 * No evaluation of trust in certificates (i.e. SecTrust and related APIs.)
 * Error reporting is too limited. Most methods indicate an error by returning nil, NULL or NO, but don't provide the standard "out" NSError parameter to provide more information. Expect the API to be refactored in the near future to remedy this.
 
@@ -51,18 +51,20 @@ h2. Overview
 
 The class hierarchy of MYCrypto looks like this:
 
-* "MYKeychainItem":Documentation/html/interfaceMYKeychainItem.html
-** "MYKey":Documentation/html/interfaceMYKey.html
-*** "*MYSymmetricKey*":Documentation/html/interfaceMYSymmetricKey.html
-*** "*MYPublicKey*":Documentation/html/interfaceMYPublicKey.html
-*** "*MYPrivateKey*":Documentation/html/interfaceMYPrivateKey.html
-*** "*MYCertificate*":Documentation/html/interfaceMYCertificate.html
-* "MYDigest":Documentation/html/interfaceMYDigest.html
-** "*MYSHA1Digest*":Documentation/html/interfaceMYSHA1Digest.html
-** "*MYSHA256Digest*":Documentation/html/interfaceMYSHA256Digest.html
+* "_MYKeychain_":Documentation/html/interfaceMYKeychain.html
+* "_MYKeychainItem_":Documentation/html/interfaceMYKeychainItem.html
+** "_MYKey_":Documentation/html/interfaceMYKey.html
+*** "MYSymmetricKey":Documentation/html/interfaceMYSymmetricKey.html
+*** "MYPublicKey":Documentation/html/interfaceMYPublicKey.html
+*** "MYPrivateKey":Documentation/html/interfaceMYPrivateKey.html
+*** "MYCertificate":Documentation/html/interfaceMYCertificate.html
+**** "MYIdentity":Documentation/html/interfaceMYIdentity.html
+* "_MYDigest_":Documentation/html/interfaceMYDigest.html
+** "MYSHA1Digest":Documentation/html/interfaceMYSHA1Digest.html
+** "MYSHA256Digest":Documentation/html/interfaceMYSHA256Digest.html
 * "MYCryptor":Documentation/html/interfaceMYCryptor.html
 
-(*Boldface* classes are concrete, others are abstract.)
+(_Italicized_ classes are abstract.)
 
 h2. References
 
@@ -72,5 +74,5 @@ h2. References
 * "??Common Security: CDSA and CSSM, Version 2??":http://www.opengroup.org/publications/catalog/c914.htm (The Open Group)
 
 * "??Practical Cryptography??":http://www.schneier.com/book-practical.html (Ferguson and Schneier)
-* "??Handbook of Applied Cryptography":http://www.cacr.math.uwaterloo.ca/hac/ (Menezes, van Oorschot, Vanstone) -- free download!
+* "??Handbook of Applied Cryptography??":http://www.cacr.math.uwaterloo.ca/hac/ (Menezes, van Oorschot, Vanstone) -- free download!
 * "??The Devil's InfoSec Dictionary??":http://www.csoonline.com/article/220527/The_Devil_s_Infosec_Dictionary (CSO Online)

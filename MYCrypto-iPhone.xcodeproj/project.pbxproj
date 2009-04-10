@@ -11,6 +11,7 @@
 		1D60589B0D05DD56006BFB54 /* MYCrypto_iPhone_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* MYCrypto_iPhone_main.m */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		27059CF30F8F0F9200A8422F /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059CF20F8F0F9200A8422F /* MYIdentity.m */; };
 		273391CD0F81EC70009414D9 /* MYCertificate-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */; };
 		273392120F8283B8009414D9 /* MYKeychain-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 273392110F8283B8009414D9 /* MYKeychain-iPhone.m */; };
 		2748607F0F8D5E0600FE617B /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 2748607E0F8D5E0600FE617B /* MYPrivateKey.m */; };
@@ -43,6 +44,8 @@
 		1D3623250D0F684500981E51 /* MYCrypto_iPhoneAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCrypto_iPhoneAppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* MYCrypto-iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MYCrypto-iPhone.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		27059CF10F8F0F8E00A8422F /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
+		27059CF20F8F0F9200A8422F /* MYIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYIdentity.m; sourceTree = "<group>"; };
 		273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYCertificate-iPhone.m"; sourceTree = "<group>"; };
 		273392110F8283B8009414D9 /* MYKeychain-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYKeychain-iPhone.m"; sourceTree = "<group>"; };
 		2748607D0F8D5DF200FE617B /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
@@ -131,6 +134,8 @@
 				273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */,
 				27E8230E0F81D56E0019BE60 /* MYCryptor.h */,
 				27E8230F0F81D56E0019BE60 /* MYCryptor.m */,
+				27059CF10F8F0F8E00A8422F /* MYIdentity.h */,
+				27059CF20F8F0F9200A8422F /* MYIdentity.m */,
 				27E823100F81D56E0019BE60 /* MYKey.h */,
 				27E823110F81D56E0019BE60 /* MYKey.m */,
 				27FE453E0F87CC8500A86D63 /* MYKey-iPhone.m */,
@@ -272,6 +277,7 @@
 				27A430140F87C6D50063D362 /* MYSymmetricKey.m in Sources */,
 				27FE453F0F87CC8500A86D63 /* MYKey-iPhone.m in Sources */,
 				2748607F0F8D5E0600FE617B /* MYPrivateKey.m in Sources */,
+				27059CF30F8F0F9200A8422F /* MYIdentity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -80,7 +80,11 @@ TestCase(EnumerateIdentities) {
     for (MYIdentity *ident in e) {
         Log(@"Found %@ -- name=%@, emails=(%@), key=%@",
             ident, ident.commonName, 
+#if TARGET_OS_IPHONE
+            nil,
+#else
             [ident.emailAddresses componentsJoinedByString: @", "],
+#endif
             ident.privateKey);
     }
 }

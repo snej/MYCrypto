@@ -23,11 +23,15 @@
 /** The identity's associated private key. */
 @property (readonly) MYPrivateKey *privateKey;
 
+#if !TARGET_OS_IPHONE
+
 /** Returns the identity that's been set as the preferred one for the given name, or nil. */
 + (MYIdentity*) preferredIdentityForName: (NSString*)name;
 
 /** Registers this identity as the preferred one for the given name,
     for later lookup using +preferredIdentityForName:. */
 - (BOOL) makePreferredIdentityForName: (NSString*)name;
+
+#endif
 
 @end

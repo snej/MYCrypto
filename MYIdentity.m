@@ -30,6 +30,7 @@
 }
 
 
+#if !TARGET_OS_IPHONE
 - (id) initWithCertificateRef: (SecCertificateRef)certificateRef {
     self = [super initWithCertificateRef: certificateRef];
     if (self) {
@@ -41,6 +42,7 @@
     }
     return self;
 }
+#endif
 
 - (void) dealloc
 {
@@ -66,6 +68,8 @@
 }
 
 
+#if !TARGET_OS_IPHONE
+
 + (MYIdentity*) preferredIdentityForName: (NSString*)name
 {
     Assert(name);
@@ -81,5 +85,7 @@
     return check(SecIdentitySetPreference(_identityRef, (CFStringRef)name, 0),
                  @"SecIdentitySetPreference");
 }
+
+#endif !TARGET_OS_IPHONE
 
 @end

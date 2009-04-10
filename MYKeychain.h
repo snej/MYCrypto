@@ -56,9 +56,6 @@
 
 #pragma mark CERTIFICATES:
 
-/** Adds a certificate to this keychain. (It must not already belong to a keychain.) */
-- (BOOL) addCertificate: (MYCertificate*)certificate;
-
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data;
 
@@ -126,6 +123,9 @@
                        privateKey: (NSData*)privKeyData
                        alertTitle: (NSString*)title
                       alertPrompt: (NSString*)prompt;
+
+/** Adds a certificate to this keychain. (It must not already belong to a keychain.) */
+- (BOOL) addCertificate: (MYCertificate*)certificate;
 
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data
