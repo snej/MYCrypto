@@ -1,6 +1,6 @@
 h1=. MYCrypto
 
-p=. Version 0.1 -- 9 April 2009
+p=. Version 0.2 -- 12 April 2009
 
 p=. By "Jens Alfke":mailto:jens@mooseyard.com <br>
 Based in part on code by Wade Tregaskis, <br>
@@ -19,6 +19,7 @@ MYCrypto gives you easy object-oriented interfaces to:
 * Identity certificates (for use with SSL and CMS)
 * Cryptographic digests/hashes (effectively-unique IDs for data)
 * The Keychain (a secure, encrypted storage system for keys and passwords)
+* Cryptographic Message Syntax [CMS] for signing/encrypting data
 
 It's open source, released under a friendly BSD license.
 
@@ -56,6 +57,9 @@ The class hierarchy of MYCrypto looks like this:
 ** "MYSHA1Digest":Documentation/html/interfaceMYSHA1Digest.html
 ** "MYSHA256Digest":Documentation/html/interfaceMYSHA256Digest.html
 * "MYCryptor":Documentation/html/interfaceMYCryptor.html
+* "MYEncoder":Documentation/html/interfaceMYEncoder.html
+* "MYDecoder":Documentation/html/interfaceMYDecoder.html
+* "MYSigner":Documentation/html/interfaceMYSigner.html
 
 (_Italicized_ classes are abstract.)
 
@@ -63,9 +67,9 @@ h2. Current Limitations
 
 h3. First off, the biggest caveat of all:
 
-* *MYCrypto 0.1 is new code and has not yet been used in any real projects. Expect bugs.* (I'm talking about my wrapper/glue code. The underlying cryptographic functionality provided by the OS is robust.)
+* *MYCrypto 0.2 is new code and has not yet been used in any real projects. Expect bugs.* (I'm talking about my wrapper/glue code. The underlying cryptographic functionality provided by the OS is robust.)
 
-h3. Further issues with the 0.1 release:
+h3. Further issues with the 0.2 release:
 
 * *MYCrypto does not yet work on the iPhone.* It currently builds, but runs into problems at runtime. I'm currently trying to figure these out. (The iPhone OS Security APIs are very different from the Mac OS X ones, and I'm much less familiar with them.) However, it does work in the iPhone Simulator, which uses the OS X APIs.
 * Exporting symmetric keys in wrapped (encrypted) form will fail. Currently they can be exported only as raw key data.
@@ -74,7 +78,6 @@ h3. Further issues with the 0.1 release:
 h3. Current API limitations, to be remedied in the future:
 
 * No API for accessing passwords; fortunately there are several other utility libraries that provide this. And if your code is doing cryptographic operations, it probably needs to store the keys themselves, not passwords.
-* No bulk data encryption/decryption using public/private keys. MYKeyPair only does raw RSA crypto, which is slow and limited to small chunks of data.
 * No evaluation of trust in certificates (i.e. SecTrust and related APIs.)
 * Error reporting is too limited. Most methods indicate an error by returning nil, NULL or NO, but don't provide the standard "out" NSError parameter to provide more information. Expect the API to be refactored in the near future to remedy this.
 

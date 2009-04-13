@@ -156,9 +156,9 @@
 				27A42D400F858ED80063D362 /* MYSymmetricKey.h */,
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
-				27EAF0390F8B2D700091AF95 /* README.textile */,
 				27059D750F8FA23100A8422F /* MYCrypto+Cocoa.h */,
 				27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */,
+				27EAF0390F8B2D700091AF95 /* README.textile */,
 			);
 			name = Source;
 			sourceTree = "<group>";

@@ -132,9 +132,8 @@
 /** Returns the SecTrustRef that was used to verify the certificate.
     You can use this object to get more detailed information about how the verification was done.
     If you set the parent decoder's policy property, then that SecPolicy will be used to evaluate
-    trust; otherwise you'll need to do it yourself using the SecTrust object.
-    You must CFRelease the result when you're finished with it. */
-- (SecTrustRef) trust;
+    trust; otherwise you'll need to do it yourself using the SecTrust object. */
+@property (readonly) SecTrustRef trust;
 
 /** The result of certificate verification, as a CSSM_RESULT code; 
  *  a nonzero value indicates an error.
