@@ -114,6 +114,8 @@ typedef CFTypeRef SecExternalItemType;
 #undef check
 BOOL check(OSStatus err, NSString *what);
 
+#define checksave(CALL) ({OSStatus err=(CALL); check(err,@""#CALL) || (_error=err, NO);})
+
 #if !MYCRYPTO_USE_IPHONE_API
 BOOL checkcssm(CSSM_RETURN err, NSString *what);
 
@@ -121,4 +123,7 @@ SecKeyRef importKey(NSData *data,
                     SecExternalItemType type,
                     SecKeychainRef keychain,
                     SecKeyImportExportParameters *params /*non-null*/);
+
+NSString* OIDAsString(CSSM_OID OID);
+
 #endif

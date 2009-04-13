@@ -62,7 +62,6 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
                                     {(id)kSecAttrCanSign, $false},
                                     {(id)kSecAttrCanVerify, $false},
                                     {(id)kSecValueData, keyData},
-    //{(id)kSecAttrApplicationTag, [@"foo" dataUsingEncoding: NSUTF8StringEncoding]}, //TEMP
                                     {(id)kSecReturnPersistentRef, $true});
     if (!check(SecItemAdd((CFDictionaryRef)keyAttrs, (CFTypeRef*)&keyRef), @"SecItemAdd")) {
         [self release];

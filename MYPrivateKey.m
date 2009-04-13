@@ -155,9 +155,9 @@
                            0LL,
                            CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY,        // public key
                            CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT,
-                           CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN,          // private key
-                           CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_SENSITIVE | CSSM_KEYATTR_PERMANENT,
-                           NULL, // SecAccessRef
+                           CSSM_KEYUSE_ANY,                                 // private key
+                           CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT | CSSM_KEYATTR_SENSITIVE,
+                           NULL,                                            // SecAccessRef
                            &pubKey, &privKey);
 #endif
     if (!check(err, @"SecKeyCreatePair")) {
@@ -172,7 +172,10 @@
 
 
 - (NSString*) description {
-    return $sprintf(@"%@[%@]", [self class], self.publicKeyDigest.abbreviatedHexString);
+    return $sprintf(@"%@[%@ %@ /%p]", [self class], 
+                    self.publicKeyDigest.abbreviatedHexString,
+                    (self.name ?:@""),
+                    self.keychainItemRef);
 }
 
 @synthesize publicKey=_publicKey;

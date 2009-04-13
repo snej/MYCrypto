@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		27059D530F8F9BB500A8422F /* MYEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059D500F8F9BB500A8422F /* MYEncoder.m */; };
+		27059D770F8FA23100A8422F /* MYCrypto+Cocoa.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */; };
+		27059D840F8FA82500A8422F /* SecurityInterface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27059D830F8FA82500A8422F /* SecurityInterface.framework */; };
+		27059DE50F8FAF6500A8422F /* MYDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059D520F8F9BB500A8422F /* MYDecoder.m */; };
 		270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 270B879E0F8C565000C56781 /* MYPrivateKey.m */; };
 		274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42ECD0F8689D30063D362 /* MYCertGen.m */; };
 		274863A20F8EF39400FE617B /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 274863A10F8EF39400FE617B /* MYIdentity.m */; };
@@ -44,6 +48,13 @@
 
 /* Begin PBXFileReference section */
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		27059D4F0F8F9BB500A8422F /* MYEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYEncoder.h; sourceTree = "<group>"; };
+		27059D500F8F9BB500A8422F /* MYEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYEncoder.m; sourceTree = "<group>"; };
+		27059D510F8F9BB500A8422F /* MYDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYDecoder.h; sourceTree = "<group>"; };
+		27059D520F8F9BB500A8422F /* MYDecoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDecoder.m; sourceTree = "<group>"; };
+		27059D750F8FA23100A8422F /* MYCrypto+Cocoa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MYCrypto+Cocoa.h"; sourceTree = "<group>"; };
+		27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYCrypto+Cocoa.m"; sourceTree = "<group>"; };
+		27059D830F8FA82500A8422F /* SecurityInterface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SecurityInterface.framework; path = /System/Library/Frameworks/SecurityInterface.framework; sourceTree = "<absolute>"; };
 		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
 		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
@@ -98,6 +109,7 @@
 				8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */,
 				27CFF51F0F7E94AE000B418E /* Security.framework in Frameworks */,
 				27E820720F7EA6260019BE60 /* CoreServices.framework in Frameworks */,
+				27059D840F8FA82500A8422F /* SecurityInterface.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
+				27059D4E0F8F9B9E00A8422F /* Encryption */,
 				274861440F8D757600FE617B /* Certificate Generation */,
 				270B881C0F8D055A00C56781 /* Internal */,
 				27CFF4CC0F7E86E8000B418E /* MYUtilities */,
@@ -116,6 +129,7 @@
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 				27CFF51E0F7E94AE000B418E /* Security.framework */,
 				27E820710F7EA6260019BE60 /* CoreServices.framework */,
+				27059D830F8FA82500A8422F /* SecurityInterface.framework */,
 			);
 			name = MYCrypto;
 			sourceTree = "<group>";
@@ -125,8 +139,6 @@
 			children = (
 				27CFF4B10F7E8535000B418E /* MYCertificate.h */,
 				27CFF4B20F7E8535000B418E /* MYCertificate.m */,
-				27CFF4B30F7E8535000B418E /* MYCryptor.h */,
-				27CFF4B40F7E8535000B418E /* MYCryptor.m */,
 				27CFF4BF0F7E8535000B418E /* MYDigest.h */,
 				27CFF4C00F7E8535000B418E /* MYDigest.m */,
 				274863A00F8EF39400FE617B /* MYIdentity.h */,
@@ -145,6 +157,8 @@
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
 				27EAF0390F8B2D700091AF95 /* README.textile */,
+				27059D750F8FA23100A8422F /* MYCrypto+Cocoa.h */,
+				27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -163,6 +177,19 @@
 				8DD76FA10486AA7600D96B5E /* MYCrypto */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		27059D4E0F8F9B9E00A8422F /* Encryption */ = {
+			isa = PBXGroup;
+			children = (
+				27059D4F0F8F9BB500A8422F /* MYEncoder.h */,
+				27059D500F8F9BB500A8422F /* MYEncoder.m */,
+				27059D510F8F9BB500A8422F /* MYDecoder.h */,
+				27059D520F8F9BB500A8422F /* MYDecoder.m */,
+				27CFF4B30F7E8535000B418E /* MYCryptor.h */,
+				27CFF4B40F7E8535000B418E /* MYCryptor.m */,
+			);
+			name = Encryption;
 			sourceTree = "<group>";
 		};
 		270B881C0F8D055A00C56781 /* Internal */ = {
@@ -263,7 +290,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/csh;
-			shellScript = "doxygen\n";
+			shellScript = "doxygen |& sed s/Warning/warning/\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -291,6 +318,9 @@
 				270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */,
 				274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */,
 				274863A20F8EF39400FE617B /* MYIdentity.m in Sources */,
+				27059D530F8F9BB500A8422F /* MYEncoder.m in Sources */,
+				27059D770F8FA23100A8422F /* MYCrypto+Cocoa.m in Sources */,
+				27059DE50F8FAF6500A8422F /* MYDecoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

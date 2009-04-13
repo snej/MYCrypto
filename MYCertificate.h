@@ -22,10 +22,16 @@
 }
 
 /** Creates a MYCertificate object for an existing Keychain certificate reference. */
++ (MYCertificate*) certificateWithCertificateRef: (SecCertificateRef)certificateRef;
+
+/** Initializes a MYCertificate object for an existing Keychain certificate reference. */
 - (id) initWithCertificateRef: (SecCertificateRef)certificateRef;
 
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data;
+
+/** Checks whether two MYCertificate objects have bit-for-bit identical certificate data. */
+- (BOOL)isEqualToCertificate:(MYCertificate*)cert;
 
 /** The Keychain object reference for this certificate. */
 @property (readonly) SecCertificateRef certificateRef;
@@ -63,4 +69,25 @@
 #endif
 //@}
 
+
+/** @name Expert
+ */
+//@{
+#if !TARGET_OS_IPHONE
+
++ (SecPolicyRef) X509Policy;
++ (SecPolicyRef) SSLPolicy;
++ (SecPolicyRef) SMIMEPolicy;
+- (CSSM_CERT_TYPE) certificateType;
+- (NSArray*) trustSettings;
+- (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting;
+    
+#endif
+//@}
+    
 @end
+
+
+NSString* MYPolicyGetName( SecPolicyRef policy );
+NSString* MYTrustDescribe( SecTrustRef trust );
+NSString* MYTrustResultDescribe( SecTrustResultType result );

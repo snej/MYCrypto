@@ -15,6 +15,10 @@
 @implementation MYCertificate
 
 
++ (MYCertificate*) certificateWithCertificateRef: (SecCertificateRef)certificateRef {
+    return [[[self alloc] initWithCertificateRef: certificateRef] autorelease];
+}
+
 /** Creates a MYCertificate object for an existing Keychain certificate reference. */
 - (id) initWithCertificateRef: (SecCertificateRef)certificateRef {
     self = [super initWithKeychainItemRef: (SecKeychainItemRef)certificateRef];
@@ -33,6 +37,10 @@
     return self;
 }
 
+
+- (BOOL)isEqualToCertificate:(MYCertificate*)cert {
+    return [self isEqual: cert] || [self.certificateData isEqual: cert.certificateData];
+}
 
 @synthesize certificateRef=_certificateRef;
 

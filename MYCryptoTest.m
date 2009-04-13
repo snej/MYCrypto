@@ -11,6 +11,7 @@
 #import "MYKeychain.h"
 #import "MYDigest.h"
 #import "MYIdentity.h"
+#import "MYCrypto+Cocoa.h"
 #import "MYCrypto_Private.h"
 
 
@@ -78,7 +79,7 @@ TestCase(EnumerateIdentities) {
     Log(@"Enumerator = %@", e);
     CAssert(e);
     for (MYIdentity *ident in e) {
-        Log(@"Found %@ -- name=%@, emails=(%@), key=%@",
+        Log(@"Found %@\n\tcommonName=%@\n\temails=(%@)\n\tkey=%@",
             ident, ident.commonName, 
 #if TARGET_OS_IPHONE
             nil,
@@ -172,33 +173,63 @@ TestCase(MYSymmetricKey) {
 #pragma mark KEY-PAIRS:
 
 
-TestCase(MYPrivateKey) {
-    RequireTestCase(MYKeychain);
-    
-    Log(@"Generating key pair...");
-    MYPrivateKey *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
-    Log(@"...created { %@ , %@ }.", pair, pair.publicKey);
+static void TestUseKeyPair(MYPrivateKey *pair) {
+    Log(@"---- TestUseKeyPair { %@ , %@ }.", pair, pair.publicKey);
     CAssert(pair);
     CAssert(pair.keyRef);
     MYPublicKey *publicKey = pair.publicKey;
     CAssert(publicKey.keyRef);
     
+    NSData *pubKeyData = publicKey.keyData;
+    Log(@"Public key = %@ (%u bytes)",pubKeyData,pubKeyData.length);
+    CAssert(pubKeyData);
+    
+    MYSHA1Digest *pubKeyDigest = publicKey.publicKeyDigest;
+    Log(@"Public key digest = %@",pubKeyDigest);
+    CAssertEqual(pair.publicKeyDigest, pubKeyDigest);
+    
+    Log(@"SHA1 of pub key = %@", pubKeyData.my_SHA1Digest.asData);
+    
+    // Let's sign data:
+    NSData *data = [@"This is a test. This is only a test!" dataUsingEncoding: NSUTF8StringEncoding];
+    NSData *sig = [pair signData: data];
+    Log(@"Signature = %@ (%u bytes)",sig,sig.length);
+    CAssert(sig);
+    CAssert( [publicKey verifySignature: sig ofData: data] );
+    
+    // Now let's encrypt...
+    NSData *crypted = [publicKey encryptData: data];
+    Log(@"Encrypted = %@ (%u bytes)",crypted,crypted.length);
+    CAssert(crypted);
+    CAssertEqual([pair decryptData: crypted], data);
+    Log(@"Verified decryption.");
+    
+    // Test creating a standalone public key:
+    MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: publicKey.keyRef];
+    CAssert( [pub verifySignature: sig ofData: data] );
+    Log(@"Verified signature.");
+    
+    // Test creating a public key from data:
+    Log(@"Reconstituting public key from data...");
+    pub = [[MYPublicKey alloc] initWithKeyData: pubKeyData];
+    CAssert(pub);
+    CAssertEqual(pub.keyData, pubKeyData);
+    CAssertEqual(pub.publicKeyDigest, pubKeyDigest);
+    CAssert( [pub verifySignature: sig ofData: data] );
+    Log(@"Verified signature from reconstituted key.");
+}
+
+
+TestCase(MYGenerateKeyPair) {
+    RequireTestCase(MYKeychain);
+    
+    Log(@"Generating key pair...");
+    MYPrivateKey *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
+    MYPublicKey *publicKey = pair.publicKey;
+    Log(@"...created { %@ , %@ }.", pair, publicKey);
+    
     @try{
-        NSData *pubKeyData = publicKey.keyData;
-        Log(@"Public key = %@ (%u bytes)",pubKeyData,pubKeyData.length);
-        CAssert(pubKeyData);
-        
-        MYSHA1Digest *pubKeyDigest = publicKey.publicKeyDigest;
-        Log(@"Public key digest = %@",pubKeyDigest);
-        CAssertEqual(pair.publicKeyDigest, pubKeyDigest);
-        
-        Log(@"SHA1 of pub key = %@", pubKeyData.my_SHA1Digest.asData);
-        
-        NSData *data = [@"This is a test. This is only a test!" dataUsingEncoding: NSUTF8StringEncoding];
-        NSData *sig = [pair signData: data];
-        Log(@"Signature = %@ (%u bytes)",sig,sig.length);
-        CAssert(sig);
-        CAssert( [publicKey verifySignature: sig ofData: data] );
+        TestUseKeyPair(pair);
         
         [pair setName: @"Test KeyPair Label"];
         CAssertEqual(pair.name, @"Test KeyPair Label");
@@ -211,28 +242,6 @@ TestCase(MYPrivateKey) {
         [pair setAlias: @"TestCase@mooseyard.com"];
         CAssertEqual(pair.alias, @"TestCase@mooseyard.com");
         CAssertEqual(publicKey.alias, @"TestCase@mooseyard.com");
-        
-        // Test creating a standalone public key:
-        MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: publicKey.keyRef];
-        CAssert( [pub verifySignature: sig ofData: data] );
-        Log(@"Verified signature.");
-
-        // Test creating a public key from data:
-        Log(@"Reconstituting public key from data...");
-        pub = [[MYPublicKey alloc] initWithKeyData: pubKeyData];
-        CAssert(pub);
-        CAssertEqual(pub.keyData, pubKeyData);
-        CAssertEqual(pub.publicKeyDigest, pubKeyDigest);
-        CAssert( [pub verifySignature: sig ofData: data] );
-        Log(@"Verified signature from reconstituted key.");
-                
-        // Now let's encrypt...
-        NSData *crypted = [pub encryptData: data];
-        Log(@"Encrypted = %@ (%u bytes)",crypted,crypted.length);
-        CAssert(crypted);
-        
-        CAssertEqual([pair decryptData: crypted], data);
-        Log(@"Verified decryption.");
         
         CAssert([pair removeFromKeychain]);
         Log(@"Removed key-pair.");
@@ -248,6 +257,24 @@ TestCase(MYPrivateKey) {
     }
 }
 
+
+TestCase(MYUseIdentity) {
+    MYIdentity *me = nil;//[MYIdentity preferredIdentityForName: @"MYCryptoTest"];
+    if (!me) {
+        NSArray *idents = [[[MYKeychain allKeychains] enumerateIdentities] allObjects];
+        SFChooseIdentityPanel *panel = [SFChooseIdentityPanel sharedChooseIdentityPanel];
+        [panel setAlternateButtonTitle: @"Cancel"];
+        if ([panel my_runModalForIdentities: idents 
+                                    message: @"Choose an identity for the MYEncoder test case:"]
+            != NSOKButton) {
+            [NSException raise: NSGenericException format: @"User canceled"];
+        }
+        me = [panel my_identity];
+        [me makePreferredIdentityForName: @"MYCryptoTest"];
+    }
+    CAssert(me,@"No default identity has been set up in the Keychain");
+    TestUseKeyPair(me.privateKey);
+}
 
 
 #pragma mark -

@@ -13,6 +13,11 @@
 @implementation MYIdentity
 
 
+/** Creates a MYIdentity object for an existing Keychain identity reference. */
++ (MYIdentity*) identityWithIdentityRef: (SecIdentityRef)identityRef {
+    return [[[self alloc] initWithIdentityRef: identityRef] autorelease];
+}
+
 - (id) initWithIdentityRef: (SecIdentityRef)identityRef {
     Assert(identityRef);
     SecCertificateRef certificateRef;
@@ -57,6 +62,8 @@
 }
 
 
+@synthesize identityRef=_identityRef;
+
 - (MYPrivateKey*) privateKey {
     SecKeyRef keyRef = NULL;
     if (!check(SecIdentityCopyPrivateKey(_identityRef, &keyRef), @"SecIdentityCopyPrivateKey"))
@@ -74,10 +81,10 @@
 {
     Assert(name);
     SecIdentityRef identityRef;
-    if (!check(SecIdentityCopyPreference((CFStringRef)name, 0, NULL, &identityRef),
-               @"SecIdentityCopyPreference"))
+    OSStatus err = SecIdentityCopyPreference((CFStringRef)name, 0, NULL, &identityRef);
+    if (err==errKCItemNotFound || !check(err,@"SecIdentityCopyPreference") || !identityRef)
         return nil;
-    return identityRef ?[[[self alloc] initWithIdentityRef: identityRef] autorelease] :nil;
+    return [self identityWithIdentityRef: identityRef];
 }
 
 - (BOOL) makePreferredIdentityForName: (NSString*)name {

@@ -20,6 +20,8 @@ MYCrypto gives you easy object-oriented interfaces to:
 * Cryptographic digests/hashes (effectively-unique IDs for data)
 * The Keychain (a secure, encrypted storage system for keys and passwords)
 
+It's open source, released under a friendly BSD license.
+
 h3. Requirements
 
 * Mac OS X 10.5 or later _[has been tested on 10.5.6]_
@@ -32,7 +34,7 @@ h3. How To Get It
 
 * "Download the current source code":http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/archive/tip.zip
 * To check out the source code using "Mercurial":http://selenic.com/mercurial/:<br>
-@hg clone /hg/hgwebdir.cgi/MYCrypto/ MYCrypto@
+@hg clone http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/ MYCrypto@
 * As described above, you'll also need to download or check out MYUtilities and put it in a directory next to MYCrypto.
 * Or if you're just looking:
 ** "Browse the source code":http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/file/tip

@@ -40,6 +40,10 @@
 }
 
 
+- (NSString*) description {
+    return $sprintf(@"%@[%@ /%p]", [self class], (self.name ?:@""), self.keychainItemRef);
+}
+
 - (SecExternalItemType) keyType {
     AssertAbstractMethod();
 }

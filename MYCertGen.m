@@ -177,7 +177,7 @@ MYCertificate* MYCertificateCreateSelfSigned(MYPrivateKey *privateKey,
     // that's binary 111111000; see http://tools.ietf.org/html/rfc3280#section-4.2.1.3
     CSSM_X509_EXTENSION keyUsage = {
         CSSMOID_KeyUsage, 
-        true, 
+        false,      // non-critical
         CSSM_X509_DATAFORMAT_PARSED,
         {.parsedValue = &keyUsageBits}
     };
@@ -187,11 +187,11 @@ MYCertificate* MYCertificateCreateSelfSigned(MYPrivateKey *privateKey,
         UInt32 count;
         const CSSM_OID *oids;
     };
-    CSSM_OID usageOids[2] = {CSSMOID_ServerAuth, CSSMOID_ClientAuth};
-    struct ExtendedUsageList extUsageBits = {2, usageOids};
+    CSSM_OID usageOids[3] = {CSSMOID_ServerAuth, CSSMOID_ClientAuth, CSSMOID_ExtendedKeyUsageAny};
+    struct ExtendedUsageList extUsageBits = {3, usageOids};
     CSSM_X509_EXTENSION extendedKeyUsage = {
         CSSMOID_ExtendedKeyUsage,
-        true,
+        false,      // non-critical
         CSSM_X509_DATAFORMAT_PARSED,
         {.parsedValue = &extUsageBits}
     };
@@ -466,10 +466,9 @@ TestCase(MYCertGen) {
     Log(@"CSSM_CL_HANDLE = %p", cl);
     CAssert(cl);
     
-    MYKeychain *keychain = [MYKeychain allKeychains];
-    Log(@"Looking for a key pair...");
-    MYPrivateKey *privateKey = [[keychain enumeratePrivateKeys] nextObject];
-    Log(@"Using key pair { %@, %@ }", privateKey, privateKey.publicKey);
+    Log(@"Generating a key pair...");
+    MYPrivateKey *privateKey = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 2048];
+    Log(@"Key-pair = { %@, %@ }", privateKey, privateKey.publicKey);
     
     Log(@"...creating cert...");
     
@@ -483,6 +482,7 @@ TestCase(MYCertGen) {
                                                       ));
     Log(@"Cert = %@", cert);
     CAssert(cert);
+    [cert.certificateData writeToFile: @"/tmp/MYCryptoTest.cer" atomically: NO];
     
     Log(@"Cert name = %@", cert.commonName);
     Log(@"Cert email = %@", cert.emailAddresses);
@@ -491,5 +491,7 @@ TestCase(MYCertGen) {
     CAssertEqual(cert.emailAddresses, $array(@"waldo@example.com"));
     CAssertEqual(cert.publicKey.publicKeyDigest, privateKey.publicKeyDigest);
     
-    [cert.certificateData writeToFile: @"/tmp/MYCryptoTest.cer" atomically: NO];
+    CAssert([[MYKeychain defaultKeychain] addCertificate: cert]);
+    
+    CAssert([cert setUserTrust: kSecTrustResultProceed]);
 }
