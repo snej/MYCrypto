@@ -34,12 +34,26 @@ h3. Requirements
 h3. How To Get It
 
 * "Download the current source code":http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/archive/tip.zip
-* To check out the source code using "Mercurial":http://selenic.com/mercurial/:<br>
+* or to check out the source code using "Mercurial":http://selenic.com/mercurial/:<br>
 @hg clone http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/ MYCrypto@
 * As described above, you'll also need to download or check out MYUtilities and put it in a directory next to MYCrypto.
+* To file or view bug reports, visit "the project tracker page":http://mooseyard.lighthouseapp.com/projects/29227/home.
 * Or if you're just looking:
 ** "Browse the source code":http://mooseyard.com/hg/hgwebdir.cgi/MYCrypto/file/tip
 ** "Browse the class documentation":Documentation/html/hierarchy.html
+
+h3. How To Build It
+
+With Xcode, of course. But before the _first_ time you build MYCrypto.xcode, you'll need to tell Xcode where the MYUtilities sources are. You do this by setting up a named 'Source Tree':
+
+# Open Xcode's Preferences panel
+# Click the "Source Trees" icon at the top
+# Click the "+" button to add a new item to the list
+# Fill in the Setting Name as "@MYUtilities@", the Display Name also as "@MYUtilities@", and the Path as the absolute filesystem path to where you downloaded MYUtilities to. _Do not use a "~" in this path!_ The compiler won't understand it and will give you errors.
+
+Now you're golden. From now on you can just open MYCrypto.xcode and press the Build button.
+
+(So far, the MYCrypto project doesn't build anything that's useful to you, like a framework ... just a tiny program that runs the unit-tests. You can add the source files to your own projects to use them.)
 
 h2. Overview
 
@@ -62,6 +76,65 @@ The class hierarchy of MYCrypto looks like this:
 * "MYSigner":Documentation/html/interfaceMYSigner.html
 
 (_Italicized_ classes are abstract.)
+
+h2. Examples
+
+h3. Creating an RSA key-pair
+
+<pre>
+MYPrivateKey *keyPair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 2048];
+</pre>
+
+h3. Creating a self-signed identity certificate:
+
+<pre>
+NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"alice", @"Common Name",
+		@"Alice", @"Given Name",
+		@"Lidell", @"Surname",
+		nil];
+MYIdentity *ident = [keyPair createSelfSignedIdentityWithAttributes: attrs];
+
+NSData *certData = ident.certificateData;
+</pre>
+
+h3. Signing and encrypting a message:
+
+<pre>
+NSData *cleartext = [@"Attack at dawn" dataUsingEncoding: NSUTF8StringEncoding];
+MYEncoder *encoder = [[MYEncoder alloc] init];
+[encoder addSigner: ident];
+[encoder addRecipient: bob];
+[encoder addRecipient: carla];
+[encoder addData: cleartext];
+[encoder finish];
+NSData *ciphertext = encoder.encodedData;
+
+sendMessage(ciphertext);
+</pre>
+
+h3. Verifying and decoding a message:
+
+<pre>
+NSData *ciphertext = receiveMessage();
+NSError *error;
+MYDecoder *decoder = [[MYDecoder alloc] initWithData: ciphertext error: &error];
+if (!decoder)
+    return NO;
+
+if (!decoder.isSigned)
+    return NO;
+decoder.policy = [MYCertificate X509Policy];
+NSMutableArray *signerCerts = [NSMutableArray array];
+for (MYSigner *signer in decoder.signers) {
+    if (signer.status != kCMSSignerValid) {
+        return NO;
+    [signerCerts addObject: signer.certificate];
+}
+
+NSData *plaintext = decoder.content;
+processMessage(plaintext, signerCerts);
+</pre>
 
 h2. Current Limitations
 

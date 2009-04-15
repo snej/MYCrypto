@@ -17,6 +17,9 @@
 
 #if DEBUG
 
+
+#define kTestCaseRSAKeySize 2048
+
 #pragma mark -
 #pragma mark KEYCHAIN:
 
@@ -224,7 +227,7 @@ TestCase(MYGenerateKeyPair) {
     RequireTestCase(MYKeychain);
     
     Log(@"Generating key pair...");
-    MYPrivateKey *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
+    MYPrivateKey *pair = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: kTestCaseRSAKeySize];
     MYPublicKey *publicKey = pair.publicKey;
     Log(@"...created { %@ , %@ }.", pair, publicKey);
     
@@ -284,7 +287,7 @@ TestCase(MYUseIdentity) {
 static void testKeyPairExportWithPrompt(BOOL withPrompt) {
     MYKeychain *keychain = [MYKeychain allKeychains];
     Log(@"Generating key pair...");
-    MYPrivateKey *pair = [keychain generateRSAKeyPairOfSize: 512];
+    MYPrivateKey *pair = [keychain generateRSAKeyPairOfSize: kTestCaseRSAKeySize];
     CAssert(pair);
     CAssert(pair.keyRef);
     CAssert(pair.publicKey.keyRef);
@@ -292,7 +295,7 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
     
     @try{
         NSData *pubKeyData = pair.publicKey.keyData;
-        CAssert(pubKeyData.length >= 512/8);
+        CAssert(pubKeyData.length >= kTestCaseRSAKeySize/8);
         [pair setName: @"Test KeyPair Label"];
         CAssertEqual(pair.name, @"Test KeyPair Label");
 #if !TARGET_OS_IPHONE

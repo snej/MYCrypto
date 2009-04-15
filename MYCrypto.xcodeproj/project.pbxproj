@@ -289,8 +289,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/csh;
-			shellScript = "doxygen |& sed s/Warning/warning/\n";
+			shellPath = /bin/sh;
+			shellScript = "if [ `which doxygen` ]; then\n  doxygen 2>&1 | sed s/Warning/warning/\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
