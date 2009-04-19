@@ -53,6 +53,8 @@
 /** The key's size/length, in bits. */
 @property (readonly) unsigned keySizeInBits;
 
+- (NSData*) exportWrappedKeyWithPassphrasePrompt: (NSString*)prompt;
+
 
 /** A utility that prompts for a passphrase, using the Security agent's nice modal panel,
     and returns the raw passphrase as a string.

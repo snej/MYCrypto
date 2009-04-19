@@ -155,11 +155,12 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
     #endif
 
     #if !TARGET_OS_IPHONE
+#if 0 // TEMPORARILY OUT OF ORDER
         // Try exporting and importing a wrapped key:
         Log(@"Testing export/import...");
-        NSData *exported = [key exportKeyInFormat: kSecFormatWrappedPKCS8 withPEM: NO];
+        NSData *exported = [key exportWrappedKeyWithPassphrasePrompt: @"Export symmetric key with passphrase:"];
         Log(@"Exported key: %@", exported);
-    #if 0
+    #if 1
         CAssert(exported);
     #else
         //FIX: Exporting symmetric keys isn't working. Temporarily making this optional.
@@ -175,6 +176,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
             decrypted = [key2 decryptData: encrypted];
             CAssertEqual(decrypted, cleartext);
         }
+#endif 0
     #endif
     }@finally{
         [key removeFromKeychain];
@@ -272,10 +274,10 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     CAssert( [publicKey verifySignature: sig ofData: data] );
     
     // Now let's encrypt...
-    NSData *crypted = [publicKey encryptData: data];
+    NSData *crypted = [publicKey rawEncryptData: data];
     Log(@"Encrypted = %@ (%u bytes)",crypted,crypted.length);
     CAssert(crypted);
-    CAssertEqual([pair decryptData: crypted], data);
+    CAssertEqual([pair rawDecryptData: crypted], data);
     Log(@"Verified decryption.");
     
     // Test creating a standalone public key:
@@ -294,6 +296,23 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
 }
 
 
+static void testWrapSessionKey( MYPrivateKey *privateKey ) {
+    MYSymmetricKey *sessionKey = [MYSymmetricKey generateSymmetricKeyOfSize: 128 algorithm:kCCAlgorithmAES128];
+    CAssert(sessionKey);
+    Log(@"Wrapping session key %@, %@", sessionKey, sessionKey.keyData);
+    NSData *wrapped = [privateKey.publicKey wrapSessionKey: sessionKey];
+    Log(@"Wrapped session key = %u bytes: %@", wrapped.length,wrapped);
+    CAssert(wrapped.length >= 128/8);
+    
+    MYSymmetricKey *unwrappedKey = [privateKey unwrapSessionKey: wrapped
+                                                  withAlgorithm: kCCAlgorithmAES128
+                                                     sizeInBits: 128];
+    Log(@"Unwrapped session key = %@, %@", unwrappedKey, unwrappedKey.keyData);
+    CAssert(unwrappedKey);
+    CAssertEqual(unwrappedKey.keyData, sessionKey.keyData);
+}
+
+
 TestCase(MYGenerateKeyPair) {
     RequireTestCase(MYKeychain);
     
@@ -304,6 +323,7 @@ TestCase(MYGenerateKeyPair) {
     
     @try{
         TestUseKeyPair(pair);
+        testWrapSessionKey(pair);
         
         [pair setName: @"Test KeyPair Label"];
         CAssertEqual(pair.name, @"Test KeyPair Label");

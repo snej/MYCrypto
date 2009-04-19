@@ -58,7 +58,6 @@ typedef CFTypeRef SecExternalItemType;
 #if !MYCRYPTO_USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
 @property (readonly) const CSSM_CSP_HANDLE cssmCSPHandle;
-- (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
 - (CSSM_CC_HANDLE) _createSignatureContext: (CSSM_ALGORITHMS)algorithm;
 - (CSSM_CC_HANDLE) _createPassThroughContext;
 #endif
@@ -67,6 +66,9 @@ typedef CFTypeRef SecExternalItemType;
 
 
 @interface MYSymmetricKey (Private)
+#if !MYCRYPTO_USE_IPHONE_API
+- (id) _initWithCSSMKey: (CSSM_KEY*)cssmKey;
+#endif
 + (MYSymmetricKey*) _generateSymmetricKeyOfSize: (unsigned)keySizeInBits
                                       algorithm: (CCAlgorithm)algorithm
                                      inKeychain: (MYKeychain*)keychain;
@@ -126,5 +128,6 @@ SecKeyRef importKey(NSData *data,
                     SecKeyImportExportParameters *params /*non-null*/);
 
 NSString* OIDAsString(CSSM_OID OID);
+CSSM_ALGORITHMS CSSMFromCCAlgorithm( CCAlgorithm ccAlgorithm );
 
 #endif

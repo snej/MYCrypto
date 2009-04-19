@@ -54,13 +54,6 @@
  The user can edit this, so don't expect it to be immutable. */
 @property (copy) NSString *comment;
 
-/** Converts the key into a data blob in one of several standard formats, suitable for storing in
-    a file or sending over the network.
-    @param format  The data format: kSecFormatOpenSSL, kSecFormatSSH, kSecFormatBSAFE or kSecFormatSSHv2.
-    @param withPEM  YES if the data should be encoded in PEM format, which converts into short lines
-        of printable ASCII characters, suitable for sending in email. */
-- (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
-
 #endif
 //@}
 
@@ -83,6 +76,8 @@
 
 /** The underlying CSSM_CSP_HANDLE structure; used with low-level crypto APIs. */
 @property (readonly) intptr_t /*CSSM_CSP_HANDLE*/ cssmCSPHandle;
+
+@property (readonly) CSSM_ALGORITHMS cssmAlgorithm;
 
 /** Gets CSSM authorization credentials for a specified operation, such as
     CSSM_ACL_AUTHORIZATION_ENCRYPT. This pointer is necessary for creating some CSSM operation

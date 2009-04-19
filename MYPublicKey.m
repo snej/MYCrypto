@@ -46,13 +46,13 @@
 }
 
 #if !MYCRYPTO_USE_IPHONE_API
-- (NSData*) keyData {
-    return [self exportKeyInFormat: kSecFormatOpenSSL withPEM: NO];
+- (SecExternalFormat) _externalFormat {
+    return kSecFormatOpenSSL;
 }
 #endif
 
 
-- (NSData*) encryptData: (NSData*)data {
+- (NSData*) rawEncryptData: (NSData*)data {
     return [self _crypt: data operation: YES];
 }
 
@@ -118,6 +118,38 @@
     CSSM_DeleteContext(ccHandle);
     return result;
 }
+
+
+- (NSData*) wrapSessionKey: (MYSymmetricKey*)sessionKey {
+    const CSSM_ACCESS_CREDENTIALS* credentials;
+    credentials = [self cssmCredentialsForOperation: CSSM_ACL_AUTHORIZATION_EXPORT_WRAPPED
+                                               type: kSecCredentialTypeDefault error: nil];
+    CSSM_CSP_HANDLE cspHandle = self.cssmCSPHandle;
+    CSSM_CC_HANDLE ctx;
+    if (!checkcssm(CSSM_CSP_CreateAsymmetricContext(cspHandle,
+                                                    self.cssmAlgorithm,
+                                                    credentials, 
+                                                    self.cssmKey,
+                                                    CSSM_PADDING_PKCS1,
+                                                    &ctx), 
+                   @"CSSM_CSP_CreateAsymmetricContext"))
+        return nil;
+    
+    // Now wrap the key:
+    NSData *result = nil;
+    CSSM_WRAP_KEY wrappedKey = {};
+    if (checkcssm(CSSM_WrapKey(ctx, credentials, sessionKey.cssmKey, NULL, &wrappedKey),
+                  @"CSSM_WrapKey")) {
+        // ...and copy the wrapped key data to the result NSData:
+        result = [NSData dataWithBytes: wrappedKey.KeyData.Data length: wrappedKey.KeyData.Length];
+        CSSM_FreeKey(cspHandle, credentials, &wrappedKey, NO);
+    }
+    // Finally, delete the context
+    CSSM_DeleteContext(ctx);
+    return result;
+}
+
+
 #endif
 
 

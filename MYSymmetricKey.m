@@ -15,9 +15,15 @@
 #import <Security/cssmtype.h>
 
 
-static const CSSM_ALGORITHMS kCSSMAlgorithms[] = {
-    CSSM_ALGID_AES, CSSM_ALGID_DES, CSSM_ALGID_3DES_3KEY, CSSM_ALGID_CAST, CSSM_ALGID_RC4
-};
+CSSM_ALGORITHMS CSSMFromCCAlgorithm( CCAlgorithm ccAlgorithm ) {
+    static const CSSM_ALGORITHMS kCSSMAlgorithms[] = {
+        CSSM_ALGID_AES, CSSM_ALGID_DES, CSSM_ALGID_3DES_3KEY, CSSM_ALGID_CAST, CSSM_ALGID_RC4
+    };
+    if (ccAlgorithm >=0 && ccAlgorithm <= kCCAlgorithmRC4)
+        return kCSSMAlgorithms[ccAlgorithm];
+    else
+        return CSSM_ALGID_NONE;
+}
 
 static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 
@@ -28,6 +34,8 @@ extern OSStatus SecKeyCreate(const CSSM_KEY *key, SecKeyRef* keyRef) WEAK_IMPORT
 
 static CSSM_KEY* cssmKeyFromData( NSData *keyData, CSSM_ALGORITHMS algorithm,
                                  MYKeychain *keychain);
+//static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm);
+//CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm);
 static CSSM_DATA makeSalt( id salty, size_t length );
 static CSSM_RETURN impExpCreatePassKey(
 	const SecKeyImportExportParameters *keyParams,  // required
@@ -66,7 +74,7 @@ static CSSM_RETURN impExpCreatePassKey(
 {
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
-    CSSM_KEY *key = cssmKeyFromData(keyData, kCSSMAlgorithms[algorithm], keychain);
+    CSSM_KEY *key = cssmKeyFromData(keyData, CSSMFromCCAlgorithm(algorithm), keychain);
     if (!key) {
         [self release];
         return nil;
@@ -87,11 +95,15 @@ static CSSM_RETURN impExpCreatePassKey(
     Assert(algorithm <= kCCAlgorithmRC4);
     CSSM_KEYATTR_FLAGS flags = CSSM_KEYATTR_EXTRACTABLE;
     if (keychain)
-        flags |= CSSM_KEYATTR_PERMANENT | CSSM_KEYATTR_SENSITIVE | CSSM_KEYATTR_EXTRACTABLE;
+        flags |= CSSM_KEYATTR_PERMANENT; // | CSSM_KEYATTR_SENSITIVE;   //FIX: Re-enable this bit
+    else {
+        flags |= CSSM_KEYATTR_RETURN_REF;
+        keychain = [MYKeychain defaultKeychain]; // establish a context for the key
+    }
     CSSM_KEYUSE usage = CSSM_KEYUSE_ANY;
     SecKeyRef keyRef = NULL;
-    if (!check(SecKeyGenerate(keychain.keychainRefOrDefault,    // nil kc generates a transient key
-                              kCSSMAlgorithms[algorithm],
+    if (!check(SecKeyGenerate(keychain.keychainRefOrDefault,
+                              CSSMFromCCAlgorithm(algorithm),
                               keySizeInBits, 
                               0, usage, flags, NULL, &keyRef),
                @"SecKeyGenerate")) {
@@ -211,54 +223,43 @@ static CSSM_RETURN impExpCreatePassKey(
 
 
 #if !TARGET_OS_IPHONE
-- (NSData*) exportKeyInFormat: (SecExternalFormat)format
-                      withPEM: (BOOL)withPEM
+- (NSData*) exportWrappedKeyWithPassphrasePrompt: (NSString*)prompt
 {
-    if (format==kSecFormatRawKey || format==kSecFormatUnknown)
-        return [super exportKeyInFormat: format withPEM: withPEM];
-    
-    // Get access credentials:
-    const CSSM_ACCESS_CREDENTIALS *credentials;
-    credentials = [self cssmCredentialsForOperation: CSSM_ACL_AUTHORIZATION_EXPORT_WRAPPED 
-                                               type: kSecCredentialTypeDefault
-                                              error: nil];
-    if (!credentials)
-        return nil;
-    
     // Prompt use for a passphrase to use for the wrapping key:
-    MYSymmetricKey *wrappingKey = [MYSymmetricKey generateFromUserPassphraseWithAlertTitle: @"Export Key" alertPrompt: @"Enter a passphrase to encrypt the key you're exporting from the Keychain:" creating: YES
-            salt: [MYCryptor randomKeyOfLength: PKCS5_V2_SALT_LEN*8]];
+    MYSymmetricKey *wrappingKey = [MYSymmetricKey 
+                                   generateFromUserPassphraseWithAlertTitle: @"Export Key" 
+                                   alertPrompt: prompt 
+                                   creating: YES
+                                   salt: [MYCryptor randomKeyOfLength: PKCS5_V2_SALT_LEN*8]];
     if (!wrappingKey)
         return nil;
+    Log(@"Wrapping using %@",wrappingKey);
     
     // Create the context:
+    CSSM_ACCESS_CREDENTIALS credentials = {};
     CSSM_CSP_HANDLE cspHandle = self.cssmCSPHandle;
+    //CSSM_ALGORITHMS algorithm = wrappingKey.cssmAlgorithm;
     CSSM_CC_HANDLE ctx;
     if (!checkcssm(CSSM_CSP_CreateSymmetricContext(cspHandle,
-                                                   CSSM_ALGID_NONE, 
-                                                   CSSM_ALGMODE_WRAP,
-                                                   NULL, 
+                                                   wrappingKey.cssmAlgorithm, //CSSM_ALGID_3DES_3KEY_EDE, //algorithm, 
+                                                   CSSM_ALGMODE_CBCPadIV8, //defaultModeForAlgorithm(algorithm),
+                                                   &credentials, 
                                                    wrappingKey.cssmKey,
                                                    NULL,
-                                                   CSSM_PADDING_NONE,
+                                                   CSSM_PADDING_PKCS7, //defaultPaddingForAlgorithm(algorithm),
                                                    NULL,
                                                    &ctx), 
                    @"CSSM_CSP_CreateSymmetricContext"))
         return nil;
     
-    // Set the wrapped key format:
+    // Now wrap the key:
     NSData *result = nil;
-    CSSM_CONTEXT_ATTRIBUTE attr = { CSSM_ATTRIBUTE_WRAPPED_KEY_FORMAT, sizeof(uint32) };
-    attr.Attribute.Uint32 = CSSM_KEYBLOB_WRAPPED_FORMAT_PKCS7;
-    if (checkcssm(CSSM_UpdateContextAttributes(ctx, 1, &attr), @"CSSM_UpdateContextAttributes")) {
-        // Now wrap the key:
-        CSSM_WRAP_KEY wrappedKey = {};
-        if (checkcssm(CSSM_WrapKey(ctx, credentials, self.cssmKey, NULL, &wrappedKey),
-                      @"CSSM_WrapKey")) {
-            // ...and copy the wrapped key data to the result NSData:
-            result = [NSData dataWithBytes: wrappedKey.KeyData.Data length: wrappedKey.KeyData.Length];
-            CSSM_FreeKey(cspHandle, credentials, &wrappedKey, NO);
-        }
+    CSSM_WRAP_KEY wrappedKey = {};
+    if (checkcssm(CSSM_WrapKey(ctx, &credentials, self.cssmKey, NULL, &wrappedKey),
+                  @"CSSM_WrapKey")) {
+        // ...and copy the wrapped key data to the result NSData:
+        result = [NSData dataWithBytes: wrappedKey.KeyData.Data length: wrappedKey.KeyData.Length];
+        CSSM_FreeKey(cspHandle, &credentials, &wrappedKey, NO);
     }
     // Finally, delete the context
     CSSM_DeleteContext(ctx);
@@ -413,7 +414,62 @@ static CSSM_DATA makeSalt( id salty, size_t length ) {
 }
 
 
-// Copied from SecImportExportUtils.cpp in Apple's libsecurity_keychain project
+#pragma mark -
+// Code from Keychain.framework:
+#if 0
+static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm) {
+    switch(algorithm) {
+        // 8-byte block ciphers
+        case CSSM_ALGID_DES:
+        case CSSM_ALGID_3DES_3KEY_EDE:
+        case CSSM_ALGID_RC5:
+        case CSSM_ALGID_RC2:
+            return CSSM_ALGMODE_CBCPadIV8; break;
+        // 16-byte block ciphers
+        case CSSM_ALGID_AES:
+            return CSSM_ALGMODE_CBCPadIV8; break;
+        // stream ciphers
+        case CSSM_ALGID_ASC:
+        case CSSM_ALGID_RC4:
+            return CSSM_ALGMODE_NONE; break;
+        // Unknown
+        default:
+        	Warn(@"Asked for the default mode for algorithm %d, but don't know that algorithm.\n", algorithm);
+            return CSSM_ALGMODE_NONE;
+    }
+}
+
+CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm) {
+    switch(algorithm) {
+        /* 8-byte block ciphers */
+        case CSSM_ALGID_DES:
+        case CSSM_ALGID_3DES_3KEY_EDE:
+        case CSSM_ALGID_RC5:
+        case CSSM_ALGID_RC2:
+            return CSSM_PADDING_PKCS5; break;
+            /* 16-byte block ciphers */
+        case CSSM_ALGID_AES:
+            return CSSM_PADDING_PKCS7; break;
+            /* stream ciphers */
+        case CSSM_ALGID_ASC:
+        case CSSM_ALGID_RC4:
+            return CSSM_PADDING_NONE; break;
+            /* RSA/DSA asymmetric */
+        case CSSM_ALGID_DSA:
+        case CSSM_ALGID_RSA:
+            return CSSM_PADDING_PKCS1; break;
+            /* Unknown */
+        default:
+        	Warn(@"Asked for the default padding mode for %d, but don't know that algorithm.\n", algorithm);
+            return CSSM_PADDING_NONE;
+    }
+}
+#endif
+
+#pragma mark -
+// Code below was copied from SecImportExportUtils.cpp in Apple's libsecurity_keychain project
+
+
 /*
  * Given a context specified via a CSSM_CC_HANDLE, add a new
  * CSSM_CONTEXT_ATTRIBUTE to the context as specified by AttributeType,

@@ -153,7 +153,7 @@
                            CSSM_ALGID_RSA, 
                            keySize,
                            0LL,
-                           CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY,        // public key
+                           CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY | CSSM_KEYUSE_WRAP,        // public key
                            CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT,
                            CSSM_KEYUSE_ANY,                                 // private key
                            CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT | CSSM_KEYATTR_SENSITIVE,
@@ -213,7 +213,7 @@
 }
 
 
-- (NSData*) decryptData: (NSData*)data {
+- (NSData*) rawDecryptData: (NSData*)data {
     return [self _crypt: data operation: NO];
 }
 
@@ -300,6 +300,64 @@
         return nil;
 }
 
-#endif TARGET_OS_IPHONE
+
+- (MYSymmetricKey*) unwrapSessionKey: (NSData*)wrappedData
+                       withAlgorithm: (CCAlgorithm)algorithm
+                          sizeInBits: (unsigned)sizeInBits
+{
+    // First create a wrapped-key structure from the data:
+    CSSM_WRAP_KEY wrappedKey = {
+        .KeyHeader = {
+            .BlobType = CSSM_KEYBLOB_WRAPPED,
+            .Format = CSSM_KEYBLOB_RAW_FORMAT_PKCS3,
+            .AlgorithmId = CSSMFromCCAlgorithm(algorithm),
+            .KeyClass = CSSM_KEYCLASS_SESSION_KEY,
+            .LogicalKeySizeInBits = sizeInBits,
+            .KeyAttr = CSSM_KEYATTR_EXTRACTABLE,
+            .KeyUsage = CSSM_KEYUSE_ANY,
+            .WrapAlgorithmId = self.cssmAlgorithm,
+        },
+        .KeyData = {
+            .Data = (void*)wrappedData.bytes,
+            .Length = wrappedData.length
+        }
+    };
+        
+    const CSSM_ACCESS_CREDENTIALS* credentials;
+    credentials = [self cssmCredentialsForOperation: CSSM_ACL_AUTHORIZATION_IMPORT_WRAPPED
+                                               type: kSecCredentialTypeDefault error: nil];
+    CSSM_CSP_HANDLE cspHandle = self.cssmCSPHandle;
+    CSSM_CC_HANDLE ctx;
+    if (!checkcssm(CSSM_CSP_CreateAsymmetricContext(cspHandle,
+                                                    self.cssmAlgorithm,
+                                                    credentials, 
+                                                    self.cssmKey,
+                                                    CSSM_PADDING_PKCS1,
+                                                    &ctx), 
+                   @"CSSM_CSP_CreateAsymmetricContext"))
+        return nil;
+    
+    // Now unwrap the key:
+    MYSymmetricKey *result = nil;
+    CSSM_KEY *unwrappedKey = calloc(1,sizeof(CSSM_KEY));
+    CSSM_DATA desc = {};
+    if (checkcssm(CSSM_UnwrapKey(ctx, 
+                                 self.cssmKey,
+                                 &wrappedKey,
+                                 wrappedKey.KeyHeader.KeyUsage,
+                                 wrappedKey.KeyHeader.KeyAttr,
+                                 NULL, NULL,
+                                 unwrappedKey,
+                                 &desc),
+                  @"CSSM_UnwrapKey")) {
+        result = [[[MYSymmetricKey alloc] _initWithCSSMKey: unwrappedKey] autorelease];
+    }
+    // Finally, delete the context
+    CSSM_DeleteContext(ctx);
+    return result;
+}
+
+
+#endif !TARGET_OS_IPHONE
 
 @end

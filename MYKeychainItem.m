@@ -98,7 +98,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 #else
     err = SecKeychainItemDelete((SecKeychainItemRef)_itemRef);
 #endif
-    return err==errSecItemNotFound || check(err, @"SecKeychainItemDelete");
+    return err==errSecItemNotFound || err==errSecInvalidItemRef || check(err, @"SecKeychainItemDelete");
 }
 
 

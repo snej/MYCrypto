@@ -7,14 +7,15 @@
 //
 
 #import "MYKey.h"
-@class MYPublicKey, MYSHA1Digest, MYIdentity;
+#import <CommonCrypto/CommonCryptor.h>
+@class MYPublicKey, MYSHA1Digest, MYIdentity, MYSymmetricKey;
 
 
 /** A private key, used for signing and decrypting data.
     Always paired with a matching public key in a "key-pair".
     MYPublicKeys are instantiated by MYKeychain: either by generating a new key-pair, by
     looking up a key-pair by its attributes, or by importing a key-pair from data. */
-@interface MYPrivateKey : MYKey <MYDecryption>
+@interface MYPrivateKey : MYKey
 {
     @private
     MYPublicKey *_publicKey;
@@ -33,7 +34,7 @@
     See the description of -[MYPublicKey encryptData:] for warnings and caveats.
     This method is usually used only to decrypt a symmetric session key, which then decrypts the
     rest of the data. */
-- (NSData*) decryptData: (NSData*)data;
+- (NSData*) rawDecryptData: (NSData*)data;
 
 /** Generates a signature of data.
     (What's actually signed using RSA is the SHA-256 digest of the data.)
@@ -80,6 +81,15 @@
                       withPEM: (BOOL)withPEM
                    alertTitle: (NSString*)alertTitle
                   alertPrompt: (NSString*)prompt;
+
+/** Decrypts a session key that was wrapped (encrypted) using my matching public key.
+    @param wrappedData  The wrapped/encrypted session key
+    @param algorithm  The algorithm of the original session key
+    @param sizeInBits  The key size (in bits) of the original session key
+    @return  The reconstituted session key */
+- (MYSymmetricKey*) unwrapSessionKey: (NSData*)wrappedData
+                       withAlgorithm: (CCAlgorithm)algorithm
+                          sizeInBits: (unsigned)sizeInBits;
 #endif
 //@}
 

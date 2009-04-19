@@ -67,6 +67,10 @@
     return cspHandle;
 }
 
+- (CSSM_ALGORITHMS) cssmAlgorithm {
+    return self.cssmKey->KeyHeader.AlgorithmId;
+}
+
 - (const CSSM_ACCESS_CREDENTIALS*) cssmCredentialsForOperation: (CSSM_ACL_AUTHORIZATION_TAG)operation
                                                           type: (SecCredentialType)type
                                                          error: (NSError**)outError
@@ -81,17 +85,17 @@
     return credentials;
 }
 
-- (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM {
+- (SecExternalFormat) _externalFormat {
+    return kSecFormatRawKey;
+}
+
+- (NSData*) keyData {
     CFDataRef data = NULL;
-    if (check(SecKeychainItemExport(self.keyRef, format, (withPEM ?kSecItemPemArmour :0), NULL, &data),
+    if (check(SecKeychainItemExport(self.keyRef, self._externalFormat, 0, NULL, &data),
               @"SecKeychainItemExport"))
         return [(id)CFMakeCollectable(data) autorelease];
     else
         return nil;
-}
-
-- (NSData*) keyData {
-    return [self exportKeyInFormat: kSecFormatRawKey withPEM: NO];
 }
 
 - (NSString*) name {

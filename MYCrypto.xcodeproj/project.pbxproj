@@ -354,6 +354,7 @@
 			baseConfigurationReference = 27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_WARN_UNUSED_FUNCTION = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
 			};
 			name = Debug;
