@@ -57,6 +57,7 @@ typedef CFTypeRef SecExternalItemType;
 - (NSData*) _crypt: (NSData *)data operation: (BOOL) op;    // YES to encrypt, NO to decrypt
 #if !MYCRYPTO_USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
+@property (readonly) const CSSM_CSP_HANDLE cssmCSPHandle;
 - (NSData*) exportKeyInFormat: (SecExternalFormat)format withPEM: (BOOL)withPEM;
 - (CSSM_CC_HANDLE) _createSignatureContext: (CSSM_ALGORITHMS)algorithm;
 - (CSSM_CC_HANDLE) _createPassThroughContext;

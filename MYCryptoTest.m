@@ -11,7 +11,9 @@
 #import "MYKeychain.h"
 #import "MYDigest.h"
 #import "MYIdentity.h"
+#if !TARGET_OS_IPHONE
 #import "MYCrypto+Cocoa.h"
+#endif
 #import "MYCrypto_Private.h"
 
 
@@ -98,57 +100,85 @@ TestCase(EnumerateIdentities) {
 #pragma mark SYMMETRIC KEYS:
 
 
-static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits ) {
+static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeychain *inKeychain ) {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
-    Log(@"--- Testing %3u-bit #%i", sizeInBits, (int)algorithm);
-    // Generate key:
-    MYSymmetricKey *key = [MYSymmetricKey generateSymmetricKeyOfSize: sizeInBits
-                                                           algorithm: algorithm];
-    Log(@"Created %@", key);
+    MYSymmetricKey *key = nil;
+    @try{
+        Log(@"--- Testing %3u-bit #%i %s", sizeInBits, (int)algorithm,
+            (inKeychain ?", in keychain" :""));
+        // Generate key:
+        if (inKeychain)
+            key = [inKeychain generateSymmetricKeyOfSize: sizeInBits algorithm: algorithm];
+        else
+            key = [MYSymmetricKey generateSymmetricKeyOfSize: sizeInBits algorithm: algorithm];
+        Log(@"Created %@", key);
     CAssert(key);
-    CAssertEq(key.algorithm, algorithm);
-    CAssertEq(key.keySizeInBits, sizeInBits);
-#if !TARGET_OS_IPHONE
-    CAssert(key.cssmKey != NULL);
-#endif
-    
-    NSData *keyData = key.keyData;
-    Log(@"Key data = %@", keyData);
-    CAssertEq(keyData.length, sizeInBits/8);
-    
-    // Encrypt a small amount of text:
-    NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
-    NSData *encrypted = [key encryptData: cleartext];
-    Log(@"Encrypted = %u bytes: %@", encrypted.length, encrypted);
-    CAssert(encrypted.length >= cleartext.length);
-    NSData *decrypted = [key decryptData: encrypted];
-    CAssertEqual(decrypted, cleartext);
-    
-    // Encrypt large binary data:
-    cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
-    CAssert(cleartext);
-    encrypted = [key encryptData: cleartext];
-    Log(@"Encrypted = %u bytes", encrypted.length);
-    CAssert(encrypted.length >= cleartext.length);
-    decrypted = [key decryptData: encrypted];
-    CAssertEqual(decrypted, cleartext);
-    
-#if !TARGET_OS_IPHONE
-    // Try reconstituting the key from its data:
-    NSData *exported = [key exportKeyInFormat: kSecFormatWrappedPKCS8 withPEM: NO];
-    Log(@"Exported key: %@", exported);
-    // CAssert(exported);
-    //FIX: Exporting symmetric keys isn't working. Temporarily making this optional.
-    if (exported) {
-        CAssert(exported);
-        MYSymmetricKey *key2 = [[MYSymmetricKey alloc] initWithKeyData: exported algorithm: algorithm];
-        Log(@"Reconstituted as %@", key2);
-        CAssertEqual(key2,key);
+        CAssertEq(key.algorithm, algorithm);
+        CAssertEq(key.keySizeInBits, sizeInBits);
+    #if !TARGET_OS_IPHONE
+        CAssert(key.cssmKey != NULL);
+    #endif
+        
+        NSData *keyData = key.keyData;
+        Log(@"Key data = %@", keyData);
+        CAssertEq(keyData.length, sizeInBits/8);
+        
+        // Encrypt a small amount of text:
+        Log(@"Testing encryption / decryption ...");
+        NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
+        NSData *encrypted = [key encryptData: cleartext];
+        Log(@"Encrypted = %u bytes: %@", encrypted.length, encrypted);
+        CAssert(encrypted.length >= cleartext.length);
+        NSData *decrypted = [key decryptData: encrypted];
+        CAssertEqual(decrypted, cleartext);
+        
+        // Encrypt large binary data:
+        cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
+        CAssert(cleartext);
+        encrypted = [key encryptData: cleartext];
+        Log(@"Encrypted = %u bytes", encrypted.length);
+        CAssert(encrypted.length >= cleartext.length);
+        decrypted = [key decryptData: encrypted];
+        CAssertEqual(decrypted, cleartext);
+        
+    #if 1
+        Log(@"Testing initWithKeyData:...");
+        MYSymmetricKey *key2 = [[MYSymmetricKey alloc] initWithKeyData: keyData algorithm: algorithm];
+        CAssert(key2);
+        Log(@"Key from data = %@",key2);
+        CAssertEqual(key2.keyData, keyData);
+        CAssertEq(key2.algorithm, algorithm);
+        CAssertEq(key2.keySizeInBits, sizeInBits);
         decrypted = [key2 decryptData: encrypted];
         CAssertEqual(decrypted, cleartext);
-    } else
-        Warn(@"Unable to export key in PKCS8");
-#endif
+        [key2 release];
+    #endif
+
+    #if !TARGET_OS_IPHONE
+        // Try exporting and importing a wrapped key:
+        Log(@"Testing export/import...");
+        NSData *exported = [key exportKeyInFormat: kSecFormatWrappedPKCS8 withPEM: NO];
+        Log(@"Exported key: %@", exported);
+    #if 0
+        CAssert(exported);
+    #else
+        //FIX: Exporting symmetric keys isn't working. Temporarily making this optional.
+        if (!exported)
+            Warn(@"Unable to export wrapped key");
+        else
+    #endif
+        {
+            CAssert(exported);
+            MYSymmetricKey *key2 = [[MYSymmetricKey alloc] initWithKeyData: exported algorithm: algorithm];
+            Log(@"Reconstituted as %@", key2);
+            CAssertEqual(key2.keyData,key.keyData);
+            decrypted = [key2 decryptData: encrypted];
+            CAssertEqual(decrypted, cleartext);
+        }
+    #endif
+    }@finally{
+        [key removeFromKeychain];
+    }
     [pool drain];
 }
 
@@ -167,8 +197,49 @@ TestCase(MYSymmetricKey) {
         40, 80, 128,
         32, 200, 512*8};
 
-    for (int i=0; i<kNTests; i++) 
-        testSymmetricKey(kTestAlgorithms[i], kTestBitSizes[i]);
+    for (int useKeychain=0; useKeychain<=1; useKeychain++)
+        for (int testNo=0; testNo<kNTests; testNo++) 
+            testSymmetricKey(kTestAlgorithms[testNo], 
+                             kTestBitSizes[testNo],
+                             useKeychain ?[MYKeychain defaultKeychain] :nil);
+}
+
+
+TestCase(MYSymmetricKeyPassphrase) {
+    Log(@"Prompting for raw passphrase --");
+    NSString *rawPassphrase = [MYSymmetricKey promptForPassphraseWithAlertTitle: @"Raw Passphrase Test" 
+                                                                    alertPrompt: @"Enter the passphrase 'Testing':"
+                                                                       creating: YES];
+    Log(@"You entered: '%@'", rawPassphrase);
+    CAssertEqual(rawPassphrase, @"Testing");
+    
+    Log(@"Prompting for passphrase for key --");
+    MYSymmetricKey *key = [MYSymmetricKey generateFromUserPassphraseWithAlertTitle: @"Symmetric Key Passphrase Test Case" 
+                                                                       alertPrompt: @"Please enter a passphrase to generate a key:"
+                                                                          creating: YES
+                                                                              salt: @"wahooma"];
+    Log(@"Key from passphrase = %@", key);
+    CAssert(key);
+
+    // Encrypt a small amount of text:
+    Log(@"Testing encryption / decryption ...");
+    NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
+    NSData *encrypted = [key encryptData: cleartext];
+    Log(@"Encrypted = %u bytes: %@", encrypted.length, encrypted);
+    CAssert(encrypted.length >= cleartext.length);
+    NSData *decrypted = [key decryptData: encrypted];
+    CAssertEqual(decrypted, cleartext);
+    
+    // Now test decryption by re-entered passphrase:
+    Log(@"Testing decryption using re-entered passphrase...");
+    MYSymmetricKey *key2 = [MYSymmetricKey generateFromUserPassphraseWithAlertTitle: @"Symmetric Key Passphrase Test Case" 
+                                                                        alertPrompt: @"Please re-enter the same passphrase:" 
+                                                                           creating: NO
+                                                                               salt: @"wahooma"];
+    Log(@"Key from passphrase = %@", key2);
+    CAssert(key2);
+    decrypted = [key2 decryptData: encrypted];
+    CAssertEqual(decrypted, cleartext);
 }
 
 
@@ -261,6 +332,7 @@ TestCase(MYGenerateKeyPair) {
 }
 
 
+#if !TARGET_OS_IPHONE
 TestCase(MYUseIdentity) {
     MYIdentity *me = nil;//[MYIdentity preferredIdentityForName: @"MYCryptoTest"];
     if (!me) {
@@ -278,6 +350,7 @@ TestCase(MYUseIdentity) {
     CAssert(me,@"No default identity has been set up in the Keychain");
     TestUseKeyPair(me.privateKey);
 }
+#endif
 
 
 #pragma mark -
@@ -362,7 +435,7 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
 
 TestCase(KeyPairExport) {
     RequireTestCase(MYKeychain);
-    RequireTestCase(MYPrivateKey);
+    RequireTestCase(MYGenerateKeyPair);
     testKeyPairExportWithPrompt(NO);
 }
 

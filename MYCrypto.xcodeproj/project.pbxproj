@@ -12,6 +12,7 @@
 		27059D840F8FA82500A8422F /* SecurityInterface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27059D830F8FA82500A8422F /* SecurityInterface.framework */; };
 		27059DE50F8FAF6500A8422F /* MYDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059D520F8F9BB500A8422F /* MYDecoder.m */; };
 		270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 270B879E0F8C565000C56781 /* MYPrivateKey.m */; };
+		27410FF00F99200A00AD413F /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */; };
 		274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42ECD0F8689D30063D362 /* MYCertGen.m */; };
 		274863A20F8EF39400FE617B /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 274863A10F8EF39400FE617B /* MYIdentity.m */; };
 		27A42CBF0F8578B40063D362 /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42CBE0F8578B40063D362 /* MYCryptoTest.m */; };
@@ -57,6 +58,7 @@
 		27059D830F8FA82500A8422F /* SecurityInterface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SecurityInterface.framework; path = /System/Library/Frameworks/SecurityInterface.framework; sourceTree = "<absolute>"; };
 		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
+		27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYSymmetricKey-iPhone.m"; sourceTree = "<group>"; };
 		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
 		274863A00F8EF39400FE617B /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
 		274863A10F8EF39400FE617B /* MYIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYIdentity.m; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 				270B879E0F8C565000C56781 /* MYPrivateKey.m */,
 				27A42D400F858ED80063D362 /* MYSymmetricKey.h */,
 				27A42D410F858ED80063D362 /* MYSymmetricKey.m */,
+				27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */,
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
 				27059D750F8FA23100A8422F /* MYCrypto+Cocoa.h */,
 				27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */,
@@ -321,6 +324,7 @@
 				27059D530F8F9BB500A8422F /* MYEncoder.m in Sources */,
 				27059D770F8FA23100A8422F /* MYCrypto+Cocoa.m in Sources */,
 				27059DE50F8FAF6500A8422F /* MYDecoder.m in Sources */,
+				27410FF00F99200A00AD413F /* MYSymmetricKey-iPhone.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

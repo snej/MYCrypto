@@ -236,6 +236,23 @@ NSString* MYTrustDescribe( SecTrustRef trust ) {
 }
 
 
+// Taken from Keychain.framework
+NSString* OIDAsString(const CSSM_OID oid) {
+    if ((NULL == oid.Data) || (0 >= oid.Length)) {
+        return nil;
+    } else {
+        NSMutableString *result = [NSMutableString stringWithCapacity:(4 * oid.Length)];
+        unsigned int i;
+        
+        for (i = 0; i < oid.Length; ++i) {
+            [result appendFormat:@"%s%hhu", ((0 == i) ? "" : ", "), oid.Data[i]];
+        }
+        
+        return result;
+    }
+}
+
+
 
 TestCase(Trust) {
     Log(@"X.509 policy = %@", MYPolicyGetName([MYCertificate X509Policy]));

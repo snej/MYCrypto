@@ -92,11 +92,13 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 }
 
 - (BOOL) removeFromKeychain {
+    OSStatus err;
 #if MYCRYPTO_USE_IPHONE_API
-    return check(SecItemDelete(self.asQuery), @"SecItemDelete");
+    err = SecItemDelete(self.asQuery);
 #else
-    return check(SecKeychainItemDelete((SecKeychainItemRef)_itemRef), @"SecKeychainItemDelete");
+    err = SecKeychainItemDelete((SecKeychainItemRef)_itemRef);
 #endif
+    return err==errSecItemNotFound || check(err, @"SecKeychainItemDelete");
 }
 
 
