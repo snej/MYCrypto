@@ -27,6 +27,17 @@
 + (MYSymmetricKey*) generateSymmetricKeyOfSize: (unsigned)keySizeInBits
                                      algorithm: (CCAlgorithm)algorithm;
 
+/** The key's algorithm. */
+@property (readonly) CCAlgorithm algorithm;
+
+/** The key's size/length, in bits. */
+@property (readonly) unsigned keySizeInBits;
+
+
+#if !TARGET_OS_IPHONE
+
+- (NSData*) exportWrappedKeyWithPassphrasePrompt: (NSString*)prompt;
+
 /** Converts a passphrase into a symmetric key.
     The same passphrase (and salt) will always return the same key, so you can use this method
     to encrypt and decrypt data using a user-entered passphrase, without having to store the key
@@ -47,15 +58,6 @@
                                                     creating: (BOOL)creating
                                                         salt: (id)saltObj;
 
-/** The key's algorithm. */
-@property (readonly) CCAlgorithm algorithm;
-
-/** The key's size/length, in bits. */
-@property (readonly) unsigned keySizeInBits;
-
-- (NSData*) exportWrappedKeyWithPassphrasePrompt: (NSString*)prompt;
-
-
 /** A utility that prompts for a passphrase, using the Security agent's nice modal panel,
     and returns the raw passphrase as a string.
     @param alertTitle  A title for the alert (this seems to be ignored by the OS).
@@ -65,5 +67,6 @@
 + (NSString*) promptForPassphraseWithAlertTitle: (NSString*)alertTitle
                                     alertPrompt: (NSString*)prompt
                                        creating: (BOOL)creating;
+#endif TARGET_OS_IPHONE
 
 @end

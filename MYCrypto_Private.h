@@ -130,4 +130,9 @@ SecKeyRef importKey(NSData *data,
 NSString* OIDAsString(CSSM_OID OID);
 CSSM_ALGORITHMS CSSMFromCCAlgorithm( CCAlgorithm ccAlgorithm );
 
+typedef struct {
+    CSSM_ALGORITHMS algorithm;
+    uint32 sizeInBits;
+} MYCryptoWrappedKeyDesc;
+
 #endif

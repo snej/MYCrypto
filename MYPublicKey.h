@@ -43,10 +43,20 @@
     (What's actually verified using RSA is the SHA-256 digest of the data.) */
 - (BOOL) verifySignature: (NSData*)signature ofData: (NSData*)data;
 
+
+/** @name Expert
+ *  Advanced methods. 
+ */
+//@{
+#if !TARGET_OS_IPHONE
+
 /** Encrypts a session key using this public key. 
     The holder of the private key can then unwrap the session key from this data.
     @param sessionKey  The symmetric session key to wrap/encrypt
     @return  The encrypted data representing the session key */
 - (NSData*) wrapSessionKey: (MYSymmetricKey*)sessionKey;
+
+#endif
+//@}
 
 @end

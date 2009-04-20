@@ -340,19 +340,23 @@
     // Now unwrap the key:
     MYSymmetricKey *result = nil;
     CSSM_KEY *unwrappedKey = calloc(1,sizeof(CSSM_KEY));
-    CSSM_DATA desc = {};
+    CSSM_DATA label = {.Data=(void*)"Imported key", .Length=strlen("Imported key")};
+    CSSM_DATA descriptiveData = {};
     if (checkcssm(CSSM_UnwrapKey(ctx, 
                                  self.cssmKey,
                                  &wrappedKey,
                                  wrappedKey.KeyHeader.KeyUsage,
                                  wrappedKey.KeyHeader.KeyAttr,
-                                 NULL, NULL,
+                                 &label,
+                                 NULL,
                                  unwrappedKey,
-                                 &desc),
+                                 &descriptiveData),
                   @"CSSM_UnwrapKey")) {
         result = [[[MYSymmetricKey alloc] _initWithCSSMKey: unwrappedKey] autorelease];
     }
     // Finally, delete the context
+    if (!result)
+        free(unwrappedKey);
     CSSM_DeleteContext(ctx);
     return result;
 }
@@ -361,3 +365,27 @@
 #endif !TARGET_OS_IPHONE
 
 @end
+
+
+
+/*
+ Copyright (c) 2009, Jens Alfke <jens@mooseyard.com>. All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without modification, are permitted
+ provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright notice, this list of conditions
+ and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+ and the following disclaimer in the documentation and/or other materials provided with the
+ distribution.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRI-
+ BUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
+ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */

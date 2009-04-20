@@ -131,7 +131,7 @@ SecKeyRef importKey(NSData *data,
                     SecExternalItemType type,
                     SecKeychainRef keychain,
                     SecKeyImportExportParameters *params) {
-    SecExternalFormat inputFormat = (type==kSecItemTypeSessionKey) ?kSecFormatRawKey :kSecFormatOpenSSL;
+    SecExternalFormat inputFormat = (type==kSecItemTypeSessionKey) ?kSecFormatRawKey :kSecFormatUnknown;
     CFArrayRef items = NULL;
     
     params->version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
@@ -142,7 +142,7 @@ SecKeyRef importKey(NSData *data,
         if (type==kSecItemTypeSessionKey)
             params->keyUsage = CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_DECRYPT;
         else if (type==kSecItemTypePublicKey)
-            params->keyUsage = CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY;
+            params->keyUsage = CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY | CSSM_KEYUSE_WRAP;
         else if (type==kSecItemTypePrivateKey)
             params->keyUsage = CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN;
     }

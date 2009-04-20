@@ -207,6 +207,7 @@ TestCase(MYSymmetricKey) {
 }
 
 
+#if !TARGET_OS_IPHONE
 TestCase(MYSymmetricKeyPassphrase) {
     Log(@"Prompting for raw passphrase --");
     NSString *rawPassphrase = [MYSymmetricKey promptForPassphraseWithAlertTitle: @"Raw Passphrase Test" 
@@ -243,6 +244,7 @@ TestCase(MYSymmetricKeyPassphrase) {
     decrypted = [key2 decryptData: encrypted];
     CAssertEqual(decrypted, cleartext);
 }
+#endif
 
 
 #pragma mark -
@@ -265,6 +267,7 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     CAssertEqual(pair.publicKeyDigest, pubKeyDigest);
     
     Log(@"SHA1 of pub key = %@", pubKeyData.my_SHA1Digest.asData);
+    CAssertEqual(pubKeyData.my_SHA1Digest,pubKeyDigest);
     
     // Let's sign data:
     NSData *data = [@"This is a test. This is only a test!" dataUsingEncoding: NSUTF8StringEncoding];
@@ -296,9 +299,13 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
 }
 
 
-static void testWrapSessionKey( MYPrivateKey *privateKey ) {
+static void TestWrapSessionKey( MYPrivateKey *privateKey ) {
+#if !TARGET_OS_IPHONE
     MYSymmetricKey *sessionKey = [MYSymmetricKey generateSymmetricKeyOfSize: 128 algorithm:kCCAlgorithmAES128];
     CAssert(sessionKey);
+    NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
+    NSData *encrypted = [sessionKey encryptData: cleartext];
+
     Log(@"Wrapping session key %@, %@", sessionKey, sessionKey.keyData);
     NSData *wrapped = [privateKey.publicKey wrapSessionKey: sessionKey];
     Log(@"Wrapped session key = %u bytes: %@", wrapped.length,wrapped);
@@ -309,7 +316,14 @@ static void testWrapSessionKey( MYPrivateKey *privateKey ) {
                                                      sizeInBits: 128];
     Log(@"Unwrapped session key = %@, %@", unwrappedKey, unwrappedKey.keyData);
     CAssert(unwrappedKey);
+    CAssertEq(unwrappedKey.algorithm, sessionKey.algorithm);
+    CAssertEq(unwrappedKey.keySizeInBits, sessionKey.keySizeInBits);
     CAssertEqual(unwrappedKey.keyData, sessionKey.keyData);
+
+    Log(@"Verifying that unwrapped key works");
+    NSData *decrypted = [unwrappedKey decryptData: encrypted];
+    CAssertEqual(decrypted, cleartext);
+#endif
 }
 
 
@@ -323,7 +337,7 @@ TestCase(MYGenerateKeyPair) {
     
     @try{
         TestUseKeyPair(pair);
-        testWrapSessionKey(pair);
+        TestWrapSessionKey(pair);
         
         [pair setName: @"Test KeyPair Label"];
         CAssertEqual(pair.name, @"Test KeyPair Label");

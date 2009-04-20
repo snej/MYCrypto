@@ -47,7 +47,7 @@
 
 #if !MYCRYPTO_USE_IPHONE_API
 - (SecExternalFormat) _externalFormat {
-    return kSecFormatOpenSSL;
+    return kSecFormatBSAFE;
 }
 #endif
 
@@ -134,11 +134,12 @@
                                                     &ctx), 
                    @"CSSM_CSP_CreateAsymmetricContext"))
         return nil;
-    
+        
     // Now wrap the key:
     NSData *result = nil;
     CSSM_WRAP_KEY wrappedKey = {};
-    if (checkcssm(CSSM_WrapKey(ctx, credentials, sessionKey.cssmKey, NULL, &wrappedKey),
+    CSSM_DATA descriptiveData = {};
+    if (checkcssm(CSSM_WrapKey(ctx, credentials, sessionKey.cssmKey, &descriptiveData, &wrappedKey),
                   @"CSSM_WrapKey")) {
         // ...and copy the wrapped key data to the result NSData:
         result = [NSData dataWithBytes: wrappedKey.KeyData.Data length: wrappedKey.KeyData.Length];
