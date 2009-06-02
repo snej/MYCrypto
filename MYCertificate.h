@@ -12,7 +12,7 @@
 #import <Security/cssmtype.h>
 #endif
 
-@class MYPublicKey;
+@class MYPublicKey, MYIdentity;
 
 
 /** An X.509 certificate. */
@@ -56,6 +56,9 @@
 - (id) initWithCertificateData: (NSData*)data
                           type: (CSSM_CERT_TYPE) type
                       encoding: (CSSM_CERT_ENCODING) encoding;
+
+/** The Identity (if any) that this Certificate is part of. */
+@property (readonly) MYIdentity *identity;
 
 /** The list (if any) of the subject's email addresses. */
 @property (readonly) NSArray *emailAddresses;

@@ -23,6 +23,7 @@
 		276FB34B0F856CA400CB326E /* MYCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB34A0F856CA400CB326E /* MYCertificate.m */; };
 		27A430120F87C6C10063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E823110F81D56E0019BE60 /* MYKey.m */; };
 		27A430140F87C6D50063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A430130F87C6D50063D362 /* MYSymmetricKey.m */; };
+		27B8522D0FCEE6F9005631F9 /* MYASN1.m in Sources */ = {isa = PBXBuildFile; fileRef = 27B8522C0FCEE6F9005631F9 /* MYASN1.m */; };
 		27E3A6AA0F91B8B30079D4D9 /* MYCryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E3A6A70F91B8B30079D4D9 /* MYCryptor.m */; };
 		27E823240F81D56E0019BE60 /* MYKeychainItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E823150F81D56E0019BE60 /* MYKeychainItem.m */; };
 		27E823270F81D56E0019BE60 /* MYDigest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E8231C0F81D56E0019BE60 /* MYDigest.m */; };
@@ -60,6 +61,8 @@
 		27A430130F87C6D50063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
 		27A430150F87C6DB0063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptoConfig.h; sourceTree = "<group>"; };
+		27B8522B0FCEE6F9005631F9 /* MYASN1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYASN1.h; sourceTree = "<group>"; };
+		27B8522C0FCEE6F9005631F9 /* MYASN1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYASN1.m; sourceTree = "<group>"; };
 		27E3A6A60F91B8B30079D4D9 /* MYCryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptor.h; sourceTree = "<group>"; };
 		27E3A6A70F91B8B30079D4D9 /* MYCryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptor.m; sourceTree = "<group>"; };
 		27E8230C0F81D56E0019BE60 /* MYCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertificate.h; sourceTree = "<group>"; };
@@ -139,6 +142,8 @@
 		27E8230B0F81D56E0019BE60 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				27B8522B0FCEE6F9005631F9 /* MYASN1.h */,
+				27B8522C0FCEE6F9005631F9 /* MYASN1.m */,
 				27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */,
 				27E8230C0F81D56E0019BE60 /* MYCertificate.h */,
 				276FB34A0F856CA400CB326E /* MYCertificate.m */,
@@ -290,6 +295,7 @@
 				27059CF30F8F0F9200A8422F /* MYIdentity.m in Sources */,
 				27E3A6AA0F91B8B30079D4D9 /* MYCryptor.m in Sources */,
 				274110090F99234100AD413F /* MYSymmetricKey-iPhone.m in Sources */,
+				27B8522D0FCEE6F9005631F9 /* MYASN1.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,7 +341,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "84D61190-B2EB-4F8E-A189-99F18EE9A07E";
-				SDKROOT = iphoneos3.0;
+				SDKROOT = iphonesimulator2.2.1;
 			};
 			name = Debug;
 		};
@@ -348,7 +354,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos3.0;
+				SDKROOT = iphonesimulator2.2.1;
 			};
 			name = Release;
 		};

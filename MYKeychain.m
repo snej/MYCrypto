@@ -206,6 +206,11 @@
 }
 
 
++ (void) setUserInteractionAllowed: (BOOL)allowed {
+    SecKeychainSetUserInteractionAllowed(allowed);
+}
+
+
 #pragma mark -
 #pragma mark SEARCHING:
 

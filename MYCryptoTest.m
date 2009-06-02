@@ -155,7 +155,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
     #endif
 
     #if !TARGET_OS_IPHONE
-#if 0 // TEMPORARILY OUT OF ORDER
+#if 1 // TEMP-ORARILY OUT OF ORDER
         // Try exporting and importing a wrapped key:
         Log(@"Testing export/import...");
         NSData *exported = [key exportWrappedKeyWithPassphrasePrompt: @"Export symmetric key with passphrase:"];
@@ -163,14 +163,13 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
     #if 1
         CAssert(exported);
     #else
-        //FIX: Exporting symmetric keys isn't working. Temporarily making this optional.
         if (!exported)
             Warn(@"Unable to export wrapped key");
         else
     #endif
         {
             CAssert(exported);
-            MYSymmetricKey *key2 = [[MYSymmetricKey alloc] initWithKeyData: exported algorithm: algorithm];
+            MYSymmetricKey *key2 = [[MYSymmetricKey alloc] initWithWrappedKeyData: exported];
             Log(@"Reconstituted as %@", key2);
             CAssertEqual(key2.keyData,key.keyData);
             decrypted = [key2 decryptData: encrypted];

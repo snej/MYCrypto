@@ -102,6 +102,11 @@
 //@{
 #if !TARGET_OS_IPHONE
 
+/** Sets whether the keychain is allowed to pop up panels to interact with the user,
+    for example to ask for permission to access keys. If user interaction is not
+    allowed, all such requests will fail. */
++ (void) setUserInteractionAllowed: (BOOL)allowed;
+
 /** Enumerates all public keys in the keychain that have the given alias string. */
 - (NSEnumerator*) symmetricKeysWithAlias: (NSString*)alias;
 

@@ -34,8 +34,15 @@ extern OSStatus SecKeyCreate(const CSSM_KEY *key, SecKeyRef* keyRef) WEAK_IMPORT
 
 static CSSM_KEY* cssmKeyFromData( NSData *keyData, CSSM_ALGORITHMS algorithm,
                                  MYKeychain *keychain);
-//static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm);
-//CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm);
+
+#if !TARGET_OS_IPHONE
+static CSSM_KEY* unwrapCssmKeyFromData(NSData *wrappedData,
+                                       CSSM_ALGORITHMS algorithm,
+                                       unsigned sizeInBits);
+static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm);
+static CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm);
+#endif
+
 static CSSM_DATA makeSalt( id salty, size_t length );
 static CSSM_RETURN impExpCreatePassKey(
 	const SecKeyImportExportParameters *keyParams,  // required
@@ -49,6 +56,10 @@ static CSSM_RETURN impExpCreatePassKey(
 
 
 - (id) _initWithCSSMKey: (CSSM_KEY*)cssmKey {
+    if (!cssmKey) {
+        [self release];
+        return nil;
+    }
     SecKeyRef keyRef = NULL;
     if (SecKeyCreate == NULL) {
         // If weak-linked SPI fn no longer exists
@@ -75,10 +86,6 @@ static CSSM_RETURN impExpCreatePassKey(
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
     CSSM_KEY *key = cssmKeyFromData(keyData, CSSMFromCCAlgorithm(algorithm), keychain);
-    if (!key) {
-        [self release];
-        return nil;
-    }
     return [self _initWithCSSMKey: key];
 }
 
@@ -223,9 +230,15 @@ static CSSM_RETURN impExpCreatePassKey(
 
 
 #if !TARGET_OS_IPHONE
+- (id) initWithWrappedKeyData: (NSData*)wrappedKeyData {
+    return [self _initWithCSSMKey: unwrapCssmKeyFromData(wrappedKeyData,
+                                                         CSSM_ALGID_AES,128)];
+}
+
+
 - (NSData*) exportWrappedKeyWithPassphrasePrompt: (NSString*)prompt
 {
-    // Prompt use for a passphrase to use for the wrapping key:
+    // Prompt user for a passphrase to use for the wrapping key:
     MYSymmetricKey *wrappingKey = [MYSymmetricKey 
                                    generateFromUserPassphraseWithAlertTitle: @"Export Key" 
                                    alertPrompt: prompt 
@@ -238,15 +251,17 @@ static CSSM_RETURN impExpCreatePassKey(
     // Create the context:
     CSSM_ACCESS_CREDENTIALS credentials = {};
     CSSM_CSP_HANDLE cspHandle = self.cssmCSPHandle;
-    //CSSM_ALGORITHMS algorithm = wrappingKey.cssmAlgorithm;
+    CSSM_ALGORITHMS algorithm = wrappingKey.cssmAlgorithm;
+    uint8 iv[16] = {0}; // Right size for AES. Are zeros OK? //FIX: Support other algorithms
+    CSSM_DATA ivData = {.Data=(void*)&iv, .Length=sizeof(iv)};
     CSSM_CC_HANDLE ctx;
     if (!checkcssm(CSSM_CSP_CreateSymmetricContext(cspHandle,
-                                                   wrappingKey.cssmAlgorithm, //CSSM_ALGID_3DES_3KEY_EDE, //algorithm, 
-                                                   CSSM_ALGMODE_CBCPadIV8, //defaultModeForAlgorithm(algorithm),
+                                                   algorithm, //CSSM_ALGID_3DES_3KEY_EDE
+                                                   defaultModeForAlgorithm(algorithm),
                                                    &credentials, 
                                                    wrappingKey.cssmKey,
-                                                   NULL,
-                                                   CSSM_PADDING_PKCS7, //defaultPaddingForAlgorithm(algorithm),
+                                                   &ivData,
+                                                   defaultPaddingForAlgorithm(algorithm),
                                                    NULL,
                                                    &ctx), 
                    @"CSSM_CSP_CreateSymmetricContext"))
@@ -396,6 +411,35 @@ static CSSM_KEY* cssmKeyFromData( NSData *keyData,
 }
 
 
+#if !TARGET_OS_IPHONE
+static CSSM_KEY* unwrapCssmKeyFromData(NSData *wrappedData,
+                                       CSSM_ALGORITHMS algorithm,
+                                       unsigned sizeInBits) {
+    Warn(@"MYSymmetricKey: unwrapping is unimplemented; sorry");
+    return nil;
+#if 0 //not finished yet
+    // First create a wrapped-key structure from the data:
+    CSSM_WRAP_KEY wrappedKey = {
+        .KeyHeader = {
+            .BlobType = CSSM_KEYBLOB_WRAPPED,
+            .Format = CSSM_KEYBLOB_RAW_FORMAT_PKCS3,
+            .AlgorithmId = algorithm,
+            .KeyClass = CSSM_KEYCLASS_SESSION_KEY,
+            .LogicalKeySizeInBits = sizeInBits,
+            .KeyAttr = CSSM_KEYATTR_EXTRACTABLE,
+            .KeyUsage = CSSM_KEYUSE_ANY,
+            .WrapAlgorithmId = CSSM_ALGID_AES,
+        },
+        .KeyData = {
+            .Data = (void*)wrappedData.bytes,
+            .Length = wrappedData.length
+        }
+    };
+#endif
+}    
+#endif
+
+
 // Create salt data of a specific length from an arbitrary NSObject. */
 static CSSM_DATA makeSalt( id salty, size_t length ) {
     // Convert to NSData if necessary:
@@ -416,7 +460,9 @@ static CSSM_DATA makeSalt( id salty, size_t length ) {
 
 #pragma mark -
 // Code from Keychain.framework:
-#if 0
+
+#if !TARGET_OS_IPHONE
+#if 1
 static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm) {
     switch(algorithm) {
         // 8-byte block ciphers
@@ -438,8 +484,10 @@ static CSSM_ENCRYPT_MODE defaultModeForAlgorithm(CSSM_ALGORITHMS algorithm) {
             return CSSM_ALGMODE_NONE;
     }
 }
+#endif
 
-CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm) {
+#if 1
+static CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm) {
     switch(algorithm) {
         /* 8-byte block ciphers */
         case CSSM_ALGID_DES:
@@ -464,6 +512,7 @@ CSSM_PADDING defaultPaddingForAlgorithm(CSSM_ALGORITHMS algorithm) {
             return CSSM_PADDING_NONE;
     }
 }
+#endif
 #endif
 
 #pragma mark -

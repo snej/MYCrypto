@@ -59,6 +59,11 @@
         return nil;
     else
         return [(id)CFMakeCollectable(data) autorelease];
+    
+    // The format of this data is not documented. There's been some reverse-engineering:
+    // https://devforums.apple.com/message/32089#32089
+    // Apparently it is a DER-formatted sequence of a modulus followed by an exponent.
+    // This can be converted to OpenSSL format by wrapping it in some additional DER goop.
 }
 
 

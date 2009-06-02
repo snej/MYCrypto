@@ -8,6 +8,7 @@
 
 #import "MYCertificate.h"
 #import "MYCrypto_Private.h"
+#import "MYIdentity.h"
 #import "MYDigest.h"
 #import "MYErrorUtils.h"
 
@@ -101,6 +102,10 @@
     MYPublicKey *key = [[[MYPublicKey alloc] initWithKeyRef: keyRef] autorelease];
     CFRelease(keyRef);
     return key;
+}
+
+- (MYIdentity*) identity {
+    return [[[MYIdentity alloc] initWithCertificateRef: _certificateRef] autorelease];
 }
 
 - (NSString*) commonName {
