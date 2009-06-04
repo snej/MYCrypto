@@ -30,6 +30,9 @@
 @interface MYKey : MYKeychainItem
 { }
 
+/** Creates a key from encoded data (but does not add it to any keychain.) */
+- (id) initWithKeyData: (NSData*)data;
+
 /** The key's raw data. */
 @property (readonly) NSData *keyData;
 

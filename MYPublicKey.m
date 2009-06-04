@@ -70,7 +70,7 @@
     return err==noErr;
     
 #else
-    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA256WithRSA];
+    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA1WithRSA];
     if (!ccHandle) return NO;
     CSSM_DATA original = {data.length, (void*)data.bytes};
     CSSM_DATA sig = {signature.length, (void*)signature.bytes};

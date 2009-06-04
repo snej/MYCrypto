@@ -126,7 +126,10 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
     [super dealloc];
 }
 
-
 @synthesize bits=_bits, bitCount=_bitCount;
+
+- (NSString*) description {
+    return $sprintf(@"%@%@", [self class], _bits);
+}
 
 @end

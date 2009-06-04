@@ -236,7 +236,7 @@
         return [NSData dataWithBytes: sigBuf length: sigLen];
 #else
     NSData *signature = nil;
-    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA256WithRSA];
+    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA1WithRSA];
     if (!ccHandle) return nil;
     CSSM_DATA original = {data.length, (void*)data.bytes};
     CSSM_DATA result = {0,NULL};

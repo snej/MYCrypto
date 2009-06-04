@@ -15,5 +15,8 @@
 /** Parses a block of BER-formatted data into an object tree. */
 id MYBERParse (NSData *ber, NSError **outError);
 
+size_t MYBERGetLength (NSData *ber, NSError **outError);
+const void* MYBERGetContents (NSData *ber, NSError **outError);
+
 NSDateFormatter* MYBERGeneralizedTimeFormatter();
 NSDateFormatter* MYBERUTCTimeFormatter();

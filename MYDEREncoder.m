@@ -338,7 +338,7 @@ TestCase(DEREncoder) {
 
 TestCase(EncodeCert) {
     NSError *error = nil;
-    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned.cer"];  //TEMP
+    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/iphonedev.cer"];  //TEMP
     id certObjects = MYBERParse(cert,&error);
     CAssertNil(error);
     Log(@"Decoded as:\n%@", [MYASN1Object dump: certObjects]);
@@ -347,6 +347,6 @@ TestCase(EncodeCert) {
     id reDecoded = MYBERParse(encoded, &error);
     CAssertNil(error);
     Log(@"Re-decoded as:\n%@", [MYASN1Object dump: reDecoded]);
-    [encoded writeToFile: @"../../Tests/selfsigned_reencoded.cer" atomically: YES];
+    [encoded writeToFile: @"../../Tests/iphonedev_reencoded.cer" atomically: YES];
     CAssertEqual(encoded,cert);
 }

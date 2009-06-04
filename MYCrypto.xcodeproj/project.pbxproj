@@ -48,6 +48,9 @@
 		27410FF00F99200A00AD413F /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */; };
 		274861D50F8E4B5200FE617B /* MYCertGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42ECD0F8689D30063D362 /* MYCertGen.m */; };
 		274863A20F8EF39400FE617B /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 274863A10F8EF39400FE617B /* MYIdentity.m */; };
+		275D9D920FD5FB4100D85A86 /* MYParsedCertificate.h in Headers */ = {isa = PBXBuildFile; fileRef = 275D9D900FD5FB4100D85A86 /* MYParsedCertificate.h */; };
+		275D9D930FD5FB4100D85A86 /* MYParsedCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */; };
+		275D9D940FD5FB4100D85A86 /* MYParsedCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */; };
 		27A42CBF0F8578B40063D362 /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42CBE0F8578B40063D362 /* MYCryptoTest.m */; };
 		27A42D1E0F8586CE0063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E822A10F81C5660019BE60 /* MYKey.m */; };
 		27A42D420F858ED80063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42D410F858ED80063D362 /* MYSymmetricKey.m */; };
@@ -108,6 +111,8 @@
 		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
 		274863A00F8EF39400FE617B /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
 		274863A10F8EF39400FE617B /* MYIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYIdentity.m; sourceTree = "<group>"; };
+		275D9D900FD5FB4100D85A86 /* MYParsedCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYParsedCertificate.h; sourceTree = "<group>"; };
+		275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYParsedCertificate.m; sourceTree = "<group>"; };
 		27A42CBE0F8578B40063D362 /* MYCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptoTest.m; sourceTree = "<group>"; };
 		27A42D400F858ED80063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27A42D410F858ED80063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
@@ -273,6 +278,8 @@
 		274861440F8D757600FE617B /* Certificates */ = {
 			isa = PBXGroup;
 			children = (
+				275D9D900FD5FB4100D85A86 /* MYParsedCertificate.h */,
+				275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */,
 				27A42ECC0F8689D30063D362 /* MYCertGen.h */,
 				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
 				27B852F30FCF4EB6005631F9 /* MYASN1Object.h */,
@@ -339,6 +346,7 @@
 				27B852FE0FCF4ECB005631F9 /* MYOID.h in Headers */,
 				27B855270FD077A6005631F9 /* MYDEREncoder.h in Headers */,
 				270A7A730FD58FF200770C4D /* MYBERParser.h in Headers */,
+				275D9D920FD5FB4100D85A86 /* MYParsedCertificate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,6 +448,7 @@
 				27B852FF0FCF4ECB005631F9 /* MYOID.m in Sources */,
 				27B855280FD077A7005631F9 /* MYDEREncoder.m in Sources */,
 				270A7A740FD58FF200770C4D /* MYBERParser.m in Sources */,
+				275D9D930FD5FB4100D85A86 /* MYParsedCertificate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,6 +482,7 @@
 				27B853000FCF4ECB005631F9 /* MYOID.m in Sources */,
 				27B855290FD077A7005631F9 /* MYDEREncoder.m in Sources */,
 				270A7A750FD58FF200770C4D /* MYBERParser.m in Sources */,
+				275D9D940FD5FB4100D85A86 /* MYParsedCertificate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

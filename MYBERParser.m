@@ -19,6 +19,14 @@
 
 
 typedef struct {
+    unsigned tag            :5;
+    unsigned isConstructed  :1;
+    unsigned tagClass       :2;
+    unsigned length         :7;
+    unsigned isLengthLong   :1;
+} BERHeader;
+
+typedef struct {
     const uint8_t *nextChar;
     size_t length;
 } InputData;
@@ -103,27 +111,23 @@ static NSDate* parseDate (NSString *dateStr, unsigned tag) {
 }
 
 
-static id parseBER(InputData *input) {
-    struct {
-        unsigned tag            :5;
-        unsigned isConstructed  :1;
-        unsigned tagClass       :2;
-        unsigned length         :7;
-        unsigned isLengthLong   :1;
-    } header;
-    memcpy(&header, readOrDie(input,2), 2);
-    
-    if (header.tag == 0x1F)
+static size_t readHeader(InputData *input, BERHeader *header) {
+    memcpy(header, readOrDie(input,2), 2);
+    if (header->tag == 0x1F)
         [NSException raise: MYBERParserException format: @"Long tags not supported"];
-    
-    // Parse the length:
-    size_t length;
-    if (!header.isLengthLong)
-        length = header.length;
-    else if (header.length == 0)
-        [NSException raise: MYBERParserException format: @"Indefinite length not supported"];
-    else
-        length = NSSwapBigIntToHost(readBigEndianUnsignedInteger(input,header.length));
+    if (!header->isLengthLong)
+        return header->length;
+    else {
+        if (header->length == 0)
+            [NSException raise: MYBERParserException format: @"Indefinite length not supported"];
+        return NSSwapBigIntToHost(readBigEndianUnsignedInteger(input,header->length));
+    }
+}
+
+
+static id parseBER(InputData *input) {
+    BERHeader header;
+    size_t length = readHeader(input,&header);
     
     Class defaultClass = [MYASN1Object class];
     
@@ -209,6 +213,16 @@ static id parseBER(InputData *input) {
         Warn(@"parseBER: Returning default %@", result);
     return result;
 }
+    
+    
+static void exceptionToError (NSException *x, NSError **outError) {
+    if ($equal(x.name, MYBERParserException)) {
+        if (outError)
+            *outError = MYError(1,MYASN1ErrorDomain, @"%@", x.reason);
+    } else {
+        @throw(x);
+    }
+}
 
 
 id MYBERParse (NSData *ber, NSError **outError) {
@@ -216,15 +230,34 @@ id MYBERParse (NSData *ber, NSError **outError) {
         InputData input = {ber.bytes, ber.length};
         return parseBER(&input);
     }@catch (NSException *x) {
-        if ($equal(x.name, MYBERParserException)) {
-            *outError = MYError(1,MYASN1ErrorDomain, @"%@", x.reason);
-        } else {
-            @throw(x);
-        }
+        exceptionToError(x,outError);
     }
     return nil;
 }
 
+
+size_t MYBERGetLength (NSData *ber, NSError **outError) {
+    @try{
+        InputData input = {ber.bytes, ber.length};
+        BERHeader header;
+        return readHeader(&input,&header);
+    }@catch (NSException *x) {
+        exceptionToError(x,outError);
+    }
+    return 0;
+}
+
+const void* MYBERGetContents (NSData *ber, NSError **outError) {
+    @try{
+        InputData input = {ber.bytes, ber.length};
+        BERHeader header;
+        readHeader(&input,&header);
+        return input.nextChar;
+    }@catch (NSException *x) {
+        exceptionToError(x,outError);
+    }
+    return NULL;
+}
 
 
 
@@ -280,6 +313,9 @@ TestCase(ParseBER) {
 }
 
 
+#import "MYCertificate.h"
+#import "MYPublicKey.h"
+
 TestCase(ParseCert) {
     NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned.cer"];
     NSError *error = nil;
@@ -288,6 +324,14 @@ TestCase(ParseCert) {
     CAssertNil(error);
     NSString *dump = [MYASN1Object dump: parsed];
     CAssert(dump);
+    Log(@"Parsed selfsigned.cer:\n%@", dump);
+    
+    MYCertificate *myCert = [[MYCertificate alloc] initWithCertificateData: cert];
+    CAssert(myCert);
+    const CSSM_KEY *pubKey = myCert.publicKey.cssmKey;
+    CSSM_DATA pubKeyData = pubKey->KeyData;
+    id parsedPubKey = MYBERParse([NSData dataWithBytes: pubKeyData.Data length: pubKeyData.Length],NULL);
+    Log(@"Parsed public key:\n%@", [MYASN1Object dump: parsedPubKey]);
 
     cert = [NSData dataWithContentsOfFile: @"../../Tests/iphonedev.cer"];
     parsed = MYBERParse(cert,&error);
