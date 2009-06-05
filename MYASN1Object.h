@@ -9,8 +9,9 @@
 #import <Foundation/Foundation.h>
 
 
-/** A generic ASN.1 data value. The BER parser instantiates these to represent parsed values that
-    it doesn't know how to represent otherwise. */
+/* A generic ASN.1 data value. The BER parser instantiates these to represent parsed values that
+    it doesn't know how to represent otherwise.
+    This is mostly used internally by MYParsedCertificate. */
 @interface MYASN1Object : NSObject
 {
     @private
@@ -40,22 +41,26 @@
 @end
 
 
-/** An ASN.1 "big" (arbitrary-length) integer.
-    The value contains the bytes of the integer, in big-endian order. */
+/* An ASN.1 "big" (arbitrary-length) integer.
+    The value contains the bytes of the integer, in big-endian order.
+    This is mostly used internally by MYParsedCertificate. */
 @interface MYASN1BigInteger : MYASN1Object
 @end
 
 
-/** An ordered string of bits, as used in ASN.1.
+/* An ordered string of bits, as used in ASN.1.
     This differs from NSData in that it need not occupy a whole number of bytes;
-    that is, the number of bits need not be a multiple of 8. */
+    that is, the number of bits need not be a multiple of 8.
+    This is mostly used internally by MYParsedCertificate. */
 @interface MYBitString : NSObject 
 {
+    @private
     NSData *_bits;
     NSUInteger _bitCount;
 }
 
 - (id)initWithBits: (NSData*)bits count: (NSUInteger)bitCount;
++ (MYBitString*) bitStringWithData: (NSData*)bits;
 
 @property (readonly, nonatomic) NSData *bits;
 @property (readonly, nonatomic) NSUInteger bitCount;

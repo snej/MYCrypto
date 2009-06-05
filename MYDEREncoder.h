@@ -11,9 +11,11 @@
 
 @interface MYDEREncoder : NSObject
 {
+    @private
     id _rootObject;
     NSMutableData *_output;
     NSError *_error;
+    BOOL _forcePrintableStrings;
 }
 
 - (id) initWithRootObject: (id)object;

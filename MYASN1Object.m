@@ -61,6 +61,15 @@
         return $sprintf(@"%@[%hhu/%u/%u, %u bytes]", self.class, _tagClass,(unsigned)_constructed,_tag, _value.length);
 }
 
+- (BOOL) isEqual: (id)object {
+    return [object isKindOfClass: [MYASN1Object class]] 
+        && _tag==[object tag] 
+        && _tagClass==[object tagClass] 
+        && _constructed==[object constructed] 
+        && $equal(_value,[object value])
+        && $equal(_components,[object components]);
+}
+
 static void dump(id object, NSMutableString *output, NSString *indent) {
     if ([object isKindOfClass: [MYASN1Object class]]) {
         MYASN1Object *asn1Obj = object;
@@ -108,8 +117,7 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 @implementation MYBitString
 
 
-- (id)initWithBits: (NSData*)bits count: (unsigned)bitCount;
-{
+- (id)initWithBits: (NSData*)bits count: (unsigned)bitCount {
     Assert(bits);
     Assert(bitCount <= 8*bits.length);
     self = [super init];
@@ -118,6 +126,10 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
         _bitCount = bitCount;
     }
     return self;
+}
+
++ (MYBitString*) bitStringWithData: (NSData*)bits {
+    return [[[self alloc] initWithBits: bits count: 8*bits.length] autorelease];
 }
 
 - (void) dealloc
@@ -130,6 +142,16 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 
 - (NSString*) description {
     return $sprintf(@"%@%@", [self class], _bits);
+}
+
+- (unsigned) hash {
+    return _bits.hash ^ _bitCount;
+}
+
+- (BOOL) isEqual: (id)object {
+    return [object isKindOfClass: [MYBitString class]] 
+        && _bitCount==[object bitCount] 
+        && [_bits isEqual: [object bits]];
 }
 
 @end

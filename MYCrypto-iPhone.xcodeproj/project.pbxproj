@@ -16,6 +16,11 @@
 		273392120F8283B8009414D9 /* MYKeychain-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 273392110F8283B8009414D9 /* MYKeychain-iPhone.m */; };
 		274110090F99234100AD413F /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 274110080F99234100AD413F /* MYSymmetricKey-iPhone.m */; };
 		2748607F0F8D5E0600FE617B /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 2748607E0F8D5E0600FE617B /* MYPrivateKey.m */; };
+		275D9FEE0FD8795300D85A86 /* MYParsedCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FE40FD8795300D85A86 /* MYParsedCertificate.m */; };
+		275D9FEF0FD8795300D85A86 /* MYASN1Object.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FE60FD8795300D85A86 /* MYASN1Object.m */; };
+		275D9FF00FD8795300D85A86 /* MYBERParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FE80FD8795300D85A86 /* MYBERParser.m */; };
+		275D9FF10FD8795300D85A86 /* MYDEREncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */; };
+		275D9FF20FD8795300D85A86 /* MYOID.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FEC0FD8795300D85A86 /* MYOID.m */; };
 		276FB13F0F84090900CB326E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276FB13E0F84090900CB326E /* Security.framework */; };
 		276FB16E0F84152B00CB326E /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB16D0F84152B00CB326E /* MYCryptoTest.m */; };
 		276FB3190F856AA700CB326E /* MYPublicKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB3180F856AA700CB326E /* MYPublicKey.m */; };
@@ -23,7 +28,6 @@
 		276FB34B0F856CA400CB326E /* MYCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB34A0F856CA400CB326E /* MYCertificate.m */; };
 		27A430120F87C6C10063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E823110F81D56E0019BE60 /* MYKey.m */; };
 		27A430140F87C6D50063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A430130F87C6D50063D362 /* MYSymmetricKey.m */; };
-		27B8522D0FCEE6F9005631F9 /* MYASN1.m in Sources */ = {isa = PBXBuildFile; fileRef = 27B8522C0FCEE6F9005631F9 /* MYASN1.m */; };
 		27E3A6AA0F91B8B30079D4D9 /* MYCryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E3A6A70F91B8B30079D4D9 /* MYCryptor.m */; };
 		27E823240F81D56E0019BE60 /* MYKeychainItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E823150F81D56E0019BE60 /* MYKeychainItem.m */; };
 		27E823270F81D56E0019BE60 /* MYDigest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E8231C0F81D56E0019BE60 /* MYDigest.m */; };
@@ -53,6 +57,16 @@
 		274110080F99234100AD413F /* MYSymmetricKey-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYSymmetricKey-iPhone.m"; sourceTree = "<group>"; };
 		2748607D0F8D5DF200FE617B /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		2748607E0F8D5E0600FE617B /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
+		275D9FE30FD8795300D85A86 /* MYParsedCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYParsedCertificate.h; sourceTree = "<group>"; };
+		275D9FE40FD8795300D85A86 /* MYParsedCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYParsedCertificate.m; sourceTree = "<group>"; };
+		275D9FE50FD8795300D85A86 /* MYASN1Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYASN1Object.h; sourceTree = "<group>"; };
+		275D9FE60FD8795300D85A86 /* MYASN1Object.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYASN1Object.m; sourceTree = "<group>"; };
+		275D9FE70FD8795300D85A86 /* MYBERParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYBERParser.h; sourceTree = "<group>"; };
+		275D9FE80FD8795300D85A86 /* MYBERParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYBERParser.m; sourceTree = "<group>"; };
+		275D9FE90FD8795300D85A86 /* MYDEREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYDEREncoder.h; sourceTree = "<group>"; };
+		275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDEREncoder.m; sourceTree = "<group>"; };
+		275D9FEB0FD8795300D85A86 /* MYOID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYOID.h; sourceTree = "<group>"; };
+		275D9FEC0FD8795300D85A86 /* MYOID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYOID.m; sourceTree = "<group>"; };
 		276FB13E0F84090900CB326E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		276FB16D0F84152B00CB326E /* MYCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptoTest.m; sourceTree = "<group>"; };
 		276FB3180F856AA700CB326E /* MYPublicKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPublicKey.m; sourceTree = "<group>"; };
@@ -61,8 +75,6 @@
 		27A430130F87C6D50063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
 		27A430150F87C6DB0063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptoConfig.h; sourceTree = "<group>"; };
-		27B8522B0FCEE6F9005631F9 /* MYASN1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYASN1.h; sourceTree = "<group>"; };
-		27B8522C0FCEE6F9005631F9 /* MYASN1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYASN1.m; sourceTree = "<group>"; };
 		27E3A6A60F91B8B30079D4D9 /* MYCryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptor.h; sourceTree = "<group>"; };
 		27E3A6A70F91B8B30079D4D9 /* MYCryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptor.m; sourceTree = "<group>"; };
 		27E8230C0F81D56E0019BE60 /* MYCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertificate.h; sourceTree = "<group>"; };
@@ -130,6 +142,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		275D9FE00FD8795300D85A86 /* Certificates */ = {
+			isa = PBXGroup;
+			children = (
+				275D9FE30FD8795300D85A86 /* MYParsedCertificate.h */,
+				275D9FE40FD8795300D85A86 /* MYParsedCertificate.m */,
+				275D9FE50FD8795300D85A86 /* MYASN1Object.h */,
+				275D9FE60FD8795300D85A86 /* MYASN1Object.m */,
+				275D9FE70FD8795300D85A86 /* MYBERParser.h */,
+				275D9FE80FD8795300D85A86 /* MYBERParser.m */,
+				275D9FE90FD8795300D85A86 /* MYDEREncoder.h */,
+				275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */,
+				275D9FEB0FD8795300D85A86 /* MYOID.h */,
+				275D9FEC0FD8795300D85A86 /* MYOID.m */,
+			);
+			name = Certificates;
+			sourceTree = "<group>";
+		};
 		27E3A6A10F91B8B30079D4D9 /* Encryption */ = {
 			isa = PBXGroup;
 			children = (
@@ -142,8 +171,6 @@
 		27E8230B0F81D56E0019BE60 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				27B8522B0FCEE6F9005631F9 /* MYASN1.h */,
-				27B8522C0FCEE6F9005631F9 /* MYASN1.m */,
 				27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */,
 				27E8230C0F81D56E0019BE60 /* MYCertificate.h */,
 				276FB34A0F856CA400CB326E /* MYCertificate.m */,
@@ -198,6 +225,7 @@
 			children = (
 				27E8230B0F81D56E0019BE60 /* Source */,
 				27E3A6A10F91B8B30079D4D9 /* Encryption */,
+				275D9FE00FD8795300D85A86 /* Certificates */,
 				27E8232B0F81D5760019BE60 /* MYUtilities */,
 				080E96DDFE201D6D7F000001 /* iPhone */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -295,7 +323,11 @@
 				27059CF30F8F0F9200A8422F /* MYIdentity.m in Sources */,
 				27E3A6AA0F91B8B30079D4D9 /* MYCryptor.m in Sources */,
 				274110090F99234100AD413F /* MYSymmetricKey-iPhone.m in Sources */,
-				27B8522D0FCEE6F9005631F9 /* MYASN1.m in Sources */,
+				275D9FEE0FD8795300D85A86 /* MYParsedCertificate.m in Sources */,
+				275D9FEF0FD8795300D85A86 /* MYASN1Object.m in Sources */,
+				275D9FF00FD8795300D85A86 /* MYBERParser.m in Sources */,
+				275D9FF10FD8795300D85A86 /* MYDEREncoder.m in Sources */,
+				275D9FF20FD8795300D85A86 /* MYOID.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

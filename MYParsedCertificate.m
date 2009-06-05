@@ -7,6 +7,7 @@
 //
 
 // References:
+// <http://www.columbia.edu/~ariel/ssleay/layman.html>
 // <http://en.wikipedia.org/wiki/X.509>
 // <http://www.cs.auckland.ac.nz/~pgut001/pubs/x509guide.txt>
 
@@ -17,8 +18,12 @@
 #import "MYBERParser.h"
 #import "MYDEREncoder.h"
 #import "MYPublicKey.h"
+#import "MYPrivateKey.h"
 #import "MYCertificate.h"
 #import "MYErrorUtils.h"
+
+
+#define kDefaultExpirationTime (60.0 * 60.0 * 24.0 * 365.0)
 
 
 static id $atIf(NSArray *array, NSUInteger index) {
@@ -29,23 +34,29 @@ static id $atIf(NSArray *array, NSUInteger index) {
 @implementation MYParsedCertificate
 
 
-static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID;
+static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
+            *kGivenNameOID, *kSurnameOID, *kDescriptionOID, *kEmailOID;
 
 
 + (void) initialize {
-    if (!kRSAAlgorithmID) {
-        UInt32 components[7] = {1, 2, 840, 113549, 1, 1, 1,};
-        kRSAAlgorithmID = [[MYOID alloc] initWithComponents: components count: 7];
+    if (!kEmailOID) {
+        kRSAAlgorithmID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 2, 840, 113549, 1, 1, 1,}
+                                                      count: 7];
+        kRSAWithSHA1AlgorithmID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 2, 840, 113549, 1, 1, 5}
+                                                              count: 7];
+        kCommonNameOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 3}
+                                                     count: 4];
+        kGivenNameOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 42}
+                                                    count: 4];
+        kSurnameOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 4}
+                                                  count: 4];
+        kDescriptionOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 13}
+                                                count: 7];
+        kEmailOID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 2, 840, 113549, 1, 9, 1}
+                                                count: 7];
     }
-    if (!kRSAWithSHA1AlgorithmID) {
-        UInt32 components[7] = {1, 2, 840, 113549, 1, 1, 5};
-        kRSAWithSHA1AlgorithmID = [[MYOID alloc] initWithComponents: components count: 7];
-    }
+    
 }
-
-+ (MYOID*) RSAAlgorithmID           {return kRSAAlgorithmID;}
-+ (MYOID*) RSAWithSHA1AlgorithmID   {return kRSAWithSHA1AlgorithmID;}
-
 
 + (NSString*) validate: (id)root {
     NSArray *top = $castIf(NSArray,root);
@@ -91,47 +102,70 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID;
     
     [_root release];
     [_issuer release];
+    [_data release];
     [super dealloc];
 }
 
 
-@synthesize issuer=_issuer;
+- (NSArray*) _info       {return $castIf(NSArray,$atIf(_root,0));}
 
+- (NSArray*) _validDates {return $castIf(NSArray, [self._info objectAtIndex: 4]);}
 
-- (NSArray*) info    {return $castIf(NSArray,$atIf(_root,0));}
-
-- (BOOL) isSelfSigned {
-    id issuer  = $atIf(self.info,3);
-    id subject = $atIf(self.info,5);
-    return $equal(issuer,subject);
+- (NSArray*) _pairForOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
+    NSArray *names = $castIf(NSArray, $atIf(self._info, infoIndex));
+    for (id nameEntry in names) {
+        for (id pair in $castIf(NSSet,nameEntry)) {
+            if ([pair isKindOfClass: [NSArray class]] && [pair count] == 2) {
+                if ($equal(oid, [pair objectAtIndex: 0]))
+                    return pair;
+            }
+        }
+    }
+    return nil;
 }
 
+- (NSString*) _stringForOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
+    return [[self _pairForOID: oid atInfoIndex: infoIndex] objectAtIndex: 1];
+}
+
+
+@synthesize issuer=_issuer, certificateData=_data;
+
+
+- (NSDate*) validFrom       {return $castIf(NSDate, $atIf(self._validDates, 0));}
+- (NSDate*) validTo         {return $castIf(NSDate, $atIf(self._validDates, 1));}
+- (NSString*) commonName    {return [self _stringForOID: kCommonNameOID atInfoIndex: 5];}
+- (NSString*) givenName     {return [self _stringForOID: kGivenNameOID atInfoIndex: 5];}
+- (NSString*) surname       {return [self _stringForOID: kSurnameOID atInfoIndex: 5];}
+- (NSString*) description   {return [self _stringForOID: kDescriptionOID atInfoIndex: 5];}
+- (NSString*) emailAddress  {return [self _stringForOID: kEmailOID atInfoIndex: 5];}
+
+- (BOOL) isSigned           {return [_root count] >= 3;}
+
+- (BOOL) isRoot {
+    id issuer = $atIf(self._info,3);
+    return $equal(issuer, $atIf(self._info,5)) || $equal(issuer, $array());
+}
+
+
 - (MYPublicKey*) subjectPublicKey {
-    NSArray *keyInfo = $cast(NSArray, $atIf(self.info, 6));
+    NSArray *keyInfo = $cast(NSArray, $atIf(self._info, 6));
     MYOID *keyAlgorithmID = $castIf(MYOID, $atIf($castIf(NSArray,$atIf(keyInfo,0)), 0));
     if (!$equal(keyAlgorithmID, kRSAAlgorithmID))
         return nil;
     MYBitString *keyData = $cast(MYBitString, $atIf(keyInfo, 1));
     if (!keyData) return nil;
     return [[[MYPublicKey alloc] initWithKeyData: keyData.bits] autorelease];
-    /*
-    NSArray *keyParts = $castIf(NSArray, MYBERParse(keyData, nil));
-    if (!keyParts) return nil;
-    MYBitString *modulus = $castIf(MYBitString, $atIf(keyParts,0));
-    int exponent = [$castIf(NSNumber, $atIf(keyParts,1)) intValue];
-    if (!modulus || exponent<3) return nil;
-    */
 }
 
 - (MYPublicKey*) issuerPublicKey {
     if (_issuer)
         return _issuer.publicKey;
-    else if (self.isSelfSigned)
+    else if (self.isRoot)
         return self.subjectPublicKey;
     else
         return nil;
 }
-
 
 - (NSData*) signedData {
     // The root object is a sequence; we want to extract the 1st object of that sequence.
@@ -159,7 +193,7 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID;
 }
 
 - (BOOL) validateSignature {
-    if (!$equal(self.signatureAlgorithmID, [MYParsedCertificate RSAWithSHA1AlgorithmID]))
+    if (!$equal(self.signatureAlgorithmID, kRSAWithSHA1AlgorithmID))
         return NO;
     NSData *signedData = self.signedData;
     NSData *signature = self.signature;
@@ -169,45 +203,191 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID;
 }
 
 
+#pragma mark -
+#pragma mark CERTIFICATE GENERATION:
+
+
+- (id) initWithPublicKey: (MYPublicKey*)pubKey {
+    Assert(pubKey);
+    self = [super init];
+    if (self != nil) {
+        id empty = [NSNull null];
+        id version = [[MYASN1Object alloc] initWithTag: 0 ofClass: 2 components: $array($object(0))];
+        _root = $array( $marray(version,
+                                empty,       // serial #
+                                $array(kRSAAlgorithmID),
+                                $marray(),
+                                $marray(empty, empty),
+                                $marray(),
+                                $array( $array(kRSAAlgorithmID, empty),
+                                       [MYBitString bitStringWithData: pubKey.keyData] ) ) );
+        [version release];
+        [_root retain];
+    }
+    return self;
+}
+
+
+- (void) _setString: (NSString*)value forOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
+    NSMutableArray *pair = (NSMutableArray*) [self _pairForOID: oid atInfoIndex: infoIndex];
+    if (pair) {
+        [pair replaceObjectAtIndex: 1 withObject: value];
+    } else {
+        NSMutableArray *names = $castIf(NSMutableArray, $atIf(self._info, infoIndex));
+        [names addObject: [NSSet setWithObject: $marray(oid,value)]];
+    }
+}
+
+
+- (void) setValidFrom: (NSDate*)validFrom {
+    [(NSMutableArray*)self._validDates replaceObjectAtIndex: 0 withObject: validFrom];
+}
+
+- (void) setValidTo: (NSDate*)validTo {
+    [(NSMutableArray*)self._validDates replaceObjectAtIndex: 1 withObject: validTo];
+}
+
+- (void) setCommonName: (NSString*)commonName {
+    [self _setString: commonName forOID: kCommonNameOID atInfoIndex: 5];
+}
+
+- (void) setGivenName: (NSString*)givenName {
+    [self _setString: givenName forOID: kGivenNameOID atInfoIndex: 5];
+}
+
+- (void) setSurname: (NSString*)surname {
+    [self _setString: surname forOID: kSurnameOID atInfoIndex: 5];
+}
+
+- (void) setDescription: (NSString*)description {
+    [self _setString: description forOID: kDescriptionOID atInfoIndex: 5];
+}
+
+- (void) setEmailAddress: (NSString*)emailAddress {
+    [self _setString: emailAddress forOID: kEmailOID atInfoIndex: 5];
+}
+
+
+- (BOOL) selfSignWithPrivateKey: (MYPrivateKey*)privateKey error: (NSError**)outError {
+    // Copy subject to issuer:
+    NSMutableArray *info = (NSMutableArray*)self._info;
+    [info replaceObjectAtIndex: 3 withObject: [info objectAtIndex: 5]];
+    
+    // Set serial number if there isn't one yet:
+    if (!$castIf(NSNumber, [info objectAtIndex: 1])) {
+        UInt64 serial = floor(CFAbsoluteTimeGetCurrent() * 1000);
+        [info replaceObjectAtIndex: 1 withObject: $object(serial)];
+    }
+    
+    // Set up valid date range if there isn't one yet:
+    NSDate *validFrom = self.validFrom;
+    if (!validFrom)
+        validFrom = self.validFrom = [NSDate date];
+    NSDate *validTo = self.validTo;
+    if (!validTo)
+        self.validTo = [validFrom addTimeInterval: kDefaultExpirationTime]; 
+    
+    // Append signature to cert structure:
+    NSData *dataToSign = [MYDEREncoder encodeRootObject: info error: outError];
+    if (!dataToSign)
+        return NO;
+    setObj(&_root, $array(info, 
+                          $array(kRSAWithSHA1AlgorithmID, [NSNull null]),
+                          [MYBitString bitStringWithData: [privateKey signData: dataToSign]]));
+    
+    setObj(&_data, [MYDEREncoder encodeRootObject: _root error: outError]);
+    return _data!=nil;
+}
+
+
 @end
 
 
 
 
+#if DEBUG
+
+
+static MYParsedCertificate* testCert(NSString *filename, BOOL selfSigned) {
+    Log(@"--- Creating MYParsedCertificate from %@", filename);
+    NSData *certData = [NSData dataWithContentsOfFile: filename];
+    //Log(@"Cert Data =\n%@", certData);
+    NSError *error = nil;
+    MYParsedCertificate *pcert = [[MYParsedCertificate alloc] initWithCertificateData: certData 
+                                                                                error: &error];
+    CAssertNil(error);
+    CAssert(pcert != nil);
+    
+    CAssertEq(pcert.isRoot, selfSigned);
+    
+    NSData *signedData = pcert.signedData;
+    //Log(@"Signed Data = (length=%x)\n%@", signedData.length, signedData);
+    CAssertEqual(signedData, [certData subdataWithRange: NSMakeRange(4,signedData.length)]);
+    
+    Log(@"AlgID = %@", pcert.signatureAlgorithmID);
+    Log(@"Signature = %@", pcert.signature);
+    CAssertEqual(pcert.signatureAlgorithmID, kRSAWithSHA1AlgorithmID);
+    CAssert(pcert.signature != nil);
+    Log(@"Subject Public Key = %@", pcert.subjectPublicKey);
+    CAssert(pcert.subjectPublicKey);
+    if (selfSigned) {
+        Log(@"Issuer Public Key = %@", pcert.issuerPublicKey);
+        CAssert(pcert.issuerPublicKey);
+        
+        CAssert(pcert.validateSignature);
+    }
+    Log(@"Common Name = %@", pcert.commonName);
+    Log(@"Given Name  = %@", pcert.givenName);
+    Log(@"Surname     = %@", pcert.surname);
+    Log(@"Desc        = %@", pcert.description);
+    Log(@"Email       = %@", pcert.emailAddress);
+    return pcert;
+}
+
+
 TestCase(ParsedCert) {
-    auto void testCert(NSString *filename, BOOL selfSigned);
     testCert(@"../../Tests/selfsigned.cer", YES);
     testCert(@"../../Tests/iphonedev.cer", NO);
-    auto void testCert(NSString *filename, BOOL selfSigned) {
-        Log(@"--- Creating MYParsedCertificate from %@", filename);
-        NSData *certData = [NSData dataWithContentsOfFile: filename];
-        //Log(@"Cert Data =\n%@", certData);
-        NSError *error = nil;
-        MYParsedCertificate *pcert = [[MYParsedCertificate alloc] initWithCertificateData: certData 
-                                                                                    error: &error];
-        CAssertNil(error);
-        CAssert(pcert != nil);
-        
-        CAssertEq(pcert.isSelfSigned, selfSigned);
-        
-        NSData *signedData = pcert.signedData;
-        //Log(@"Signed Data = (length=%x)\n%@", signedData.length, signedData);
-        CAssertEqual(signedData, [certData subdataWithRange: NSMakeRange(4,signedData.length)]);
-        
-        Log(@"AlgID = %@", pcert.signatureAlgorithmID);
-        Log(@"Signature = %@", pcert.signature);
-        CAssertEqual(pcert.signatureAlgorithmID, [MYParsedCertificate RSAWithSHA1AlgorithmID]);
-        CAssert(pcert.signature != nil);
-        Log(@"Subject Public Key = %@", pcert.subjectPublicKey);
-        CAssert(pcert.subjectPublicKey);
-        if (selfSigned) {
-            Log(@"Issuer Public Key = %@", pcert.issuerPublicKey);
-            CAssert(pcert.issuerPublicKey);
-            
-            CAssert(pcert.validateSignature);
-        }
-    }
-}    
+}
+
+
+#import "MYKeychain.h"
+
+TestCase(CreateCert) {
+    MYPrivateKey *privateKey = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
+    MYParsedCertificate *pcert = [[MYParsedCertificate alloc] initWithPublicKey: privateKey.publicKey];
+    pcert.commonName = @"testcase";
+    pcert.givenName = @"Test";
+    pcert.surname = @"Case";
+    pcert.description = @"Just a test certificate created by MYCrypto";
+    pcert.emailAddress = @"testcase@example.com";
+
+    CAssertEqual(pcert.commonName, @"testcase");
+    CAssertEqual(pcert.givenName, @"Test");
+    CAssertEqual(pcert.surname, @"Case");
+    CAssertEqual(pcert.description, @"Just a test certificate created by MYCrypto");
+    CAssertEqual(pcert.emailAddress, @"testcase@example.com");
+    
+    Log(@"Signing...");
+    NSError *error;
+    CAssert([pcert selfSignWithPrivateKey: privateKey error: &error]);
+    CAssertNil(error);
+    NSData *certData = pcert.certificateData;
+    Log(@"Generated cert = \n%@", certData);
+    CAssert(certData);
+    [certData writeToFile: @"../../Tests/generated.cer" atomically: YES];
+    MYParsedCertificate *pcert2 = testCert(@"../../Tests/generated.cer", YES);
+    
+    Log(@"Verifying...");
+    CAssertEqual(pcert2.commonName, @"testcase");
+    CAssertEqual(pcert2.givenName, @"Test");
+    CAssertEqual(pcert2.surname, @"Case");
+    CAssertEqual(pcert2.description, @"Just a test certificate created by MYCrypto");
+    CAssertEqual(pcert2.emailAddress, @"testcase@example.com");
+}
+
+#endif
+
 
 
 
@@ -215,8 +395,8 @@ TestCase(ParsedCert) {
  
 Sequence:                           <-- top
     Sequence:                       <-- info
-        MYASN1Object[2/0]:          <-- version (int, constructed)
-            2
+        MYASN1Object[2/0]:          <-- version (tag=0, constructed)
+            2                       
         1                           <-- serial number
         Sequence:
             {1 2 840 113549 1 1 1}  <-- algorithm ID
@@ -246,23 +426,23 @@ Sequence:                           <-- top
             2010-04-13 21:54:35 -0700
         Sequence:                       <-- subject
             Set:
-                Sequence:
+                Sequence:                   <-- surname
                     {2 5 4 4}
                     Widdershins
             Set:
-                Sequence:
+                Sequence:                   <-- email
                     {1 2 840 113549 1 9 1}
                     waldo@example.com
             Set:
-                Sequence:
+                Sequence:                   <-- common name
                     {2 5 4 3}
                     waldo
             Set:
-                Sequence:
+                Sequence:                   <-- first name
                     {2 5 4 42}
                     Waldo
             Set:
-                Sequence:
+                Sequence:                   <-- description
                     {2 5 4 13}
                     Just a fictitious person
         Sequence:                               <-- public key info

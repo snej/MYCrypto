@@ -194,7 +194,15 @@ static id parseBER(InputData *input) {
                 return readStringOrDie(input,length,NSUTF8StringEncoding);
             case 18: // numeric string
             case 19: // printable string:
-                return readStringOrDie(input,length,NSASCIIStringEncoding);
+            case 22: // IA5 string:
+            case 20: // T61 string:
+            {
+                NSString *string = readStringOrDie(input,length,NSASCIIStringEncoding);
+                if (string)
+                    return string;
+                else
+                    break;  // if decoding fails, fall back to generic MYASN1Object
+            }
             case 23: // UTC time:
             case 24: // Generalized time:
                 return parseDate(readStringOrDie(input,length,NSASCIIStringEncoding), header.tag);
@@ -328,9 +336,7 @@ TestCase(ParseCert) {
     
     MYCertificate *myCert = [[MYCertificate alloc] initWithCertificateData: cert];
     CAssert(myCert);
-    const CSSM_KEY *pubKey = myCert.publicKey.cssmKey;
-    CSSM_DATA pubKeyData = pubKey->KeyData;
-    id parsedPubKey = MYBERParse([NSData dataWithBytes: pubKeyData.Data length: pubKeyData.Length],NULL);
+    id parsedPubKey = MYBERParse(myCert.publicKey.keyData, NULL);
     Log(@"Parsed public key:\n%@", [MYASN1Object dump: parsedPubKey]);
 
     cert = [NSData dataWithContentsOfFile: @"../../Tests/iphonedev.cer"];

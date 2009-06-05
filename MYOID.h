@@ -6,10 +6,11 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 
-/** An ASN.1 Object-ID, which is a sequence of integer components that define namespaces. */
+/* An ASN.1 Object-ID, which is a sequence of integer components that define namespaces.
+    This is mostly used internally by MYParsedCertificate. */
 @interface MYOID : NSObject <NSCopying>
 {
     NSData *_data;

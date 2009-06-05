@@ -278,10 +278,10 @@
 		274861440F8D757600FE617B /* Certificates */ = {
 			isa = PBXGroup;
 			children = (
-				275D9D900FD5FB4100D85A86 /* MYParsedCertificate.h */,
-				275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */,
 				27A42ECC0F8689D30063D362 /* MYCertGen.h */,
 				27A42ECD0F8689D30063D362 /* MYCertGen.m */,
+				275D9D900FD5FB4100D85A86 /* MYParsedCertificate.h */,
+				275D9D910FD5FB4100D85A86 /* MYParsedCertificate.m */,
 				27B852F30FCF4EB6005631F9 /* MYASN1Object.h */,
 				27B852F40FCF4EB7005631F9 /* MYASN1Object.m */,
 				270A7A710FD58FF200770C4D /* MYBERParser.h */,

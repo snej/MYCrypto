@@ -19,6 +19,7 @@
 @interface MYDEREncoder ()
 - (void) _encode: (id)object;
 @property (retain) NSError *error;
+@property BOOL _forcePrintableStrings;
 @end
 
 
@@ -46,9 +47,15 @@
 {
     [_rootObject release];
     [_output release];
+    [_error release];
     [super dealloc];
 }
 
+- (id) copyWithZone: (NSZone*)zone {
+    MYDEREncoder *copy = [[[self class] alloc] init];
+    copy->_forcePrintableStrings = _forcePrintableStrings;
+    return copy;
+}
 
 
 static unsigned sizeOfUnsignedInt (UInt64 n) {
@@ -185,11 +192,22 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
 
 
 - (void) _encodeString: (NSString*)string {
+    static NSMutableCharacterSet *kNotPrintableCharSet;
+    if (!kNotPrintableCharSet) {
+        kNotPrintableCharSet = [[NSMutableCharacterSet characterSetWithCharactersInString: @" '()+,-./:=?"] retain];
+        [kNotPrintableCharSet formUnionWithCharacterSet: [NSCharacterSet alphanumericCharacterSet]];
+        [kNotPrintableCharSet invert];
+    }
     NSData *data = [string dataUsingEncoding: NSASCIIStringEncoding];
-    if (data)
-        [self _writeTag: 19 class: 0 constructed: NO data: data];
-    else
+    if (data) {
+        unsigned tag = 19; // printablestring (a silly arbitrary subset of ASCII defined by ASN.1)
+        if (!_forcePrintableStrings && [string rangeOfCharacterFromSet: kNotPrintableCharSet].length > 0)
+            tag = 20; // IA5string (full 7-bit ASCII)
+        [self _writeTag: tag class: 0 constructed: NO data: data];
+    } else {
+        // fall back to UTF-8:
         [self _writeTag: 12 class: 0 constructed: NO data: [string dataUsingEncoding: NSUTF8StringEncoding]];
+    }
 }
 
 
@@ -209,7 +227,7 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
 
 
 - (void) _encodeCollection: (id)collection tag: (unsigned)tag class: (unsigned)tagClass {
-    MYDEREncoder *subEncoder = [[[self class] alloc] init];
+    MYDEREncoder *subEncoder = [self copy];
     for (id object in collection)
         [subEncoder _encode: object];
     [self _writeTag: tag class: tagClass constructed: YES data: subEncoder.output];
@@ -268,7 +286,7 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
     return _output;
 }
 
-@synthesize error=_error;
+@synthesize error=_error, _forcePrintableStrings;
 
 
 @end
@@ -342,11 +360,13 @@ TestCase(EncodeCert) {
     id certObjects = MYBERParse(cert,&error);
     CAssertNil(error);
     Log(@"Decoded as:\n%@", [MYASN1Object dump: certObjects]);
-    NSData *encoded = [MYDEREncoder encodeRootObject: certObjects error: &error];
+    MYDEREncoder *encoder = [[MYDEREncoder alloc] initWithRootObject: certObjects];
+    encoder._forcePrintableStrings = YES;       // hack for compatibility with the way CDSA writes ASN.1
+    NSData *encoded = encoder.output;
     CAssertNil(error);
     id reDecoded = MYBERParse(encoded, &error);
     CAssertNil(error);
     Log(@"Re-decoded as:\n%@", [MYASN1Object dump: reDecoded]);
-    [encoded writeToFile: @"../../Tests/iphonedev_reencoded.cer" atomically: YES];
+    [encoded writeToFile: @"../../Tests/selfsigned_reencoded.cer" atomically: YES];
     CAssertEqual(encoded,cert);
 }

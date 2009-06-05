@@ -6,13 +6,14 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 
 #define MYASN1ErrorDomain @"MYASN1ErrorDomain"
 
 
-/** Parses a block of BER-formatted data into an object tree. */
+/** Parses a block of BER-formatted data into an object tree.
+    This is mostly used internally by MYParsedCertificate. */
 id MYBERParse (NSData *ber, NSError **outError);
 
 size_t MYBERGetLength (NSData *ber, NSError **outError);
