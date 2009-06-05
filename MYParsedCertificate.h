@@ -7,16 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-@class MYCertificate, MYPublicKey, MYPrivateKey, MYOID;
+@class MYCertificateName, MYCertificate, MYPublicKey, MYPrivateKey, MYOID;
 
 /** A parsed X.509 certificate. Can be used to get more info about an existing cert,
-    or to modify a self-signed cert and regenerate it. */
+    to modify and regenerate a self-signed cert, or to create a new self-signed cert. */
 @interface MYParsedCertificate : NSObject 
 {
     @private
     NSData *_data;
     NSArray *_root;
-    MYCertificate *_issuer;
+    MYCertificate *_issuerCertificate;
 }
 
 /** Initializes an instance by parsing an existing X.509 certificate's data. */
@@ -31,30 +31,21 @@
 /** The date/time at which the certificate expires. */
 @property (retain) NSDate *validTo;
 
-/** The "common name" (nickname, whatever) of the subject/owner of the certificate. */
-@property (copy) NSString *commonName;
+/** Information about the identity of the owner of this certificate. */
+@property (readonly) MYCertificateName *subject;
 
-/** The given/first name of the subject/owner of the certificate. */
-@property (copy) NSString *givenName;
-
-/** The surname / last name / family name of the subject/owner of the certificate. */
-@property (copy) NSString *surname;
-
-/** A description of the subject/owner of the certificate. */
-@property (copy) NSString *description;
-
-/** The raw email address of the subject of the certificate. */
-@property (copy) NSString *emailAddress;
-
-/** The public key of the subject of the certificate. */
-@property (readonly) MYPublicKey *subjectPublicKey;
+/** Information about the identity that signed/authorized this certificate. */
+@property (readonly) MYCertificateName *issuer;
 
 /** Returns YES if the issuer is the same as the subject. (Aka a "self-signed" certificate.) */
 @property (readonly) BOOL isRoot;
 
+/** The public key of the subject of the certificate. */
+@property (readonly) MYPublicKey *subjectPublicKey;
+
 /** Associates the certificate to its issuer.
     If the cert is not self-signed, you must manually set this property before validating. */
-@property (retain) MYCertificate* issuer;
+@property (retain) MYCertificate* issuerCertificate;
 
 /** Checks that the issuer's signature is valid and hasn't been tampered with.
     If the certificate is root/self-signed, the subjectPublicKey is used to check the signature;
@@ -81,5 +72,39 @@
     After this method returns successfully, access the certificateData property to get the
     encoded certificate. */
 - (BOOL) selfSignWithPrivateKey: (MYPrivateKey*)privateKey error: (NSError**)outError;
+
+@end
+
+
+
+/** An X.509 Name structure, describing the subject or issuer of a certificate.
+    Changing a property value of an instance associated with an already-signed certificate will
+    raise an exception. */
+@interface MYCertificateName : NSObject
+{
+    @private
+    NSArray *_components;
+}
+
+/** The "common name" (nickname, whatever). */
+@property (copy) NSString *commonName;
+
+/** The given/first name. */
+@property (copy) NSString *givenName;
+
+/** The surname / last name / family name. */
+@property (copy) NSString *surname;
+
+/** A description. */
+@property (copy) NSString *nameDescription;
+
+/** The raw email address. */
+@property (copy) NSString *emailAddress;
+
+/** Lower-level accessor that returns the value associated with the given OID. */
+- (NSString*) stringForOID: (MYOID*)oid;
+
+/** Lower-level accessor that sets the value associated with the given OID. */
+- (void) setString: (NSString*)value forOID: (MYOID*)oid;
 
 @end

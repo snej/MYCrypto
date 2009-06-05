@@ -6,6 +6,9 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
+// Reference:
+// <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
+
 #import "MYASN1Object.h"
 
 

@@ -6,6 +6,9 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
+// Reference:
+// <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
+
 #import "MYBERParser.h"
 #import "MYASN1Object.h"
 #import "MYOID.h"
@@ -103,6 +106,7 @@ NSDateFormatter* MYBERUTCTimeFormatter() {
 }
 
 static NSDate* parseDate (NSString *dateStr, unsigned tag) {
+    //FIX: There are more date formats possible; need to try them all. (see "Layman's Guide", 5.17)
     NSDateFormatter *fmt = (tag==23 ?MYBERUTCTimeFormatter() :MYBERGeneralizedTimeFormatter());
     NSDate *date = [fmt dateFromString: dateStr];
     if (!date)

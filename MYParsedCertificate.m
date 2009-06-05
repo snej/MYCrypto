@@ -7,9 +7,9 @@
 //
 
 // References:
-// <http://www.columbia.edu/~ariel/ssleay/layman.html>
-// <http://en.wikipedia.org/wiki/X.509>
-// <http://www.cs.auckland.ac.nz/~pgut001/pubs/x509guide.txt>
+// <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
+// <http://www.cs.auckland.ac.nz/~pgut001/pubs/x509guide.txt> "X.509 Style Guide"
+// <http://en.wikipedia.org/wiki/X.509> Wikipedia article on X.509
 
 
 #import "MYParsedCertificate.h"
@@ -31,6 +31,12 @@ static id $atIf(NSArray *array, NSUInteger index) {
 }
 
 
+@interface MYCertificateName ()
+- (id) _initWithComponents: (NSArray*)components;
+@end
+
+
+#pragma mark -
 @implementation MYParsedCertificate
 
 
@@ -101,7 +107,7 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 {
     
     [_root release];
-    [_issuer release];
+    [_issuerCertificate release];
     [_data release];
     [super dealloc];
 }
@@ -111,34 +117,19 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 
 - (NSArray*) _validDates {return $castIf(NSArray, [self._info objectAtIndex: 4]);}
 
-- (NSArray*) _pairForOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
-    NSArray *names = $castIf(NSArray, $atIf(self._info, infoIndex));
-    for (id nameEntry in names) {
-        for (id pair in $castIf(NSSet,nameEntry)) {
-            if ([pair isKindOfClass: [NSArray class]] && [pair count] == 2) {
-                if ($equal(oid, [pair objectAtIndex: 0]))
-                    return pair;
-            }
-        }
-    }
-    return nil;
-}
-
-- (NSString*) _stringForOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
-    return [[self _pairForOID: oid atInfoIndex: infoIndex] objectAtIndex: 1];
-}
-
-
-@synthesize issuer=_issuer, certificateData=_data;
+@synthesize issuerCertificate=_issuerCertificate, certificateData=_data;
 
 
 - (NSDate*) validFrom       {return $castIf(NSDate, $atIf(self._validDates, 0));}
 - (NSDate*) validTo         {return $castIf(NSDate, $atIf(self._validDates, 1));}
-- (NSString*) commonName    {return [self _stringForOID: kCommonNameOID atInfoIndex: 5];}
-- (NSString*) givenName     {return [self _stringForOID: kGivenNameOID atInfoIndex: 5];}
-- (NSString*) surname       {return [self _stringForOID: kSurnameOID atInfoIndex: 5];}
-- (NSString*) description   {return [self _stringForOID: kDescriptionOID atInfoIndex: 5];}
-- (NSString*) emailAddress  {return [self _stringForOID: kEmailOID atInfoIndex: 5];}
+
+- (MYCertificateName*) subject {
+    return [[[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 5]] autorelease];
+}
+
+- (MYCertificateName*) issuer {
+    return [[[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 3]] autorelease];
+}
 
 - (BOOL) isSigned           {return [_root count] >= 3;}
 
@@ -159,8 +150,8 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 }
 
 - (MYPublicKey*) issuerPublicKey {
-    if (_issuer)
-        return _issuer.publicKey;
+    if (_issuerCertificate)
+        return _issuerCertificate.publicKey;
     else if (self.isRoot)
         return self.subjectPublicKey;
     else
@@ -228,43 +219,12 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 }
 
 
-- (void) _setString: (NSString*)value forOID: (MYOID*)oid atInfoIndex: (unsigned)infoIndex {
-    NSMutableArray *pair = (NSMutableArray*) [self _pairForOID: oid atInfoIndex: infoIndex];
-    if (pair) {
-        [pair replaceObjectAtIndex: 1 withObject: value];
-    } else {
-        NSMutableArray *names = $castIf(NSMutableArray, $atIf(self._info, infoIndex));
-        [names addObject: [NSSet setWithObject: $marray(oid,value)]];
-    }
-}
-
-
 - (void) setValidFrom: (NSDate*)validFrom {
     [(NSMutableArray*)self._validDates replaceObjectAtIndex: 0 withObject: validFrom];
 }
 
 - (void) setValidTo: (NSDate*)validTo {
     [(NSMutableArray*)self._validDates replaceObjectAtIndex: 1 withObject: validTo];
-}
-
-- (void) setCommonName: (NSString*)commonName {
-    [self _setString: commonName forOID: kCommonNameOID atInfoIndex: 5];
-}
-
-- (void) setGivenName: (NSString*)givenName {
-    [self _setString: givenName forOID: kGivenNameOID atInfoIndex: 5];
-}
-
-- (void) setSurname: (NSString*)surname {
-    [self _setString: surname forOID: kSurnameOID atInfoIndex: 5];
-}
-
-- (void) setDescription: (NSString*)description {
-    [self _setString: description forOID: kDescriptionOID atInfoIndex: 5];
-}
-
-- (void) setEmailAddress: (NSString*)emailAddress {
-    [self _setString: emailAddress forOID: kEmailOID atInfoIndex: 5];
 }
 
 
@@ -304,6 +264,72 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 
 
 
+#pragma mark -
+@implementation MYCertificateName
+
+- (id) _initWithComponents: (NSArray*)components
+{
+    self = [super init];
+    if (self != nil) {
+        _components = [components retain];
+    }
+    return self;
+}
+
+- (void) dealloc
+{
+    [_components release];
+    [super dealloc];
+}
+
+- (BOOL) isEqual: (id)object {
+    return [object isKindOfClass: [MYCertificateName class]]
+        && [_components isEqual: ((MYCertificateName*)object)->_components];
+}
+
+- (NSArray*) _pairForOID: (MYOID*)oid {
+    for (id nameEntry in _components) {
+        for (id pair in $castIf(NSSet,nameEntry)) {
+            if ([pair isKindOfClass: [NSArray class]] && [pair count] == 2) {
+                if ($equal(oid, [pair objectAtIndex: 0]))
+                    return pair;
+            }
+        }
+    }
+    return nil;
+}
+
+- (NSString*) stringForOID: (MYOID*)oid {
+    return [[self _pairForOID: oid] objectAtIndex: 1];
+}
+
+- (void) setString: (NSString*)value forOID: (MYOID*)oid {
+    NSMutableArray *pair = (NSMutableArray*) [self _pairForOID: oid];
+    if (pair)
+        [pair replaceObjectAtIndex: 1 withObject: value];
+    else
+        [(NSMutableArray*)_components addObject: [NSSet setWithObject: $marray(oid,value)]];
+}
+
+- (NSString*) commonName    {return [self stringForOID: kCommonNameOID];}
+- (NSString*) givenName     {return [self stringForOID: kGivenNameOID];}
+- (NSString*) surname       {return [self stringForOID: kSurnameOID];}
+- (NSString*) nameDescription {return [self stringForOID: kDescriptionOID];}
+- (NSString*) emailAddress  {return [self stringForOID: kEmailOID];}
+
+- (void) setCommonName: (NSString*)commonName   {[self setString: commonName forOID: kCommonNameOID];}
+- (void) setGivenName: (NSString*)givenName     {[self setString: givenName forOID: kGivenNameOID];}
+- (void) setSurname: (NSString*)surname         {[self setString: surname forOID: kSurnameOID];}
+- (void) setNameDescription: (NSString*)desc    {[self setString: desc forOID: kDescriptionOID];}
+- (void) setEmailAddress: (NSString*)email      {[self setString: email forOID: kEmailOID];}
+
+
+@end
+
+
+
+#pragma mark -
+#pragma mark TEST CASES:
 
 #if DEBUG
 
@@ -336,11 +362,12 @@ static MYParsedCertificate* testCert(NSString *filename, BOOL selfSigned) {
         
         CAssert(pcert.validateSignature);
     }
-    Log(@"Common Name = %@", pcert.commonName);
-    Log(@"Given Name  = %@", pcert.givenName);
-    Log(@"Surname     = %@", pcert.surname);
-    Log(@"Desc        = %@", pcert.description);
-    Log(@"Email       = %@", pcert.emailAddress);
+    MYCertificateName *subject = pcert.subject;
+    Log(@"Common Name = %@", subject.commonName);
+    Log(@"Given Name  = %@", subject.givenName);
+    Log(@"Surname     = %@", subject.surname);
+    Log(@"Desc        = %@", subject.nameDescription);
+    Log(@"Email       = %@", subject.emailAddress);
     return pcert;
 }
 
@@ -356,17 +383,19 @@ TestCase(ParsedCert) {
 TestCase(CreateCert) {
     MYPrivateKey *privateKey = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
     MYParsedCertificate *pcert = [[MYParsedCertificate alloc] initWithPublicKey: privateKey.publicKey];
-    pcert.commonName = @"testcase";
-    pcert.givenName = @"Test";
-    pcert.surname = @"Case";
-    pcert.description = @"Just a test certificate created by MYCrypto";
-    pcert.emailAddress = @"testcase@example.com";
+    MYCertificateName *subject = pcert.subject;
+    subject.commonName = @"testcase";
+    subject.givenName = @"Test";
+    subject.surname = @"Case";
+    subject.nameDescription = @"Just a test certificate created by MYCrypto";
+    subject.emailAddress = @"testcase@example.com";
 
-    CAssertEqual(pcert.commonName, @"testcase");
-    CAssertEqual(pcert.givenName, @"Test");
-    CAssertEqual(pcert.surname, @"Case");
-    CAssertEqual(pcert.description, @"Just a test certificate created by MYCrypto");
-    CAssertEqual(pcert.emailAddress, @"testcase@example.com");
+    subject = pcert.subject;
+    CAssertEqual(subject.commonName, @"testcase");
+    CAssertEqual(subject.givenName, @"Test");
+    CAssertEqual(subject.surname, @"Case");
+    CAssertEqual(subject.nameDescription, @"Just a test certificate created by MYCrypto");
+    CAssertEqual(subject.emailAddress, @"testcase@example.com");
     
     Log(@"Signing...");
     NSError *error;
@@ -379,11 +408,13 @@ TestCase(CreateCert) {
     MYParsedCertificate *pcert2 = testCert(@"../../Tests/generated.cer", YES);
     
     Log(@"Verifying...");
-    CAssertEqual(pcert2.commonName, @"testcase");
-    CAssertEqual(pcert2.givenName, @"Test");
-    CAssertEqual(pcert2.surname, @"Case");
-    CAssertEqual(pcert2.description, @"Just a test certificate created by MYCrypto");
-    CAssertEqual(pcert2.emailAddress, @"testcase@example.com");
+    MYCertificateName *subject2 = pcert2.subject;
+    CAssertEqual(subject2,subject);
+    CAssertEqual(subject2.commonName, @"testcase");
+    CAssertEqual(subject2.givenName, @"Test");
+    CAssertEqual(subject2.surname, @"Case");
+    CAssertEqual(subject2.nameDescription, @"Just a test certificate created by MYCrypto");
+    CAssertEqual(subject2.emailAddress, @"testcase@example.com");
 }
 
 #endif
