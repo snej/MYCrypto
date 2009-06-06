@@ -49,15 +49,6 @@
 //@{
 #if !TARGET_OS_IPHONE
 
-/** Creates a self-signed identity certificate using this key-pair.
-    The attributes describe the certificate's metadata, including its expiration date and the
-    subject's name. Keys for the dictionary are given below; the only mandatory one is
-    kMYIdentityCommonNameKey.
-    The resulting identity certificate includes X.509 extended attributes allowing it to be
-    used for SSL connections. (Plug: See my MYNetwork library for an easy way to run SSL
-    servers and clients.) */
-- (MYIdentity*) createSelfSignedIdentityWithAttributes: (NSDictionary*)attributes;
-
 /** Exports the private key as a data blob, so that it can be stored as a backup, or transferred
     to another computer. Since the key is sensitive, it must be exported in encrypted form
     using a user-chosen passphrase. This method will display a standard alert panel, run by
@@ -94,15 +85,3 @@
 //@}
 
 @end
-
-
-/* Attribute keys for creating identities: */
-
-#define kMYIdentityCommonNameKey    @"Common Name"      // NSString. Required!
-#define kMYIdentityGivenNameKey     @"Given Name"
-#define kMYIdentitySurnameKey       @"Surname"
-#define kMYIdentityDescriptionKey   @"Description"
-#define kMYIdentityEmailAddressKey  @"Email Address"
-#define kMYIdentityValidFromKey     @"Valid From"       // NSDate. Defaults to the current date/time
-#define kMYIdentityValidToKey       @"Valid To"         // NSDate. Defaults to one year from ValidFrom
-#define kMYIdentitySerialNumberKey  @"Serial Number"    // NSNumber. Defaults to 1

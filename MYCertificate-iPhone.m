@@ -7,6 +7,7 @@
 //
 
 #import "MYCertificate.h"
+#import "MYCertificateInfo.h"
 #import "MYCrypto_Private.h"
 
 #if MYCRYPTO_USE_IPHONE_API
@@ -35,6 +36,12 @@
     self = [self initWithCertificateRef: certificateRef];
     CFRelease(certificateRef);
     return self;
+}
+
+- (void) dealloc
+{
+    [_info release];
+    [super dealloc];
 }
 
 
@@ -69,6 +76,21 @@
     return key;
 }
 
+- (MYIdentity*) identity {
+    return [self.keychain identityWithDigest: self.publicKey.publicKeyDigest];
+}
+
+
+- (MYCertificateInfo*) info {
+    if (!_info) {
+        NSError *error;
+        _info = [[MYCertificateInfo alloc] initWithCertificateData: self.certificateData
+                                                             error: &error];
+        if (!_info)
+            Warn(@"Couldn't parse certificate %@: %@", self, error);
+    }
+    return _info;
+}
 
 - (NSString*) commonName {
     CFStringRef name = SecCertificateCopySubjectSummary(_certificateRef);

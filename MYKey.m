@@ -22,10 +22,11 @@
     return [super initWithKeychainItemRef: (SecKeychainItemRef)key];
 }
 
-- (id) _initWithKeyData: (NSData*)data
+- (id) _initWithKeyData: (NSData*)keyData
             forKeychain: (SecKeychainRef)keychain {
+    Assert(keyData!=nil);
     SecKeyImportExportParameters params = {};
-    SecKeyRef key = importKey(data, self.keyType, keychain, &params);
+    SecKeyRef key = importKey(keyData, self.keyType, keychain, &params);
     if (!key) {
         [self release];
         return nil;

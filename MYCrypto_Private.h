@@ -25,14 +25,15 @@ typedef CFTypeRef SecExternalItemType;
 #endif
 
 
-#if TARGET_OS_IPHONE && !MYCRYPTO_USE_IPHONE_API
 @interface MYKeychain (Private)
+- (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest;
+#if TARGET_OS_IPHONE && !MYCRYPTO_USE_IPHONE_API
 - (id) initWithKeychainRef: (SecKeychainRef)keychainRef;
 @property (readonly) SecKeychainRef keychainRef, keychainRefOrDefault;
 @property (readonly) CSSM_CSP_HANDLE CSPHandle;
 @property (readonly) NSString* path;
-@end
 #endif
+@end
 
 
 @interface MYKeychainItem (Private);

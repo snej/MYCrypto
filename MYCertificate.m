@@ -10,6 +10,7 @@
 #import "MYCrypto_Private.h"
 #import "MYIdentity.h"
 #import "MYDigest.h"
+#import "MYCertificateInfo.h"
 #import "MYErrorUtils.h"
 
 #if !MYCRYPTO_USE_IPHONE_API
@@ -54,6 +55,13 @@
                                     type: CSSM_CERT_X_509v3 
                                 encoding: CSSM_CERT_ENCODING_BER];
 }
+
+- (void) dealloc
+{
+    [_info release];
+    [super dealloc];
+}
+
 
 
 - (NSString*) description {
@@ -106,6 +114,17 @@
 
 - (MYIdentity*) identity {
     return [[[MYIdentity alloc] initWithCertificateRef: _certificateRef] autorelease];
+}
+
+- (MYCertificateInfo*) info {
+    if (!_info) {
+        NSError *error;
+        _info = [[MYCertificateInfo alloc] initWithCertificateData: self.certificateData
+                                                             error: &error];
+        if (!_info)
+            Warn(@"Couldn't parse certificate %@: %@", self, error);
+    }
+    return _info;
 }
 
 - (NSString*) commonName {

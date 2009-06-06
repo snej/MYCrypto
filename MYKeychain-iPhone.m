@@ -106,6 +106,13 @@
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
+- (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
+    return [MYKeyEnumerator firstItemWithQuery:
+                $mdict({(id)kSecClass, (id)kSecClassIdentity},
+                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData},
+                        {(id)kSecReturnRef, $true})];
+}
+
 - (NSEnumerator*) enumerateIdentities {
     NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassIdentity},
                                         {(id)kSecMatchLimit, (id)kSecMatchLimitAll},

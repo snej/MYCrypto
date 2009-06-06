@@ -9,12 +9,25 @@
 #import "MYPublicKey.h"
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
+#import "MYASN1Object.h"
+#import "MYDEREncoder.h"
+#import "MYBERParser.h"
 #import "MYErrorUtils.h"
 #import <CommonCrypto/CommonDigest.h>
 
 
 #pragma mark -
 @implementation MYPublicKey
+
+
+- (id) initWithModulus: (NSData*)modulus exponent: (unsigned)exponent {
+    // An RSA key is encoded in ASN.1 as a sequence of modulus and exponent, both as integers.
+    MYASN1BigInteger *modulusInt = [[MYASN1BigInteger alloc] initWithUnsignedData: modulus];
+    id asn1 = $array( modulusInt, $object(exponent) );
+    [modulusInt release];
+    NSData *keyData = [MYDEREncoder encodeRootObject: asn1 error: nil];
+    return [self initWithKeyData: keyData];
+}
 
 
 - (void) dealloc
@@ -50,6 +63,18 @@
     return kSecFormatBSAFE;
 }
 #endif
+
+
+- (BOOL) getModulus: (NSData**)outModulus exponent: (unsigned*)outExponent {
+    Assert(outModulus!=nil);
+    Assert(outExponent!=nil);
+    NSArray *asn1 = $castIf(NSArray, MYBERParse(self.keyData, nil));
+    if (!asn1 || asn1.count != 2)
+        return NO;
+    *outModulus = $castIf(MYASN1BigInteger, [asn1 objectAtIndex: 0]).unsignedData;
+    *outExponent = $castIf(NSNumber, [asn1 objectAtIndex: 1]).unsignedIntValue;
+    return (*outModulus!=nil && *outExponent>=3);
+}
 
 
 - (NSData*) rawEncryptData: (NSData*)data {

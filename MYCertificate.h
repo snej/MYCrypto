@@ -12,13 +12,14 @@
 #import <Security/cssmtype.h>
 #endif
 
-@class MYPublicKey, MYIdentity;
+@class MYPublicKey, MYIdentity, MYCertificateInfo;
 
 
 /** An X.509 certificate. */
 @interface MYCertificate : MYKeychainItem {
     @private
     SecCertificateRef _certificateRef;
+    MYCertificateInfo *_info;
 }
 
 /** Creates a MYCertificate object for an existing Keychain certificate reference. */
@@ -42,7 +43,13 @@
 /** The certificate's public key. */
 @property (readonly) MYPublicKey *publicKey;
 
-/** The name of the subject (owner) of the certificate. */
+/** The Identity (if any) that this Certificate is part of. */
+@property (readonly) MYIdentity *identity;
+
+/** The metadata of the certificate, like the subject name and expiration date. */
+@property (readonly) MYCertificateInfo *info;
+
+/** The common name of the subject (owner) of the certificate. */
 @property (readonly) NSString *commonName;
 
 
@@ -56,9 +63,6 @@
 - (id) initWithCertificateData: (NSData*)data
                           type: (CSSM_CERT_TYPE) type
                       encoding: (CSSM_CERT_ENCODING) encoding;
-
-/** The Identity (if any) that this Certificate is part of. */
-@property (readonly) MYIdentity *identity;
 
 /** The list (if any) of the subject's email addresses. */
 @property (readonly) NSArray *emailAddresses;

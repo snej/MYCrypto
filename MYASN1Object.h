@@ -45,6 +45,9 @@
     The value contains the bytes of the integer, in big-endian order.
     This is mostly used internally by MYParsedCertificate. */
 @interface MYASN1BigInteger : MYASN1Object
+- (id) initWithSignedData: (NSData*)signedData;
+- (id) initWithUnsignedData: (NSData*) unsignedData;
+@property (readonly) NSData *signedData, *unsignedData;
 @end
 
 

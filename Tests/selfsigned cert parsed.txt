@@ -1,0 +1,88 @@
+Parsed form of selfsigned.cer:
+ 
+Sequence:                       <-- top
+    Sequence:                       <-- info
+        MYASN1Object[2/0]:              <-- version (tag=0, constructed)
+            2                       
+        1                               <-- serial number
+        Sequence:
+            {1 2 840 113549 1 1 1}      <-- algorithm ID
+        Sequence:                       <-- issuer (same as subject here)
+            Set:
+                Sequence:
+                    {2 5 4 4}
+                    Widdershins
+            Set:
+                Sequence:
+                    {1 2 840 113549 1 9 1}
+                    waldo@example.com
+            Set:
+                Sequence:
+                    {2 5 4 3}
+                    waldo
+            Set:
+                Sequence:
+                    {2 5 4 42}
+                    Waldo
+            Set:
+                Sequence:
+                    {2 5 4 13}
+                    Just a fictitious person
+        Sequence:                       <--validity
+            2009-04-12 21:54:35 -0700
+            2010-04-13 21:54:35 -0700
+        Sequence:                       <-- subject
+            Set:
+                Sequence:                   <-- surname
+                    {2 5 4 4}
+                    Widdershins
+            Set:
+                Sequence:                   <-- email
+                    {1 2 840 113549 1 9 1}
+                    waldo@example.com
+            Set:
+                Sequence:                   <-- common name
+                    {2 5 4 3}
+                    waldo
+            Set:
+                Sequence:                   <-- first name
+                    {2 5 4 42}
+                    Waldo
+            Set:
+                Sequence:                   <-- description
+                    {2 5 4 13}
+                    Just a fictitious person
+        Sequence:                       <-- public key info
+            Sequence:
+                {1 2 840 113549 1 1 1}      <-- algorithm ID (RSA)
+                <null>
+            MYBitString<3082010a 02820101 0095713c 360badf2 d8575ebd 278fa26b
+            a2e6d05e 1eb04eaa 9fa6f11b fd341556 038b3077 525c7adb f5aedf3b
+            249b08e6 7f77af26 7ff2feb8 5f4ccb96 5269dbd2 f01f19b6 55fc4ea3
+            a85f2ede 11ff80f8 fc23e662 f263f685 06a9ec07 f7ee4249 af184f21
+            2d9253d8 7f6f7cbc 96e6ba5c abc8f4e7 3bf6100b 06dcf3ee 999d4170
+            f5dd005d a24a54a1 3edaddd5 0675409d 6728a387 5fa71898 ebf7d93d
+            4af8742d f9a0e9ad 6dc21cfa fc2d1967 e692575b 56e5376c 8cf008e8
+            a442d787 6843a92e 9501b144 8a75adef 5e804fec 6d09740d 1ea8442e
+            67fac3be c5ea3af5 d95d9f95 2c507711 01c45942 28ad1410 23525324
+            62848476 d987d3c7 d65f9057 daf1e853 77020301 0001>       <-- DER-encoded public key
+        MYASN1Object[2/3]:              <-- extensions
+            Sequence:
+                Sequence:
+                    {2 5 29 15}
+                    <030202fc>
+                Sequence:
+                    {2 5 29 37}
+                    <301a0608 2b060105 05070301 06082b06 01050507 03020604 551d2500>
+    Sequence:                           <-- signature algorithm ID
+        {1 2 840 113549 1 1 5}
+        <null>
+    MYBitString<79c8e789 50a11fcb 7398f5fe 0cfa2595 b2476f53 62dfbea2 70ae3a8b
+    fdaf5a57 39be6101 fc5e0929 e57a0b2b 41e3ab52 f78ef1b5 ecc8848c da7f42aa
+    b57c3df4 df4125a9 db4e6388 197c2a1c e326c1a5 5203b4ef da057b91 4abc43aa
+    3eeee6aa fe4303c3 0f000175 16b916b5 72f8b74f c682a06f 920e3bbf a16cdad8
+    fce3f184 adccc61e 8d3b44e5 8bd103f0 46310f6a 992f240a b290354c 04c519c9
+    22276df6 310ccb8e 942e38f6 555ca40b 71482e52 146a9988 f021c2c0 2d285db5
+    59d48eaf 7b20559f 068ea1a0 f07fbaee 29284ada 28bf8344 f435f30f 6263f0c9
+    9c4920ce a1b7c6c0 9cfa3bbb af5a0fee 5b0e94eb 9c57d28b 1bb9c977 be53e4bb
+    b675ffaa>                           <-- signature data

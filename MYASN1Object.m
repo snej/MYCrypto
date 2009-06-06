@@ -113,6 +113,46 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 
 @implementation MYASN1BigInteger
 
+- (id) initWithSignedData: (NSData*)signedData {
+    // Skip unnecessary leading 00 (if positive) or FF (if negative) bytes:
+    const SInt8 *start = signedData.bytes, *last = start + signedData.length - 1;
+    const SInt8 *pos = start;
+    while (pos<last && ((pos[0]==0 && pos[1]>=0) || (pos[0]==-1 && pos[1]<0)))
+        pos++;
+    if (pos > start)
+        signedData = [NSData dataWithBytes: pos length: last-pos+1];
+    return [self initWithTag: 2 ofClass: 0 constructed: NO value: signedData];
+}
+
+- (id) initWithUnsignedData: (NSData*) unsignedData {
+    const UInt8 *start = unsignedData.bytes;
+    if (*start >= 0x80) {
+        // Prefix with 00 byte so high bit isn't misinterpreted as a sign bit:
+        NSMutableData *fixedData = [NSMutableData dataWithCapacity: unsignedData.length + 1];
+        UInt8 zero = 0;
+        [fixedData appendBytes: &zero length: 1];
+        [fixedData appendData: unsignedData];
+        unsignedData = fixedData;
+    }
+    return [self initWithSignedData: unsignedData];
+}
+
+- (NSData*) signedData {
+    return self.value;
+}
+
+- (NSData*) unsignedData {
+    // Strip any leading zero bytes that were inserted for sign-bit padding:
+    NSData *data = self.value;
+    const UInt8 *start = data.bytes, *last = start + data.length - 1;
+    const UInt8 *pos = start;
+    while (pos<last && *pos==0)
+        pos++;
+    if (pos > start)
+        data = [NSData dataWithBytes: pos length: last-pos+1];
+    return data;
+}
+
 @end
 
 
@@ -158,3 +198,27 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 }
 
 @end
+
+
+
+/*
+ Copyright (c) 2009, Jens Alfke <jens@mooseyard.com>. All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without modification, are permitted
+ provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright notice, this list of conditions
+ and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+ and the following disclaimer in the documentation and/or other materials provided with the
+ distribution.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRI-
+ BUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
+ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */

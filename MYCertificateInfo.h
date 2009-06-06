@@ -1,5 +1,5 @@
 //
-//  MYParsedCertificate.h
+//  MYCertificateInfo.h
 //  MYCrypto
 //
 //  Created by Jens Alfke on 6/2/09.
@@ -7,29 +7,24 @@
 //
 
 #import <Foundation/Foundation.h>
-@class MYCertificateName, MYCertificate, MYPublicKey, MYPrivateKey, MYOID;
+@class MYCertificateName, MYCertificate, MYIdentity, MYPublicKey, MYPrivateKey, MYOID;
 
-/** A parsed X.509 certificate. Can be used to get more info about an existing cert,
-    to modify and regenerate a self-signed cert, or to create a new self-signed cert. */
-@interface MYParsedCertificate : NSObject 
+/** A parsed X.509 certificate; provides access to the names and metadata. */
+@interface MYCertificateInfo : NSObject 
 {
     @private
-    NSData *_data;
     NSArray *_root;
-    MYCertificate *_issuerCertificate;
 }
 
-/** Initializes an instance by parsing an existing X.509 certificate's data. */
+/** Initialize by parsing X.509 certificate data.
+    (More commonly you'll get an instance via MYCertificate's 'info' property.) */
 - (id) initWithCertificateData: (NSData*)data error: (NSError**)outError;
 
-/** The raw data of the certificate. */
-@property (readonly) NSData* certificateData;
-
 /** The date/time at which the certificate first becomes valid. */
-@property (retain) NSDate *validFrom;
+@property (retain, readonly) NSDate *validFrom;
 
 /** The date/time at which the certificate expires. */
-@property (retain) NSDate *validTo;
+@property (retain, readonly) NSDate *validTo;
 
 /** Information about the identity of the owner of this certificate. */
 @property (readonly) MYCertificateName *subject;
@@ -40,46 +35,52 @@
 /** Returns YES if the issuer is the same as the subject. (Aka a "self-signed" certificate.) */
 @property (readonly) BOOL isRoot;
 
-/** The public key of the subject of the certificate. */
-@property (readonly) MYPublicKey *subjectPublicKey;
-
-/** Associates the certificate to its issuer.
-    If the cert is not self-signed, you must manually set this property before validating. */
-@property (retain) MYCertificate* issuerCertificate;
-
-/** Checks that the issuer's signature is valid and hasn't been tampered with.
-    If the certificate is root/self-signed, the subjectPublicKey is used to check the signature;
-    otherwise, the issuer property needs to have been set and its publicKey will be used. */
-- (BOOL) validateSignature;
+@end
 
 
-// Generating certificates:
+
+@interface MYCertificateRequest : MYCertificateInfo
+{
+    @private
+    MYPublicKey *_publicKey;
+}
 
 /** Initializes a blank instance which can be used to create a new certificate.
     The certificate will not contain anything yet other than the public key.
     The desired attributes should be set, and then the -selfSignWithPrivateKey:error method called. */
 - (id) initWithPublicKey: (MYPublicKey*)pubKey;
 
-/** Has the certificate been signed yet? */
-@property (readonly) BOOL isSigned;
+/** The date/time at which the certificate first becomes valid. Settable. */
+@property (retain) NSDate *validFrom;
+
+/** The date/time at which the certificate expires. Settable */
+@property (retain) NSDate *validTo;
+
+/** Encodes the certificate request in X.509 format -- this is NOT a certificate!
+    It has to be sent to a Certificate Authority to be signed.
+    If you want to generate a self-signed certificate, use one of the self-signing methods instead. */
+- (NSData*) requestData: (NSError**)outError;
 
 /** Signs the certificate using the given private key, which must be the counterpart of the
-    public key stored in the certificate.
+    public key stored in the certificate, and returns the encoded certificate data.
     The subject attributes will be copied to the issuer attributes.
     If no valid date range has been set yet, it will be set to a range of one year starting from
     the current time.
-    A unique serial number based on the current time will be set.
-    After this method returns successfully, access the certificateData property to get the
-    encoded certificate. */
-- (BOOL) selfSignWithPrivateKey: (MYPrivateKey*)privateKey error: (NSError**)outError;
+    A unique serial number based on the current time will be set. */
+- (NSData*) selfSignWithPrivateKey: (MYPrivateKey*)privateKey error: (NSError**)outError;
 
+/** Signs the certificate using the given private key, which must be the counterpart of the
+    public key stored in the certificate; adds the certificate to the keychain;
+    and returns a MYIdentity representing the paired certificate and private key. */
+- (MYIdentity*) createSelfSignedIdentityWithPrivateKey: (MYPrivateKey*)privateKey
+                                                 error: (NSError**)outError;
 @end
 
 
 
 /** An X.509 Name structure, describing the subject or issuer of a certificate.
-    Changing a property value of an instance associated with an already-signed certificate will
-    raise an exception. */
+    The properties are settable only if this instance belongs to a MYCertificateRequest;
+    otherwise trying to set them will raise an exception. */
 @interface MYCertificateName : NSObject
 {
     @private

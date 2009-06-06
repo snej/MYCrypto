@@ -118,11 +118,6 @@
 }
 
 
-- (MYIdentity*) createSelfSignedIdentityWithAttributes: (NSDictionary*)attributes {
-    return MYIdentityCreateSelfSigned(self, attributes);
-}
-
-
 #endif
 
 

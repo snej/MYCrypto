@@ -261,6 +261,14 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     Log(@"Public key = %@ (%u bytes)",pubKeyData,pubKeyData.length);
     CAssert(pubKeyData);
     
+    NSData *modulus;
+    unsigned exponent;
+    CAssert([publicKey getModulus: &modulus exponent: &exponent]);
+    Log(@"Modulus = %@", modulus);
+    Log(@"Exponent = %u", exponent);
+    CAssertEq(modulus.length, 2048U/8);
+    CAssertEq(exponent,65537U); // this is what CDSA always seems to use
+    
     MYSHA1Digest *pubKeyDigest = publicKey.publicKeyDigest;
     Log(@"Public key digest = %@",pubKeyDigest);
     CAssertEqual(pair.publicKeyDigest, pubKeyDigest);
@@ -294,7 +302,14 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     CAssertEqual(pub.keyData, pubKeyData);
     CAssertEqual(pub.publicKeyDigest, pubKeyDigest);
     CAssert( [pub verifySignature: sig ofData: data] );
+    [pub release];
     Log(@"Verified signature from reconstituted key.");
+    
+    // Test creating a public key from modulus+exponent:
+    Log(@"Reconstituting public key from modulus+exponent...");
+    pub = [[MYPublicKey alloc] initWithModulus: modulus exponent: exponent];
+    CAssertEqual(pub.keyData, pubKeyData);
+    [pub release];
 }
 
 
