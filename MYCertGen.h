@@ -4,8 +4,9 @@
 //
 //  Created by Jens Alfke on 4/3/09.
 //  Copyright 2009 Jens Alfke. All rights reserved.
-//
-//  Derived from ...
+
+//  NOTE: This module has been replaced by MYCertificateInfo, which isn't dependent on
+//  CSSM APIs that aren't available on iPhone.
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>

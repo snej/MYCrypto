@@ -39,6 +39,8 @@
 
 
 
+/** A mutable, unsigned certificate that can be filled out and then signed by the issuer.
+    Used to generate an identity certificate for a key-pair. */
 @interface MYCertificateRequest : MYCertificateInfo
 {
     @private
