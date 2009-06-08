@@ -97,6 +97,10 @@
     return name ?[(id)CFMakeCollectable(name) autorelease] :nil;
 }
 
+- (NSArray*) emailAddresses {
+    NSString *email = self.info.subject.emailAddress;
+    return email ?$array(email) :nil;
+}
 
 @end
 

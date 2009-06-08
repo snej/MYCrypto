@@ -24,16 +24,16 @@
 - (id) initWithRawDigest: (const void*)rawDigest length: (size_t)length;
 
 /** Wraps an existing digest, stored in an NSData object, in a MYDigest object. */
-+ (MYDigest*) digestFromDigestData: (NSData*)digestData;
++ (id) digestFromDigestData: (NSData*)digestData;
 
 /** Wraps an existing digest, expressed as a hex string, in a MYDigest object. */
-+ (MYDigest*) digestFromHexString: (NSString*)hexString;
++ (id) digestFromHexString: (NSString*)hexString;
 
 /** Computes a cryptographic digest of the given data. */
-+ (MYDigest*) digestOfData: (NSData*)data;
++ (id) digestOfData: (NSData*)data;
 
 /** Computes a cryptographic digest of the given data. */
-+ (MYDigest*) digestOfBytes: (const void*)bytes length: (size_t)length;
++ (id) digestOfBytes: (const void*)bytes length: (size_t)length;
 
 /** Returns the digest as an NSData object. */
 @property (readonly) NSData *asData;

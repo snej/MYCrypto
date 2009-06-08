@@ -79,11 +79,11 @@ enum {
 }
 
 
-+ (MYDigest*) digestFromDigestData: (NSData*)digestData {
++ (id) digestFromDigestData: (NSData*)digestData {
     return [[[self alloc] initWithRawDigest: digestData.bytes length: digestData.length] autorelease];
 }
 
-+ (MYDigest*) digestFromHexString: (NSString*)hexString
++ (id) digestFromHexString: (NSString*)hexString
 {
     const char *cStr = [hexString UTF8String];
     const size_t length = [self length];
@@ -98,10 +98,11 @@ enum {
     return [[[self alloc] initWithRawDigest: &digest length: length] autorelease];
 }
 
-+ (MYDigest*) digestOfData: (NSData*)data {
++ (id) digestOfData: (NSData*)data {
     return [self digestOfBytes: data.bytes length: data.length];
 }
-+ (MYDigest*) digestOfBytes: (const void*)bytes length: (size_t)length {
+
++ (id) digestOfBytes: (const void*)bytes length: (size_t)length {
     const size_t digestLength = [self length];
     uint8_t digest[digestLength];
     [self computeDigest: digest ofBytes: bytes length: length];

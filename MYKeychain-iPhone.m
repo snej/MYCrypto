@@ -19,6 +19,7 @@
     CFArrayRef _results;
     CFTypeRef _itemClass;
     CFIndex _index;
+    MYKeychainItem *_currentObject;
 }
 
 - (id) initWithQuery: (NSMutableDictionary*)query;
@@ -62,78 +63,57 @@
 
 - (MYPublicKey*) publicKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecClass, (id)kSecClassKey},
-                      {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData},
-                      {(id)kSecReturnRef, $true})];
+                $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPublic},
+                       {(id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
 }   
 
 - (NSEnumerator*) enumeratePublicKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPublic},
-                                {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPublic});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
 
 - (MYPrivateKey*) privateKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecClass, (id)kSecClassKey},
-                      {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
-                      {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData},
-                      {(id)kSecReturnRef, $true})];
+                $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
+                       {(id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumeratePrivateKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
-                                {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
 - (MYCertificate*) certificateWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
                 $mdict({(id)kSecClass, (id)kSecClassCertificate},
-                      {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData},
-                      {(id)kSecReturnRef, $true})];
+                       {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumerateCertificates {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassCertificate},
-                                {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassCertificate});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
 - (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
                 $mdict({(id)kSecClass, (id)kSecClassIdentity},
-                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData},
-                        {(id)kSecReturnRef, $true})];
+                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumerateIdentities {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassIdentity},
-                                        {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                        {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassIdentity});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
 - (NSEnumerator*) enumerateSymmetricKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
 - (NSEnumerator*) symmetricKeysWithAlias: (NSString*)alias {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                {(id)kSecAttrApplicationTag, alias},
-                                {(id)kSecMatchLimit, (id)kSecMatchLimitAll},
-                                {(id)kSecReturnRef, $true});
+    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
+                                        {(id)kSecAttrApplicationTag, alias});
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
@@ -187,33 +167,54 @@
 - (id) initWithQuery: (NSMutableDictionary*)query {
     self = [super init];
     if (self) {
-        if (![query objectForKey: (id)kSecMatchLimit])
-            [query setObject: (id)kSecMatchLimitAll forKey: (id)kSecMatchLimit];
+        _itemClass = (CFTypeRef)[query objectForKey: (id)kSecAttrKeyClass];
+        if (_itemClass)
+            [query setObject: (id)kSecClassKey forKey: (id)kSecClass];
+        else
+            _itemClass = (CFTypeRef)[query objectForKey: (id)kSecClass];
+        Assert(_itemClass);
+        CFRetain(_itemClass);
+
+        // Ask for all results unless caller specified fewer:
+        CFTypeRef limit = [query objectForKey: (id)kSecMatchLimit];
+        if (! limit) {
+            limit = kSecMatchLimitAll;
+            [query setObject: (id)limit forKey: (id)kSecMatchLimit];
+        }
+        
+        [query setObject: $true forKey: (id)kSecReturnRef];
+        
         OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef*)&_results);
         if (err && err != errSecItemNotFound) {
             check(err,@"SecItemCopyMatching");
             [self release];
             return nil;
         }
-        if (_results) CFRetain(_results);
-        _itemClass = (CFTypeRef)[query objectForKey: (id)kSecClass];
-        if (_itemClass == kSecClassKey)
-            _itemClass = (CFTypeRef)[query objectForKey: (id)kSecAttrKeyClass];
-        if (_itemClass) CFRetain(_itemClass);
+        Log(@"Enumerator results = %@", _results);//TEMP
+        
+        if (_results && CFEqual(limit,kSecMatchLimitOne)) {
+            // If you ask for only one, it gives you the object back instead of an array:
+            CFArrayRef resultsArray = CFArrayCreate(NULL, (const void**)&_results, 1, 
+                                                    &kCFTypeArrayCallBacks);
+            CFRelease(_results);
+            _results = resultsArray;
+        }
     }
     return self;
 }
 
 + (id) firstItemWithQuery: (NSMutableDictionary*)query {
+    [query setObject: (id)kSecMatchLimitOne forKey: (id)kSecMatchLimit];
     MYKeyEnumerator *e = [[self alloc] initWithQuery: query];
-    MYKeychainItem *item = e.nextObject;
+    MYKeychainItem *item = [e.nextObject retain];
     [e release];
-    return item;
+    return [item autorelease];
 }    
 
 - (void) dealloc
 {
-    if (_itemClass) CFRelease(_itemClass);
+    [_currentObject release];
+    CFRelease(_itemClass);
     if (_results) CFRelease(_results);
     [super dealloc];
 }
@@ -222,23 +223,24 @@
 - (id) nextObject {
     if (!_results)
         return nil;
-    MYKeychainItem *next = nil;
-    while (next==nil && _index < CFArrayGetCount(_results)) {
+    setObj(&_currentObject,nil);
+    while (_currentObject==nil && _index < CFArrayGetCount(_results)) {
         CFTypeRef found = CFArrayGetValueAtIndex(_results, _index++); 
         if (_itemClass == kSecAttrKeyClassPrivate) {
-            next = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
+            _currentObject = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecAttrKeyClassPublic) {
-            next = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+            _currentObject = [[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecAttrKeyClassSymmetric) {
-            next = [[[MYSymmetricKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+            _currentObject = [[MYSymmetricKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecClassCertificate) {
-            next = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
+            _currentObject = [[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found];
         } else if (_itemClass == kSecClassIdentity) {
-            next = [[[MYIdentity alloc] initWithIdentityRef: (SecIdentityRef)found] autorelease];
+            _currentObject = [[MYIdentity alloc] initWithIdentityRef: (SecIdentityRef)found];
+        } else  {
+            Assert(NO,@"Unknown _itemClass: %@",_itemClass);
         }
-        CFRelease(found);
     }
-    return next;
+    return _currentObject;
 }
 
 

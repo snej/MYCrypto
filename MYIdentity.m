@@ -35,19 +35,21 @@
 }
 
 
-#if !TARGET_OS_IPHONE
 - (id) initWithCertificateRef: (SecCertificateRef)certificateRef {
     self = [super initWithCertificateRef: certificateRef];
     if (self) {
+#if !MYCRYPTO_USE_IPHONE_API
         if (!check(SecIdentityCreateWithCertificate(NULL, certificateRef, &_identityRef),
                    @"SecIdentityCreateWithCertificate")) {
             [self release];
             return nil;
         }
+#else
+        Assert(NO,@"-[MYIdentity initWithCertificateRef] isn't implemented for iPhone yet!");//FIX
+#endif
     }
     return self;
 }
-#endif
 
 - (void) dealloc
 {
@@ -69,7 +71,7 @@
     if (!check(SecIdentityCopyPrivateKey(_identityRef, &keyRef), @"SecIdentityCopyPrivateKey"))
         return NULL;
     MYPrivateKey *privateKey = [[MYPrivateKey alloc] _initWithKeyRef: keyRef
-                                                          publicKey: self.publicKey];
+                                                           publicKey: self.publicKey];
     CFRelease(keyRef);
     return [privateKey autorelease];
 }

@@ -36,13 +36,23 @@
     [super dealloc];
 }
 
-- (SecExternalItemType) keyType {
+- (SecExternalItemType) keyClass {
 #if MYCRYPTO_USE_IPHONE_API
     return kSecAttrKeyClassPublic;
 #else
     return kSecItemTypePublicKey;
 #endif
 }
+
+#if MYCRYPTO_USE_IPHONE_API
+- (SecExternalItemType) keyType {
+    return kSecAttrKeyTypeRSA;
+}
+
+- (MYSHA1Digest*) _keyDigest {
+    return (MYSHA1Digest*) [MYSHA1Digest digestFromDigestData: [self _attribute: kSecAttrApplicationLabel]];
+}
+#endif
 
 - (NSUInteger)hash {
     return self.publicKeyDigest.hash;

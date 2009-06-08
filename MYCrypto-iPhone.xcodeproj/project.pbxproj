@@ -25,6 +25,8 @@
 		276FB3190F856AA700CB326E /* MYPublicKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB3180F856AA700CB326E /* MYPublicKey.m */; };
 		276FB33B0F856ACB00CB326E /* MYKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB33A0F856ACB00CB326E /* MYKeychain.m */; };
 		276FB34B0F856CA400CB326E /* MYCertificate.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB34A0F856CA400CB326E /* MYCertificate.m */; };
+		27958CA30FDB5F8F00095275 /* iphonedev.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27958CA10FDB5F8F00095275 /* iphonedev.cer */; };
+		27958CA40FDB5F8F00095275 /* selfsigned.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27958CA20FDB5F8F00095275 /* selfsigned.cer */; };
 		27A430120F87C6C10063D362 /* MYKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E823110F81D56E0019BE60 /* MYKey.m */; };
 		27A430140F87C6D50063D362 /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A430130F87C6D50063D362 /* MYSymmetricKey.m */; };
 		27CD85DD0FDB1A82006BCB47 /* MYCertificateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CD85DC0FDB1A82006BCB47 /* MYCertificateInfo.m */; };
@@ -70,6 +72,8 @@
 		276FB3180F856AA700CB326E /* MYPublicKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPublicKey.m; sourceTree = "<group>"; };
 		276FB33A0F856ACB00CB326E /* MYKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKeychain.m; sourceTree = "<group>"; };
 		276FB34A0F856CA400CB326E /* MYCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificate.m; sourceTree = "<group>"; };
+		27958CA10FDB5F8F00095275 /* iphonedev.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = iphonedev.cer; path = Tests/iphonedev.cer; sourceTree = "<group>"; };
+		27958CA20FDB5F8F00095275 /* selfsigned.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned.cer; path = Tests/selfsigned.cer; sourceTree = "<group>"; };
 		27A430130F87C6D50063D362 /* MYSymmetricKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYSymmetricKey.m; sourceTree = "<group>"; };
 		27A430150F87C6DB0063D362 /* MYSymmetricKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYSymmetricKey.h; sourceTree = "<group>"; };
 		27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptoConfig.h; sourceTree = "<group>"; };
@@ -155,6 +159,8 @@
 				275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */,
 				275D9FEB0FD8795300D85A86 /* MYOID.h */,
 				275D9FEC0FD8795300D85A86 /* MYOID.m */,
+				27958CA10FDB5F8F00095275 /* iphonedev.cer */,
+				27958CA20FDB5F8F00095275 /* selfsigned.cer */,
 			);
 			name = Certificates;
 			sourceTree = "<group>";
@@ -291,6 +297,8 @@
 				27E823290F81D56E0019BE60 /* MYCrypto.xcconfig in Resources */,
 				27E8232A0F81D56E0019BE60 /* MYCrypto_Debug.xcconfig in Resources */,
 				27E8233C0F81D5760019BE60 /* MYError_CSSMErrorDomain.strings in Resources */,
+				27958CA30FDB5F8F00095275 /* iphonedev.cer in Resources */,
+				27958CA40FDB5F8F00095275 /* selfsigned.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

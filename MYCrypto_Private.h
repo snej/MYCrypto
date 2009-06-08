@@ -53,10 +53,12 @@ typedef CFTypeRef SecExternalItemType;
 - (id) initWithKeyData: (NSData*)data;
 - (id) _initWithKeyData: (NSData*)data
             forKeychain: (SecKeychainRef)keychain;
-@property (readonly) SecExternalItemType keyType;
+@property (readonly) SecExternalItemType keyClass, keyType;
 @property (readonly) MYSHA1Digest* _keyDigest;
 - (NSData*) _crypt: (NSData *)data operation: (BOOL) op;    // YES to encrypt, NO to decrypt
-#if !MYCRYPTO_USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
++ (SecKeyRef) _addKeyWithInfo: (NSMutableDictionary*)info;
+#else
 @property (readonly) const CSSM_KEY* cssmKey;
 @property (readonly) const CSSM_CSP_HANDLE cssmCSPHandle;
 - (CSSM_CC_HANDLE) _createSignatureContext: (CSSM_ALGORITHMS)algorithm;

@@ -26,7 +26,7 @@
             forKeychain: (SecKeychainRef)keychain {
     Assert(keyData!=nil);
     SecKeyImportExportParameters params = {};
-    SecKeyRef key = importKey(keyData, self.keyType, keychain, &params);
+    SecKeyRef key = importKey(keyData, self.keyClass, keychain, &params);
     if (!key) {
         [self release];
         return nil;
@@ -45,10 +45,15 @@
     return $sprintf(@"%@[%@ /%p]", [self class], (self.name ?:@""), self.keychainItemRef);
 }
 
-- (SecExternalItemType) keyType {
+- (SecExternalItemType) keyClass {
     AssertAbstractMethod();
 }
 
+#if MYCRYPTO_USE_IPHONE_API
+- (SecExternalItemType) keyType {
+    return NULL;
+}
+#endif
 
 - (SecKeyRef) keyRef {
     return (SecKeyRef) self.keychainItemRef;

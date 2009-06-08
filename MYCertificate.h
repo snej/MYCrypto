@@ -52,6 +52,9 @@
 /** The common name of the subject (owner) of the certificate. */
 @property (readonly) NSString *commonName;
 
+/** The list (if any) of the subject's email addresses. */
+@property (readonly) NSArray *emailAddresses;
+
 
 /** @name Mac-Only
  *  Functionality not available on iPhone. 
@@ -63,9 +66,6 @@
 - (id) initWithCertificateData: (NSData*)data
                           type: (CSSM_CERT_TYPE) type
                       encoding: (CSSM_CERT_ENCODING) encoding;
-
-/** The list (if any) of the subject's email addresses. */
-@property (readonly) NSArray *emailAddresses;
 
 /** Finds the current 'preferred' certificate for the given name string. */
 + (MYCertificate*) preferredCertificateForName: (NSString*)name;

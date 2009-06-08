@@ -43,27 +43,27 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
     NSNumber *keySizeInBits = [NSNumber numberWithUnsignedInt: keyData.length * 8];
-    NSDictionary *keyAttrs = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                    //{(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                    {(id)kSecAttrKeyType, [NSNumber numberWithUnsignedInt: kCSSMAlgorithms[algorithm]]},
-                                    {(id)kSecAttrKeySizeInBits, keySizeInBits},
-                                    {(id)kSecAttrEffectiveKeySize, keySizeInBits},
-                                    {(id)kSecAttrIsPermanent, keychain ?$true :$false},
-                                    {(id)kSecAttrCanEncrypt, $true},
-                                    {(id)kSecAttrCanDecrypt, $true},
-                                    {(id)kSecAttrCanWrap, $false},
-                                    {(id)kSecAttrCanUnwrap, $false},
-                                    {(id)kSecAttrCanDerive, $false},
-                                    {(id)kSecAttrCanSign, $false},
-                                    {(id)kSecAttrCanVerify, $false},
-                                    {(id)kSecValueData, keyData},
-                                    {(id)kSecReturnPersistentRef, $true});
-    SecKeyRef keyRef = NULL;
-    if (!check(SecItemAdd((CFDictionaryRef)keyAttrs, (CFTypeRef*)&keyRef), @"SecItemAdd")) {
+    NSNumber *keyType = [NSNumber numberWithUnsignedInt: kCSSMAlgorithms[algorithm]];
+    NSMutableDictionary *keyAttrs = $mdict( {(id)kSecClass, (id)kSecClassKey},
+                                            {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
+                                            {(id)kSecAttrKeyType, keyType},
+                                            {(id)kSecValueData, keyData},
+                                            {(id)kSecAttrKeySizeInBits, keySizeInBits},
+                                            {(id)kSecAttrEffectiveKeySize, keySizeInBits},
+                                            {(id)kSecAttrIsPermanent, keychain ?$true :$false},
+                                            {(id)kSecAttrCanEncrypt, $true},
+                                            {(id)kSecAttrCanDecrypt, $true},
+                                            {(id)kSecAttrCanWrap, $false},
+                                            {(id)kSecAttrCanUnwrap, $false},
+                                            {(id)kSecAttrCanDerive, $false},
+                                            {(id)kSecAttrCanSign, $false},
+                                            {(id)kSecAttrCanVerify, $false},
+                                            {(id)kSecReturnPersistentRef, $true});
+    SecKeyRef keyRef = [[self class] _addKeyWithInfo: keyAttrs];
+    if (!keyRef) {
         [self release];
         return nil;
     }
-    Assert(keyRef, @"SecItemAdd didn't return anything");
     self = [self initWithKeyRef: keyRef];
     CFRelease(keyRef);
     return self;
@@ -93,7 +93,7 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 }
 
 
-- (SecExternalItemType) keyType {
+- (SecExternalItemType) keyClass {
     return kSecAttrKeyClassSymmetric;
 }
 

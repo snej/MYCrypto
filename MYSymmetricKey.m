@@ -283,7 +283,7 @@ static CSSM_RETURN impExpCreatePassKey(
 #endif
 
 
-- (SecExternalItemType) keyType {
+- (SecExternalItemType) keyClass {
     return kSecItemTypeSessionKey;
 }
 

@@ -175,17 +175,30 @@
 
 @synthesize publicKey=_publicKey;
 
-- (MYSHA1Digest*) publicKeyDigest {
-    return _publicKey.publicKeyDigest;
+- (MYSHA1Digest*) _keyDigest {
+    if (_publicKey)
+        return _publicKey.publicKeyDigest;
+    else
+        return [MYSHA1Digest digestFromDigestData: [self _attribute: kSecAttrApplicationLabel]];
 }
 
-- (SecExternalItemType) keyType {
+- (MYSHA1Digest*) publicKeyDigest {
+    return self._keyDigest;
+}
+
+- (SecExternalItemType) keyClass {
 #if MYCRYPTO_USE_IPHONE_API
     return kSecAttrKeyClassPublic;
 #else
     return kSecItemTypePrivateKey;
 #endif
 }
+
+#if MYCRYPTO_USE_IPHONE_API
+- (SecExternalItemType) keyType {
+    return kSecAttrKeyTypeRSA;
+}
+#endif
 
 - (NSData *) keyData {
     [NSException raise: NSGenericException format: @"Can't access keyData of a PrivateKey"];

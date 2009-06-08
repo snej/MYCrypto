@@ -17,13 +17,14 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 @implementation MYKeychainItem
 
 
-- (id) initWithKeychainItemRef: (MYKeychainItemRef)itemRef;
+- (id) initWithKeychainItemRef: (MYKeychainItemRef)itemRef
 {
     Assert(itemRef!=NULL);
     self = [super init];
     if (self != nil) {
         _itemRef = itemRef;
         CFRetain(_itemRef);
+        LogTo(INIT,@"%@, _itemRef=%@", [self class], itemRef);
     }
     return self;
 }
@@ -213,6 +214,8 @@ BOOL check(OSStatus err, NSString *what) {
             return checkcssm(err,what);
 #endif
         Warn(@"MYCrypto error, %@: %@", what, MYErrorName(NSOSStatusErrorDomain,err));
+        if (err==-50)
+            [NSException raise: NSGenericException format: @"%@ failed with paramErr (-50)",what];
         return NO;
     } else
         return YES;

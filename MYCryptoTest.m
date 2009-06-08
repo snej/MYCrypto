@@ -43,23 +43,44 @@ TestCase(MYKeychain) {
 }
 
 
-TestCase(EnumerateKeys) {
+TestCase(Enumerate) {
+    RequireTestCase(EnumeratePublicKeys);
+    RequireTestCase(EnumeratePrivateKeys);
+    RequireTestCase(EnumerateSymmetricKeys);
+    RequireTestCase(EnumerateCerts);
+    RequireTestCase(EnumerateIdentities);
+}
+
+
+TestCase(EnumeratePublicKeys) {
     RequireTestCase(MYKeychain);
     NSEnumerator *e = [[MYKeychain allKeychains] enumeratePublicKeys];
     Log(@"Public Key Enumerator = %@", e);
     CAssert(e);
     for (MYPublicKey *key in e) {
-        Log(@"Found %@ -- name=%@", key, key.name);
+        Log(@"Trying public key %@", key.keyRef);
+        @try{
+            Log(@"Found %@ -- name=%@", key, key.name);
+        }@catch (NSException *x) {
+            Warn(@"Caught %@",x); //TEMP
+        }
     }
-    
-    e = [[MYKeychain allKeychains] enumeratePrivateKeys];
+}
+
+TestCase(EnumeratePrivateKeys) {
+    RequireTestCase(MYKeychain);
+    NSEnumerator *e = [[MYKeychain allKeychains] enumeratePrivateKeys];
     Log(@"Key-Pair Enumerator = %@", e);
     CAssert(e);
     for (MYPrivateKey *key in e) {
-        Log(@"Found %@ -- name=%@", key, key.name);
+        Log(@"Found %@ -- name=%@ --> %@", key, key.name, key.publicKey);
+        CAssert(key.publicKey);
     }
-    
-    e = [[MYKeychain allKeychains] enumerateSymmetricKeys];
+}
+
+TestCase(EnumerateSymmetricKeys) {
+    RequireTestCase(MYKeychain);
+    NSEnumerator *e = [[MYKeychain allKeychains] enumerateSymmetricKeys];
     Log(@"Symmetric Key Enumerator = %@", e);
     CAssert(e);
     for (MYSymmetricKey *key in e) {
@@ -74,7 +95,8 @@ TestCase(EnumerateCerts) {
     Log(@"Enumerator = %@", e);
     CAssert(e);
     for (MYCertificate *cert in e) {
-        //Log(@"Found %@ -- name=%@, email=%@", cert, cert.commonName, cert.emailAddresses);
+        Log(@"Found %@ -- name=%@, email=%@", cert, cert.commonName, cert.emailAddresses);
+        CAssert(cert.publicKey);
     }
 }
 
@@ -112,7 +134,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
         else
             key = [MYSymmetricKey generateSymmetricKeyOfSize: sizeInBits algorithm: algorithm];
         Log(@"Created %@", key);
-    CAssert(key);
+        CAssert(key);
         CAssertEq(key.algorithm, algorithm);
         CAssertEq(key.keySizeInBits, sizeInBits);
     #if !TARGET_OS_IPHONE

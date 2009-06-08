@@ -179,8 +179,18 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
                                            [MYBitString bitStringWithData: publicKey.keyData] ) ) );
     self = [super initWithRoot: root];
     [version release];
+    if (self) {
+        _publicKey = publicKey.retain;
+    }
     return self;
 }
+    
+- (void) dealloc
+{
+    [_publicKey release];
+    [super dealloc];
+}
+
 
 - (NSDate*) validFrom       {return [super validFrom];}
 - (NSDate*) validTo         {return [super validTo];}
@@ -244,11 +254,14 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 - (MYIdentity*) createSelfSignedIdentityWithPrivateKey: (MYPrivateKey*)privateKey
                                                  error: (NSError**)outError
 {
+    Assert(privateKey.keychain!=nil);
     NSData *certData = [self selfSignWithPrivateKey: privateKey error: outError];
     if (!certData)
         return nil;
     MYCertificate *cert = [privateKey.keychain importCertificate: certData];
     Assert(cert!=nil);
+    Assert(cert.keychain!=nil);
+    AssertEqual(cert.publicKey.keyData, _publicKey.keyData);
     MYIdentity *identity = cert.identity;
     Assert(identity!=nil);
     return identity;
@@ -329,10 +342,9 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 #if DEBUG
 
 
-static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
-    Log(@"--- Creating MYCertificateInfo from %@", filename);
-    NSData *certData = [NSData dataWithContentsOfFile: filename];
+static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     //Log(@"Cert Data =\n%@", certData);
+    CAssert(certData!=nil);
     NSError *error = nil;
     MYCertificateInfo *pcert = [[MYCertificateInfo alloc] initWithCertificateData: certData 
                                                                             error: &error];
@@ -359,10 +371,21 @@ static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
     return pcert;
 }
 
+static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
+#if TARGET_OS_IPHONE
+    filename = [[NSBundle mainBundle] pathForResource: filename ofType: @"cer"];
+#else
+    filename = [[@"../../Tests/" stringByAppendingPathComponent: filename]
+                stringByAppendingPathExtension: @"cer"];
+#endif
+    Log(@"--- Creating MYCertificateInfo from %@", filename);
+    return testCertData([NSData dataWithContentsOfFile: filename], selfSigned);
+}
+
 
 TestCase(ParsedCert) {
-    testCert(@"../../Tests/selfsigned.cer", YES);
-    testCert(@"../../Tests/iphonedev.cer", NO);
+    testCert(@"selfsigned", YES);
+    testCert(@"iphonedev", NO);
 }
 
 
@@ -395,8 +418,10 @@ TestCase(CreateCert) {
         CAssert(certData);
         CAssertNil(error);
         CAssert(certData);
+#if !TARGET_OS_IPHONE
         [certData writeToFile: @"../../Tests/generated.cer" atomically: YES];
-        MYCertificateInfo *pcert2 = testCert(@"../../Tests/generated.cer", YES);
+#endif
+        MYCertificateInfo *pcert2 = testCertData(certData, YES);
         
         Log(@"Verifying Info...");
         MYCertificateName *subject2 = pcert2.subject;
