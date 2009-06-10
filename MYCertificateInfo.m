@@ -21,9 +21,17 @@
 #import "MYErrorUtils.h"
 
 
-#define kDefaultExpirationTime (60.0 * 60.0 * 24.0 * 365.0)
+#define kDefaultExpirationTime (60.0 * 60.0 * 24.0 * 365.0)     /* that's 1 year */
+
+/*  X.509 version number to generate. Even though my code doesn't (yet) add any of the post-v1
+    metadata, it's necessary to write v3 or the resulting certs won't be accepted on some platforms,
+    notably iPhone OS.
+    "This field is used mainly for marketing purposes to claim that software is X.509v3 compliant 
+    (even when it isn't)." --Peter Gutmann */
+#define kCertRequestVersionNumber 3
 
 
+/* "Safe" NSArray accessor -- returns nil if out of range. */
 static id $atIf(NSArray *array, NSUInteger index) {
     return index < array.count ?[array objectAtIndex: index] :nil;
 }
@@ -43,7 +51,7 @@ static id $atIf(NSArray *array, NSUInteger index) {
 
 
 static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
-            *kGivenNameOID, *kSurnameOID, *kDescriptionOID, *kEmailOID;
+             *kGivenNameOID, *kSurnameOID, *kDescriptionOID, *kEmailOID;
 
 
 + (void) initialize {
@@ -209,7 +217,9 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 - (id) initWithPublicKey: (MYPublicKey*)publicKey {
     Assert(publicKey);
     id empty = [NSNull null];
-    id version = [[MYASN1Object alloc] initWithTag: 0 ofClass: 2 components: $array($object(0))];
+    id version = [[MYASN1Object alloc] initWithTag: 0 
+                                           ofClass: 2
+                                        components: $array($object(kCertRequestVersionNumber - 1))];
     NSArray *root = $array( $marray(version,
                                     empty,       // serial #
                                     $array(kRSAAlgorithmID),
@@ -493,8 +503,8 @@ TestCase(CreateCert) {
         CAssertEqual(subject2.surname, @"Case");
         CAssertEqual(subject2.nameDescription, @"Just a test certificate created by MYCrypto");
         CAssertEqual(subject2.emailAddress, @"testcase@example.com");
-        
-        Log(@"Verifying Signature...");
+                
+        Log(@"Creating MYCertificate object...");
         MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];
         Log(@"Loaded %@", cert);
         CAssert(cert);
