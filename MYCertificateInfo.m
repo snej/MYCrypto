@@ -107,12 +107,17 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
         return nil;
     }
 
-    return [self initWithRoot: root];
+    self = [self initWithRoot: root];
+    if (self) {
+        _data = [data copy];
+    }
+    return self;
 }
 
 - (void) dealloc
 {
     [_root release];
+    [_data release];
     [super dealloc];
 }
 
@@ -156,6 +161,42 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
     if (!keyData) return nil;
     return [[[MYPublicKey alloc] initWithKeyData: keyData.bits] autorelease];
 }
+
+- (NSData*) signedData {
+    if (!_data)
+        return nil;
+    // The root object is a sequence; we want to extract the 1st object of that sequence.
+    const UInt8 *certStart = _data.bytes;
+    const UInt8 *start = MYBERGetContents(_data, nil);
+    if (!start) return nil;
+    size_t length = MYBERGetLength([NSData dataWithBytesNoCopy: (void*)start
+                                                        length: _data.length - (start-certStart)
+                                                  freeWhenDone: NO],
+                                   NULL);
+    if (length==0)
+        return nil;
+    return [NSData dataWithBytes: start length: (start + length - certStart)];
+}
+
+- (MYOID*) signatureAlgorithmID {
+    return $castIf(MYOID, $atIf($castIf(NSArray,$atIf(_root,1)), 0));
+}
+
+- (NSData*) signature {
+    id signature = $atIf(_root,2);
+    if ([signature isKindOfClass: [MYBitString class]])
+        signature = [signature bits];
+    return $castIf(NSData,signature);
+}
+
+- (BOOL) verifySignatureWithKey: (MYPublicKey*)issuerPublicKey {
+    if (!$equal(self.signatureAlgorithmID, kRSAWithSHA1AlgorithmID))
+        return NO;
+    NSData *signedData = self.signedData;
+    NSData *signature = self.signature;
+    return signedData && signature && [issuerPublicKey verifySignature: signature ofData: signedData];
+}
+
 
 @end
 
@@ -364,28 +405,45 @@ static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     CAssert(subject.commonName);
     
     // Now go through MYCertificate:
+    Log(@"Creating a MYCertificate from the data...");
     MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];
+    Log(@"MYCertificate = %@", cert);
     CAssert(cert);
     CAssertEqual(cert.info, pcert);
+    Log(@"Trust = %@", MYTrustResultDescribe([cert evaluateTrust]));
     
     return pcert;
 }
 
-static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
+static NSData* readTestFile(NSString *filename) {
 #if TARGET_OS_IPHONE
     filename = [[NSBundle mainBundle] pathForResource: filename ofType: @"cer"];
 #else
     filename = [[@"../../Tests/" stringByAppendingPathComponent: filename]
                 stringByAppendingPathExtension: @"cer"];
 #endif
-    Log(@"--- Creating MYCertificateInfo from %@", filename);
-    return testCertData([NSData dataWithContentsOfFile: filename], selfSigned);
+    Log(@"--- Testing certificate file %@", filename);
+    NSData *data = [NSData dataWithContentsOfFile: filename];
+    CAssert(data, @"Couldn't read file %@", filename);
+    return data;
+}
+
+static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
+    return testCertData(readTestFile(filename), selfSigned);
 }
 
 
 TestCase(ParsedCert) {
     testCert(@"selfsigned", YES);
     testCert(@"iphonedev", NO);
+    
+    // Now test a self-signed cert with a bad signature:
+    MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: readTestFile(@"selfsigned_altered")];
+    Log(@"MYCertificate = %@", cert);
+    CAssertNil(cert);
+
+    Log(@"Checking /tmp/generated.cer");
+    testCertData([NSData dataWithContentsOfFile: @"/tmp/generated.cer"], YES);//TEMP
 }
 
 
@@ -418,7 +476,11 @@ TestCase(CreateCert) {
         CAssert(certData);
         CAssertNil(error);
         CAssert(certData);
-#if !TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
+        NSString *path = [@"/tmp/generated.cer" stringByStandardizingPath]; //TEMP
+        CAssert([certData writeToFile: path atomically: YES]);
+        Log(@"Wrote generated cert to %@",path);
+#else
         [certData writeToFile: @"../../Tests/generated.cer" atomically: YES];
 #endif
         MYCertificateInfo *pcert2 = testCertData(certData, YES);

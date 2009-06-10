@@ -29,6 +29,7 @@
     Concrete subclasses are MYSymmetricKey and MYPublicKey. */
 @interface MYKey : MYKeychainItem
 { 
+    @private
     NSData *_keyData;
 }
 

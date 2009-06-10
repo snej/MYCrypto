@@ -178,8 +178,16 @@
 - (MYSHA1Digest*) _keyDigest {
     if (_publicKey)
         return _publicKey.publicKeyDigest;
-    else
-        return [MYSHA1Digest digestFromDigestData: [self _attribute: kSecAttrApplicationLabel]];
+    else {
+        NSData *digestData;
+#if MYCRYPTO_USE_IPHONE_API
+        digestData = [self _attribute: kSecAttrApplicationLabel];
+#else
+        digestData = [[self class] _getAttribute: kSecKeyLabel 
+                                          ofItem: (SecKeychainItemRef)self.keyRef]; 
+#endif
+        return [MYSHA1Digest digestFromDigestData: digestData];
+    }
 }
 
 - (MYSHA1Digest*) publicKeyDigest {

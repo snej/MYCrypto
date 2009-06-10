@@ -220,6 +220,22 @@
 }
 
 
+- (BOOL) _verifyPublicKeyRef: (MYKeychainItemRef)itemRef {
+    // Enumerating the keychain sometimes returns public-key refs that give not-found errors
+    // when you try to use them for anything. As a workaround, detect these early on before
+    // even creating a MYPublicKey:
+    NSDictionary *info = $dict({(id)kSecValueRef, (id)itemRef},
+    {(id)kSecReturnAttributes, $true});
+    CFDictionaryRef attrs = NULL;
+    OSStatus err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs);
+    if (attrs) CFRelease(attrs);
+    if (err == errSecItemNotFound) {
+        Log(@"MYKeyEnumerator: Ignoring bogus(?) key with ref %p", itemRef);
+        return NO;
+    } else
+        return YES;
+}        
+
 - (id) nextObject {
     if (!_results)
         return nil;
@@ -229,7 +245,8 @@
         if (_itemClass == kSecAttrKeyClassPrivate) {
             _currentObject = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecAttrKeyClassPublic) {
-            _currentObject = [[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found];
+            if ([self _verifyPublicKeyRef: found])
+                _currentObject = [[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecAttrKeyClassSymmetric) {
             _currentObject = [[MYSymmetricKey alloc] initWithKeyRef: (SecKeyRef)found];
         } else if (_itemClass == kSecClassCertificate) {

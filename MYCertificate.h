@@ -55,6 +55,9 @@
 /** The list (if any) of the subject's email addresses. */
 @property (readonly) NSArray *emailAddresses;
 
+- (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy;
+- (SecTrustResultType) evaluateTrust;
+
 
 /** @name Mac-Only
  *  Functionality not available on iPhone. 
@@ -80,21 +83,24 @@
 /** @name Expert
  */
 //@{
-#if !TARGET_OS_IPHONE
 
 + (SecPolicyRef) X509Policy;
 + (SecPolicyRef) SSLPolicy;
+
+#if !TARGET_OS_IPHONE
 + (SecPolicyRef) SMIMEPolicy;
 - (CSSM_CERT_TYPE) certificateType;
 - (NSArray*) trustSettings;
 - (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting;
-    
 #endif
+    
 //@}
     
 @end
 
 
+NSString* MYTrustResultDescribe( SecTrustResultType result );
+#if !TARGET_OS_IPHONE
 NSString* MYPolicyGetName( SecPolicyRef policy );
 NSString* MYTrustDescribe( SecTrustRef trust );
-NSString* MYTrustResultDescribe( SecTrustResultType result );
+#endif

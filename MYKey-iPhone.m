@@ -59,7 +59,7 @@
 
 
 - (id) initWithKeyRef: (SecKeyRef)key {
-    return [super initWithKeychainItemRef: (SecKeychainItemRef)key];
+    return [self initWithKeychainItemRef: (SecKeychainItemRef)key];
 }
 
 
@@ -114,7 +114,8 @@
         return nil;
     else {
         Assert(data!=NULL);
-        return [(id)CFMakeCollectable(data) autorelease];
+        _keyData = NSMakeCollectable(data);
+        return _keyData;
     }
     // The format of this data is not documented. There's been some reverse-engineering:
     // https://devforums.apple.com/message/32089#32089
@@ -147,9 +148,7 @@
 - (BOOL) setValue: (NSString*)value ofAttribute: (SecKeychainAttrType)attribute {
     if (!value)
         value = (id)[NSNull null];
-    NSDictionary *query = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyClass, (id)self.keyClass},
-                                {(id)kSecMatchItemList, self._itemList} );
+    NSDictionary *query = $dict( {(id)kSecValueRef, (id)self.keyRef} );
     NSDictionary *attrs = $dict( {(id)attribute, value} );
     return check(SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attrs), @"SecItemUpdate");
 }

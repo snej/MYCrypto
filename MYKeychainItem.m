@@ -68,13 +68,6 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return $array((id)_itemRef);
 }
 
-#if MYCRYPTO_USE_IPHONE_API
-- (CFDictionaryRef) asQuery {
-    return (CFDictionaryRef) $dict( {(id)kSecClass, (id)kSecClassKey},//FIX
-                                    {(id)kSecMatchItemList, self._itemList} );
-}
-#endif
-
 
 - (MYKeychain*) keychain {
 #if MYCRYPTO_USE_IPHONE_API
@@ -95,7 +88,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 - (BOOL) removeFromKeychain {
     OSStatus err;
 #if MYCRYPTO_USE_IPHONE_API
-    err = SecItemDelete(self.asQuery);
+    err = SecItemDelete((CFDictionaryRef) $dict( {(id)kSecValueRef, (id)_itemRef} ));
 #else
     err = SecKeychainItemDelete((SecKeychainItemRef)_itemRef);
     if (err==errSecInvalidItemRef)
@@ -127,8 +120,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 + (NSData*) _getAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
     NSData *value = nil;
 #if MYCRYPTO_USE_IPHONE_API
-    NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecMatchItemList, $array((id)item)},
+    NSDictionary *info = $dict( {(id)kSecValueRef, (id)item},
                                 {(id)kSecReturnAttributes, $true} );
     CFDictionaryRef attrs;
     if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
@@ -182,9 +174,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 {
 #if MYCRYPTO_USE_IPHONE_API
     id value = stringValue ?(id)stringValue :(id)[NSNull null];
-    NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassKey},
-                                {(id)kSecAttrKeyType, (id)attr},
-                                {(id)kSecMatchItemList, $array((id)item)});
+    NSDictionary *query = $dict({(id)kSecValueRef, (id)item});
     NSDictionary *attrs = $dict({(id)attr, value});
     return check(SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attrs), @"SecItemUpdate");
     

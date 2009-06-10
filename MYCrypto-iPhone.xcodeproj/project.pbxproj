@@ -12,7 +12,6 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		27059CF30F8F0F9200A8422F /* MYIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 27059CF20F8F0F9200A8422F /* MYIdentity.m */; };
-		273391CD0F81EC70009414D9 /* MYCertificate-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */; };
 		273392120F8283B8009414D9 /* MYKeychain-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 273392110F8283B8009414D9 /* MYKeychain-iPhone.m */; };
 		274110090F99234100AD413F /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 274110080F99234100AD413F /* MYSymmetricKey-iPhone.m */; };
 		2748607F0F8D5E0600FE617B /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 2748607E0F8D5E0600FE617B /* MYPrivateKey.m */; };
@@ -20,6 +19,7 @@
 		275D9FF00FD8795300D85A86 /* MYBERParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FE80FD8795300D85A86 /* MYBERParser.m */; };
 		275D9FF10FD8795300D85A86 /* MYDEREncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */; };
 		275D9FF20FD8795300D85A86 /* MYOID.m in Sources */ = {isa = PBXBuildFile; fileRef = 275D9FEC0FD8795300D85A86 /* MYOID.m */; };
+		275ED90F0FDF8C22006A371D /* selfsigned_altered.cer in Resources */ = {isa = PBXBuildFile; fileRef = 275ED90E0FDF8C22006A371D /* selfsigned_altered.cer */; };
 		276FB13F0F84090900CB326E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276FB13E0F84090900CB326E /* Security.framework */; };
 		276FB16E0F84152B00CB326E /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB16D0F84152B00CB326E /* MYCryptoTest.m */; };
 		276FB3190F856AA700CB326E /* MYPublicKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 276FB3180F856AA700CB326E /* MYPublicKey.m */; };
@@ -54,7 +54,6 @@
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		27059CF10F8F0F8E00A8422F /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
 		27059CF20F8F0F9200A8422F /* MYIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYIdentity.m; sourceTree = "<group>"; };
-		273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYCertificate-iPhone.m"; sourceTree = "<group>"; };
 		273392110F8283B8009414D9 /* MYKeychain-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYKeychain-iPhone.m"; sourceTree = "<group>"; };
 		274110080F99234100AD413F /* MYSymmetricKey-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYSymmetricKey-iPhone.m"; sourceTree = "<group>"; };
 		2748607D0F8D5DF200FE617B /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
@@ -67,6 +66,7 @@
 		275D9FEA0FD8795300D85A86 /* MYDEREncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDEREncoder.m; sourceTree = "<group>"; };
 		275D9FEB0FD8795300D85A86 /* MYOID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYOID.h; sourceTree = "<group>"; };
 		275D9FEC0FD8795300D85A86 /* MYOID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYOID.m; sourceTree = "<group>"; };
+		275ED90E0FDF8C22006A371D /* selfsigned_altered.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned_altered.cer; path = Tests/selfsigned_altered.cer; sourceTree = "<group>"; };
 		276FB13E0F84090900CB326E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		276FB16D0F84152B00CB326E /* MYCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptoTest.m; sourceTree = "<group>"; };
 		276FB3180F856AA700CB326E /* MYPublicKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPublicKey.m; sourceTree = "<group>"; };
@@ -161,6 +161,7 @@
 				275D9FEC0FD8795300D85A86 /* MYOID.m */,
 				27958CA10FDB5F8F00095275 /* iphonedev.cer */,
 				27958CA20FDB5F8F00095275 /* selfsigned.cer */,
+				275ED90E0FDF8C22006A371D /* selfsigned_altered.cer */,
 			);
 			name = Certificates;
 			sourceTree = "<group>";
@@ -180,7 +181,6 @@
 				27AAD9710F8927DB0064DD7C /* MYCryptoConfig.h */,
 				27E8230C0F81D56E0019BE60 /* MYCertificate.h */,
 				276FB34A0F856CA400CB326E /* MYCertificate.m */,
-				273391CC0F81EC70009414D9 /* MYCertificate-iPhone.m */,
 				27059CF10F8F0F8E00A8422F /* MYIdentity.h */,
 				27059CF20F8F0F9200A8422F /* MYIdentity.m */,
 				27E823100F81D56E0019BE60 /* MYKey.h */,
@@ -299,6 +299,7 @@
 				27E8233C0F81D5760019BE60 /* MYError_CSSMErrorDomain.strings in Resources */,
 				27958CA30FDB5F8F00095275 /* iphonedev.cer in Resources */,
 				27958CA40FDB5F8F00095275 /* selfsigned.cer in Resources */,
+				275ED90F0FDF8C22006A371D /* selfsigned_altered.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,7 +319,6 @@
 				27E823390F81D5760019BE60 /* Logging.m in Sources */,
 				27E8233A0F81D5760019BE60 /* Test.m in Sources */,
 				27E8233B0F81D5760019BE60 /* MYErrorUtils.m in Sources */,
-				273391CD0F81EC70009414D9 /* MYCertificate-iPhone.m in Sources */,
 				273392120F8283B8009414D9 /* MYKeychain-iPhone.m in Sources */,
 				276FB16E0F84152B00CB326E /* MYCryptoTest.m in Sources */,
 				276FB3190F856AA700CB326E /* MYPublicKey.m in Sources */,

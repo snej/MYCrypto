@@ -14,6 +14,7 @@
 {
     @private
     NSArray *_root;
+    NSData *_data;
 }
 
 /** Initialize by parsing X.509 certificate data.
@@ -34,6 +35,10 @@
 
 /** Returns YES if the issuer is the same as the subject. (Aka a "self-signed" certificate.) */
 @property (readonly) BOOL isRoot;
+
+/** Verifies the certificate's signature, using the given public key.
+    If the certificate is root/self-signed, use the cert's own subject public key. */
+- (BOOL) verifySignatureWithKey: (MYPublicKey*)issuerPublicKey;
 
 @end
 

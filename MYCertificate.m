@@ -13,8 +13,6 @@
 #import "MYCertificateInfo.h"
 #import "MYErrorUtils.h"
 
-#if !MYCRYPTO_USE_IPHONE_API
-
 
 @implementation MYCertificate
 
@@ -34,28 +32,51 @@
 
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data
+#if !MYCRYPTO_USE_IPHONE_API
                           type: (CSSM_CERT_TYPE) type
                       encoding: (CSSM_CERT_ENCODING) encoding
+#endif
 {
     Assert(data);
-    CSSM_DATA cssmData = {.Data=(void*)data.bytes, .Length=data.length};
     SecCertificateRef certificateRef = NULL;
+#if MYCRYPTO_USE_IPHONE_API
+    certificateRef = SecCertificateCreateWithData(NULL, (CFDataRef)data);
+#else
+    CSSM_DATA cssmData = {.Data=(void*)data.bytes, .Length=data.length};
     if (!check(SecCertificateCreateFromData(&cssmData, type, encoding, &certificateRef),
-        @"SecCertificateCreateFromData")) {
+               @"SecCertificateCreateFromData"))
+        certificateRef = NULL;
+#endif
+    if (!certificateRef) {
         [self release];
         return nil;
     }
     self = [self initWithCertificateRef: certificateRef];
     CFRelease(certificateRef);
+    
+    // If the cert is self-signed, verify its signature. Apple's frameworks don't do this,
+    // even the SecTrust API; if the signature doesn't verify, they just assume it could be
+    // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
+    MYCertificateInfo *info = self.info;
+    if (info.isRoot) {
+        Log(@"Verifying self-signed certificate %@ ...", self);
+        if (![info verifySignatureWithKey: self.publicKey]) {
+            Log(@"Self-signed cert failed signature verification (%@)", self);
+            [self release];
+            return nil;
+        }
+    }
+    
     return self;
 }
 
+#if !MYCRYPTO_USE_IPHONE_API
 - (id) initWithCertificateData: (NSData*)data {
     return [self initWithCertificateData: data 
                                     type: CSSM_CERT_X_509v3 
                                 encoding: CSSM_CERT_ENCODING_BER];
 }
-
+#endif
 - (void) dealloc
 {
     [_info release];
@@ -78,6 +99,7 @@
 }
 
 
+#if !TARGET_OS_IPHONE
 + (MYCertificate*) preferredCertificateForName: (NSString*)name {
     SecCertificateRef certRef = NULL;
     if (!check(SecCertificateCopyPreference((CFStringRef)name, 0, &certRef),
@@ -90,22 +112,48 @@
     return check(SecCertificateSetPreference(_certificateRef, (CFStringRef)name, 0, NULL),
                  @"SecCertificateSetPreference");
 }
+#endif TARGET_OS_IPHONE
 
 
 @synthesize certificateRef=_certificateRef;
 
 - (NSData*) certificateData {
+#if MYCRYPTO_USE_IPHONE_API
+    CFDataRef data = SecCertificateCopyData(_certificateRef);
+    return data ?[(id)CFMakeCollectable(data) autorelease] :nil;
+#else
     CSSM_DATA cssmData;
     if (!check(SecCertificateGetData(_certificateRef, &cssmData),
                @"SecCertificateGetData"))
         return nil;
     return [NSData dataWithBytes: cssmData.Data length: cssmData.Length];
+#endif
 }
 
 - (MYPublicKey*) publicKey {
     SecKeyRef keyRef = NULL;
+#if MYCRYPTO_USE_IPHONE_API
+    SecTrustRef trust = NULL;
+    SecPolicyRef policy = SecPolicyCreateBasicX509();
+    OSStatus err = SecTrustCreateWithCertificates((CFArrayRef)$array((id)_certificateRef),
+                                                  policy,
+                                                  &trust);
+    CFRelease(policy);
+    if (!check(err,@"SecTrustCreateWithCertificates"))
+        return nil;
+    SecTrustResultType result;
+    if (!check(SecTrustEvaluate(trust, &result), @"SecTrustEvaluate")) {
+        CFRelease(trust);
+        return nil;
+    }
+    keyRef = SecTrustCopyPublicKey(trust);
+    CFRelease(trust);
+#else
     if (!check(SecCertificateCopyPublicKey(_certificateRef, &keyRef),
                @"SecCertificateCopyPublicKey") || !keyRef)
+        return nil;
+#endif
+    if (!keyRef)
         return nil;
     MYPublicKey *key = [[[MYPublicKey alloc] initWithKeyRef: keyRef] autorelease];
     CFRelease(keyRef);
@@ -129,18 +177,27 @@
 
 - (NSString*) commonName {
     CFStringRef name = NULL;
+#if MYCRYPTO_USE_IPHONE_API
+    name = SecCertificateCopySubjectSummary(_certificateRef);
+#else
     if (!check(SecCertificateCopyCommonName(_certificateRef, &name),
-               @"SecCertificateCopyCommonName") || !name)
+               @"SecCertificateCopyCommonName"))
         return nil;
-    return [(id)CFMakeCollectable(name) autorelease];
+#endif
+    return name ?[NSMakeCollectable(name) autorelease] :nil;
 }
 
 - (NSArray*) emailAddresses {
+#if MYCRYPTO_USE_IPHONE_API
+    NSString *email = self.info.subject.emailAddress;
+    return email ?$array(email) :nil;
+#else
     CFArrayRef addrs = NULL;
     if (!check(SecCertificateCopyEmailAddresses(_certificateRef, &addrs),
                @"SecCertificateCopyEmailAddresses") || !addrs)
         return nil;
     return [(id)CFMakeCollectable(addrs) autorelease];
+#endif
 }
 
 
@@ -148,6 +205,37 @@
 #pragma mark TRUST/POLICY STUFF:
 
 
+- (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy {
+    SecTrustRef trust;
+    if (!check(SecTrustCreateWithCertificates((CFArrayRef)$array((id)_certificateRef), policy, &trust), 
+               @"SecTrustCreateWithCertificates"))
+        return kSecTrustResultOtherError;
+    SecTrustResultType result;
+    if (!check(SecTrustEvaluate(trust, &result), @"SecTrustEvaluate"))
+        result = kSecTrustResultOtherError;
+    
+#if 0
+    // This is just to log details:
+    CSSM_TP_APPLE_EVIDENCE_INFO *status;
+    CFArrayRef certChain;
+    if (check(SecTrustGetResult(trust, &result, &certChain, &status), @"SecTrustGetResult")) {
+        Log(@"evaluateTrust: result=%@, bits=%X, certChain=%@", MYTrustResultDescribe(result),status->StatusBits, certChain);
+        for (unsigned i=0; i<status->NumStatusCodes; i++)
+            Log(@"    #%i: %X", i, status->StatusCodes[i]);
+        CFRelease(certChain);
+    }
+#endif
+    
+    CFRelease(trust);
+    return result;
+}
+
+- (SecTrustResultType) evaluateTrust {
+    return [self evaluateTrustWithPolicy: [[self class] X509Policy]];
+}
+
+
+#if !MYCRYPTO_USE_IPHONE_API
 + (SecPolicyRef) policyForOID: (CSSM_OID) policyOID {
     SecPolicySearchRef search;
     if (!check(SecPolicySearchCreate(CSSM_CERT_X_509v3, &policyOID, NULL, &search),
@@ -159,28 +247,40 @@
     CFRelease(search);
     return policy;
 }
+#endif
 
 + (SecPolicyRef) X509Policy {
     static SecPolicyRef sX509Policy = NULL;
-    if (!sX509Policy)
+    if (!sX509Policy) {
+#if MYCRYPTO_USE_IPHONE_API
+        sX509Policy = SecPolicyCreateBasicX509();
+#else
         sX509Policy = [self policyForOID: CSSMOID_APPLE_X509_BASIC];
+#endif
+    }
     return sX509Policy;
 }
 
 + (SecPolicyRef) SSLPolicy {
     static SecPolicyRef sSSLPolicy = NULL;
-    if (!sSSLPolicy)
+    if (!sSSLPolicy) {
+#if MYCRYPTO_USE_IPHONE_API
+        sSSLPolicy = SecPolicyCreateSSL(NO,NULL);
+#else
         sSSLPolicy = [self policyForOID: CSSMOID_APPLE_TP_SSL];
+#endif
+    }
     return sSSLPolicy;
 }
 
+#if !TARGET_OS_IPHONE
 + (SecPolicyRef) SMIMEPolicy {
     static SecPolicyRef sSMIMEPolicy = NULL;
-    if (!sSMIMEPolicy)
+    if (!sSMIMEPolicy) {
         sSMIMEPolicy = [self policyForOID: CSSMOID_APPLE_TP_SMIME];
+    }
     return sSMIMEPolicy;
 }
-
 
 - (CSSM_CERT_TYPE) certificateType {
     CSSM_CERT_TYPE type = CSSM_CERT_UNKNOWN;
@@ -212,18 +312,11 @@
     } else
         return paramErr;
 }
+#endif
 
 
 @end
 
-
-NSString* MYPolicyGetName( SecPolicyRef policy ) {
-    if (!policy)
-        return @"(null)";
-    CSSM_OID oid = {};
-    SecPolicyGetOID(policy, &oid);
-    return $sprintf(@"SecPolicy[%@]", OIDAsString(oid));
-}
 
 NSString* MYTrustResultDescribe( SecTrustResultType result ) {
     static NSString* const kTrustResultNames[kSecTrustResultOtherError+1] = {
@@ -242,6 +335,15 @@ NSString* MYTrustResultDescribe( SecTrustResultType result ) {
         return $sprintf(@"(Unknown trust result %i)", result);
 }
 
+
+#if !TARGET_OS_IPHONE
+NSString* MYPolicyGetName( SecPolicyRef policy ) {
+    if (!policy)
+        return @"(null)";
+    CSSM_OID oid = {};
+    SecPolicyGetOID(policy, &oid);
+    return $sprintf(@"SecPolicy[%@]", OIDAsString(oid));
+}
 
 NSString* MYTrustDescribe( SecTrustRef trust ) {
     SecTrustResultType result;
@@ -275,9 +377,10 @@ NSString* OIDAsString(const CSSM_OID oid) {
         return result;
     }
 }
+#endif
 
 
-
+#if !TARGET_OS_IPHONE
 TestCase(Trust) {
     Log(@"X.509 policy = %@", MYPolicyGetName([MYCertificate X509Policy]));
     Log(@"  SSL policy = %@", MYPolicyGetName([MYCertificate SSLPolicy]));
@@ -288,9 +391,7 @@ TestCase(Trust) {
             Log(@"---- %@ = %@", cert, settings);
     }
 }
-
-
-#endif !MYCRYPTO_USE_IPHONE_API
+#endif
 
 
 

@@ -29,7 +29,6 @@
     return [self initWithKeyData: keyData];
 }
 
-
 - (void) dealloc
 {
     [_digest release];
@@ -47,10 +46,6 @@
 #if MYCRYPTO_USE_IPHONE_API
 - (SecExternalItemType) keyType {
     return kSecAttrKeyTypeRSA;
-}
-
-- (MYSHA1Digest*) _keyDigest {
-    return (MYSHA1Digest*) [MYSHA1Digest digestFromDigestData: [self _attribute: kSecAttrApplicationLabel]];
 }
 #endif
 
