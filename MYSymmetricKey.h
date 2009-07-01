@@ -21,7 +21,10 @@
 @interface MYSymmetricKey : MYKey <MYEncryption, MYDecryption>
 {
     @private
-#if !MYCRYPTO_USE_IPHONE_API
+#if MYCRYPTO_USE_IPHONE_API
+    CCAlgorithm _algorithm;
+    unsigned _keySizeInBits;
+#else
     CSSM_KEY *_ownedCSSMKey;
 #endif
 }
@@ -38,9 +41,6 @@
 
 /** The key's algorithm. */
 @property (readonly) CCAlgorithm algorithm;
-
-/** The key's size/length, in bits. */
-@property (readonly) unsigned keySizeInBits;
 
 
 #if !TARGET_OS_IPHONE

@@ -19,45 +19,6 @@
 @implementation MYKey
 
 
-+ (SecKeyRef) _addKeyWithInfo: (NSMutableDictionary*)info {
-    if (![info objectForKey: (id)kSecAttrApplicationTag]) {
-        // Every keychain item has to have a unique tag, apparently, or you'll get spurious
-        // duplicate-item errors. If none was given, make up a random one:
-        UInt8 tag[16];
-        Assert(check(SecRandomCopyBytes(kSecRandomDefault, sizeof(tag), tag), @"SecRandomCopyBytes"));
-        [info setObject: [NSData dataWithBytes: tag length: sizeof(tag)] 
-                 forKey: (id)kSecAttrApplicationTag];
-    }
-    CFDataRef keyPersistentRef;
-    SecKeyRef key;
-    OSStatus err = SecItemAdd((CFDictionaryRef)info, (CFTypeRef*)&keyPersistentRef);
-    if (err==errSecDuplicateItem) {
-        // it's already in the keychain -- get a reference to it:
-		[info removeObjectForKey: (id)kSecReturnPersistentRef];
-		[info setObject: $true forKey: (id)kSecReturnRef];
-		if (check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&key), 
-                   @"SecItemCopyMatching"))
-            return key;
-    } else if (check(err, @"SecItemAdd")) {
-        // It was added
-        if ([[info objectForKey: (id)kSecReturnPersistentRef] boolValue]) {
-            // now get its SecKeyRef:
-            info = $mdict({(id)kSecValuePersistentRef, (id)keyPersistentRef},
-                          {(id)kSecReturnRef, $true});
-            err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&key);
-            CFRelease(keyPersistentRef);
-            if (check(err,@"SecItemCopyMatching")) {
-                Assert(key!=nil);
-                return key;
-            }
-        } else {
-            return (SecKeyRef)keyPersistentRef;
-        }
-    }
-    return NULL;
-}
-
-
 - (id) initWithKeyRef: (SecKeyRef)key {
     return [self initWithKeychainItemRef: (SecKeychainItemRef)key];
 }
@@ -70,8 +31,8 @@
                                         {(id)kSecAttrKeyType, (id)self.keyType},
                                         {(id)kSecValueData, data},
                                         {(id)kSecAttrIsPermanent, (keychain ?$true :$false)},
-                                        {(id)kSecReturnPersistentRef, $true} );
-    SecKeyRef key = [[self class] _addKeyWithInfo: info];
+                                        {(id)kSecReturnPersistentRef, (keychain ?$true :$false)} );
+    SecKeyRef key = (SecKeyRef)[MYKeychain _addItemWithInfo: info];
     if (!key) {
         [self release];
         return nil;
@@ -80,6 +41,9 @@
     if (self) {
         if (!keychain)
             _keyData = [data copy];
+        
+        //TEMP For debugging:
+        AssertEqual(self.keyData, data);
     }
     return self;
 }
@@ -95,6 +59,19 @@
 }
 
 
+/*- (NSData*) persistentRef {
+    NSDictionary *info = $dict( {(id)kSecValueRef, (id)self.keyRef},
+                              //{(id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
+                                {(id)kSecReturnPersistentRef, $true} );
+    CFDataRef data;
+    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching"))
+        return nil;
+    if (!data)
+        Warn(@"MYKey persistentRef couldn't get ref");
+    return [NSMakeCollectable(data) autorelease];
+}*/
+
+
 - (SecExternalItemType) keyClass {
     AssertAbstractMethod();
 }
@@ -108,11 +85,13 @@
         return _keyData;
     
     NSDictionary *info = $dict( {(id)kSecValueRef, (id)self.keyRef},
+                              //{(id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
                                 {(id)kSecReturnData, $true} );
     CFDataRef data;
-    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching"))
+    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching")) {
+        Log(@"SecItemCopyMatching failed; input = %@", info);
         return nil;
-    else {
+    } else {
         Assert(data!=NULL);
         _keyData = NSMakeCollectable(data);
         return _keyData;
@@ -134,11 +113,11 @@
 
 - (id) _attribute: (CFTypeRef)attribute {
     NSDictionary *info = $dict({(id)kSecValueRef, (id)self.keyRef},
+            {(id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
                                {(id)kSecReturnAttributes, $true});
     CFDictionaryRef attrs = NULL;
     if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
         return nil;
-    Log(@"_attribute: %@ of %@ %p", attribute, [self class], self.keyRef);//TEMP
     CFTypeRef rawValue = CFDictionaryGetValue(attrs,attribute);
     id value = rawValue ?[[(id)CFMakeCollectable(rawValue) retain] autorelease] :nil;
     CFRelease(attrs);

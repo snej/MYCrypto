@@ -43,6 +43,16 @@ TestCase(MYKeychain) {
 }
 
 
+#if MYCRYPTO_USE_IPHONE_API
+TestCase(RemoveAll) {
+    RequireTestCase(MYKeychain);
+    MYKeychain *kc = [MYKeychain defaultKeychain];
+    CAssert([kc removeAllCertificates]);
+    CAssert([kc removeAllKeys]);
+}
+#endif
+
+
 TestCase(Enumerate) {
     RequireTestCase(EnumeratePublicKeys);
     RequireTestCase(EnumeratePrivateKeys);
@@ -95,8 +105,26 @@ TestCase(EnumerateCerts) {
     Log(@"Enumerator = %@", e);
     CAssert(e);
     for (MYCertificate *cert in e) {
-        Log(@"Found %@ -- name=%@, email=%@", cert, cert.commonName, cert.emailAddresses);
+        Log(@"Found %@ -- key=%@, name=%@, email=%@", cert,
+            cert.publicKey, cert.commonName, cert.emailAddresses);
         CAssert(cert.publicKey);
+        
+#if MYCRYPTO_USE_IPHONE_API
+        // Verify that cert has public-key-hash attribute:
+        NSData *digestData = [MYKeychainItem _getAttribute: kSecAttrPublicKeyHash 
+                                                    ofItem: cert.certificateRef];
+        CAssert(digestData, @"SecCertificateRef missing kSecAttrPublicKeyHash");
+        MYSHA1Digest *digest = [MYSHA1Digest digestFromDigestData: digestData];
+        CAssertEqual(digest, cert.publicKey.publicKeyDigest);
+        Log(@"kSecAttrPublicKeyHash matches: %@", digest);
+#else
+        MYSHA1Digest *digest = cert.publicKey.publicKeyDigest;
+#endif
+        // Verify that certificateWithDigest will find it:
+        MYCertificate *cert2 = [[MYKeychain allKeychains] certificateWithDigest: digest];
+        Log(@"certificateWithDigest(%@) returned %@", digest,cert2);
+        CAssert(cert2);
+        CAssertEqual(cert2.certificateData, cert.certificateData);
     }
 }
 
@@ -108,12 +136,15 @@ TestCase(EnumerateIdentities) {
     for (MYIdentity *ident in e) {
         Log(@"Found %@\n\tcommonName=%@\n\temails=(%@)\n\tkey=%@",
             ident, ident.commonName, 
-#if TARGET_OS_IPHONE
-            nil,
-#else
             [ident.emailAddresses componentsJoinedByString: @", "],
-#endif
             ident.privateKey);
+        
+        // Verify that identityWithDigest will find it:
+        MYSHA1Digest *digest = ident.publicKey.publicKeyDigest;
+        MYIdentity *ident2 = [[MYKeychain allKeychains] identityWithDigest:digest];
+        Log(@"identityWithDigest(%@) returned %@", digest,ident2);
+        CAssert(ident2);
+        CAssertEqual(ident2.certificateData, ident.certificateData);
     }
 }
 
@@ -177,7 +208,6 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
     #endif
 
     #if !TARGET_OS_IPHONE
-#if 1 // TEMP-ORARILY OUT OF ORDER
         // Try exporting and importing a wrapped key:
         Log(@"Testing export/import...");
         NSData *exported = [key exportWrappedKeyWithPassphrasePrompt: @"Export symmetric key with passphrase:"];
@@ -197,7 +227,6 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
             decrypted = [key2 decryptData: encrypted];
             CAssertEqual(decrypted, cleartext);
         }
-#endif 0
     #endif
     }@finally{
         [key removeFromKeychain];

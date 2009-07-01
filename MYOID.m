@@ -59,6 +59,16 @@
     return [[[self alloc] initWithBEREncoding: encoding] autorelease];
 }
 
+#if TARGET_OS_MAC
++ (MYOID*) OIDFromCSSM: (CSSM_OID)cssmOid
+{
+    NSData *ber = [[NSData alloc] initWithBytesNoCopy: cssmOid.Data length: cssmOid.Length freeWhenDone: NO];
+    MYOID *oid = [[[self alloc] initWithBEREncoding: ber] autorelease];
+    [ber release];
+    return oid;
+}
+#endif
+
 
 - (id) copyWithZone: (NSZone*)zone {
     return [self retain];

@@ -16,6 +16,10 @@
     NSData *_data;
 }
 
+#if TARGET_OS_MAC
++ (MYOID*) OIDFromCSSM: (CSSM_OID)cssmOid;
+#endif
+
 - (id) initWithComponents: (const UInt32*)components count: (unsigned)componentCount;
 - (id) initWithBEREncoding: (NSData*)encoding;
 - (NSData*) DEREncoding;

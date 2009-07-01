@@ -33,6 +33,12 @@
     }
     self = [self initWithKeyRef: key];
     CFRelease(key);
+    if (self) {
+#if MYCRYPTO_USE_IPHONE_API
+        if (!keychain)
+            self.isPersistent = NO;
+#endif
+    }
     return self;
 }
 
@@ -102,6 +108,12 @@
         return [(id)CFMakeCollectable(data) autorelease];
     else
         return nil;
+}
+
+- (unsigned) keySizeInBits {
+    const CSSM_KEY *key = self.cssmKey;
+    Assert(key);
+    return key->KeyHeader.LogicalKeySizeInBits;
 }
 
 - (NSString*) name {

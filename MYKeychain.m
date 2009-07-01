@@ -36,7 +36,7 @@
     SecIdentitySearchRef _searchRef;
 }
 
-- (id) initWithKeychain: (MYKeychain*)keychain;
+- (id) initWithKeychain: (MYKeychain*)keychain keyUsage: (CSSM_KEYUSE)keyUsage;
 @end
 
 
@@ -269,7 +269,11 @@
 }
 
 - (NSEnumerator*) enumerateIdentities {
-    return [[[MYIdentityEnumerator alloc] initWithKeychain: self] autorelease];
+    return [self enumerateIdentitiesWithKeyUsage: 0];
+}
+
+- (NSEnumerator*) enumerateIdentitiesWithKeyUsage: (CSSM_KEYUSE)keyUsage {
+    return [[[MYIdentityEnumerator alloc] initWithKeychain: self keyUsage: keyUsage] autorelease];
 }
 
 - (NSEnumerator*) enumerateSymmetricKeys {
@@ -448,10 +452,10 @@
 
 @implementation MYIdentityEnumerator
 
-- (id) initWithKeychain: (MYKeychain*)keychain {
+- (id) initWithKeychain: (MYKeychain*)keychain keyUsage: (CSSM_KEYUSE)keyUsage {
     self = [super init];
     if (self) {
-        if (!check(SecIdentitySearchCreate(keychain.keychainRef, 0, &_searchRef),
+        if (!check(SecIdentitySearchCreate(keychain.keychainRef, keyUsage, &_searchRef),
                    @"SecIdentitySearchCreate")) {
             [self release];
             return nil;

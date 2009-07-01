@@ -14,6 +14,20 @@
 #if MYCRYPTO_USE_IPHONE_API
 
 
+// from cssmtype.h:
+enum {
+    CSSM_CERT_UNKNOWN =					0x00,
+    CSSM_CERT_X_509v1 =					0x01,
+    CSSM_CERT_X_509v2 =					0x02,
+    CSSM_CERT_X_509v3 =					0x03,
+
+    CSSM_CERT_ENCODING_UNKNOWN =		0x00,
+    CSSM_CERT_ENCODING_CUSTOM =			0x01,
+    CSSM_CERT_ENCODING_BER =			0x02,
+    CSSM_CERT_ENCODING_DER =			0x03,
+};
+
+
 @interface MYKeyEnumerator : NSEnumerator
 {
     CFArrayRef _results;
@@ -98,7 +112,7 @@
 - (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
                 $mdict({(id)kSecClass, (id)kSecClassIdentity},
-                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData})];
+                       {(id)kSecAttrApplicationLabel/*kSecAttrPublicKeyHash*/, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumerateIdentities {
@@ -122,6 +136,50 @@
 #pragma mark IMPORT:
 
 
++ (CFTypeRef) _addItemWithInfo: (NSMutableDictionary*)info {
+    // Generally SecItemAdd will fail (return paramErr) if asked to return a regular ref.
+    // As a workaround ask for a persistent ref instead, then convert that to regular ref.
+    if (![[info objectForKey: (id)kSecReturnRef] boolValue])
+        [info setObject: $true forKey: (id)kSecReturnPersistentRef];
+    
+    CFDataRef itemPersistentRef;
+    CFTypeRef item;
+    OSStatus err = SecItemAdd((CFDictionaryRef)info, (CFTypeRef*)&itemPersistentRef);
+    if (err==errSecDuplicateItem) {
+        Log(@"_addItemWithInfo: Keychain claims it's a dup, so look for existing item");
+        // it's already in the keychain -- get a reference to it:
+		[info removeObjectForKey: (id)kSecReturnPersistentRef];
+		[info setObject: $true forKey: (id)kSecReturnRef];
+		if (check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&item), 
+                  @"SecItemCopyMatching")) {
+            if (!item)
+                Warn(@"_addItemWithInfo: Couldn't find supposedly-duplicate item, info=%@",info);
+            Log(@"_addItemWithInfo: SecItemAdd found item; ref=%@", item);//TEMP
+            return item;
+        }
+    } else if (check(err, @"SecItemAdd")) {
+        // It was added
+        if ([[info objectForKey: (id)kSecReturnPersistentRef] boolValue]) {
+            // now get its item ref:
+            Log(@"SecItemAdd added item; persistenRef=%@", itemPersistentRef);//TEMP
+            info = $mdict({(id)kSecValuePersistentRef, (id)itemPersistentRef},
+            {(id)kSecReturnRef, $true});
+            err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&item);
+            CFRelease(itemPersistentRef);
+            if (check(err,@"SecItemCopyMatching")) {
+                Assert(item!=nil);
+                return item;
+            }
+        } else {
+            Log(@"SecItemAdd added item; ref=%@", itemPersistentRef);//TEMP
+            return (CFTypeRef)itemPersistentRef;
+        }
+    }
+    Log(@"SecItemAdd failed: info = %@", info); // for help in debugging, dump the input dict
+    return NULL;
+}
+
+
 - (MYPublicKey*) importPublicKey: (NSData*)keyData {
     return [[[MYPublicKey alloc] _initWithKeyData: keyData 
                                       forKeychain: self]
@@ -131,13 +189,25 @@
 - (MYCertificate*) importCertificate: (NSData*)data
 {
     Assert(data);
-    NSDictionary *info = $dict( {(id)kSecClass, (id)kSecClassCertificate},
-                                {(id)kSecValueData, data},
-                                {(id)kSecReturnRef, $true} );
-    SecCertificateRef cert;
-    if (!check(SecItemAdd((CFDictionaryRef)info, (CFTypeRef*)&cert), @"SecItemAdd"))
+    
+#if 1
+    SecCertificateRef cert0 = SecCertificateCreateWithData(NULL, (CFDataRef)data);
+    if (!cert0)
         return nil;
-    return [[[MYCertificate alloc] initWithCertificateRef: cert] autorelease];
+    NSMutableDictionary *info = $mdict( {(id)kSecClass, (id)kSecClassCertificate},
+                                        {(id)kSecValueRef, (id)cert0});
+#else
+    NSMutableDictionary *info = $mdict( {(id)kSecClass, (id)kSecClassCertificate},
+                                        {(id)kSecAttrCertificateType, $object(CSSM_CERT_X_509v3)},
+                                        {(id)kSecAttrCertificateEncoding, $object(CSSM_CERT_ENCODING_BER)},
+                                        {(id)kSecValueData, data} );
+#endif
+    SecCertificateRef cert = (SecCertificateRef) [[self class] _addItemWithInfo: info];
+    if (!cert)
+        return nil;
+    MYCertificate *myCert = [[[MYCertificate alloc] initWithCertificateRef: cert] autorelease];
+    AssertEqual(data, myCert.certificateData);  //TEMP for debugging
+    return myCert;
 }
 
 
@@ -154,6 +224,21 @@
 
 - (MYPrivateKey*) generateRSAKeyPairOfSize: (unsigned)keySize {
     return [MYPrivateKey _generateRSAKeyPairOfSize: keySize inKeychain: self];
+}
+
+
+#pragma mark -
+#pragma mark REMOVING:
+
+
+- (BOOL) removeAllCertificates {
+    NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassCertificate});
+    return check(SecItemDelete((CFDictionaryRef)query),  @"SecItemDelete");
+}
+
+- (BOOL) removeAllKeys {
+    NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassKey});
+    return check(SecItemDelete((CFDictionaryRef)query), @"SecItemDelete");
 }
 
 
@@ -190,7 +275,7 @@
             [self release];
             return nil;
         }
-        Log(@"Enumerator results = %@", _results);//TEMP
+        //Log(@"Enumerator results = %@", _results);
         
         if (_results && CFEqual(limit,kSecMatchLimitOne)) {
             // If you ask for only one, it gives you the object back instead of an array:
@@ -225,7 +310,7 @@
     // when you try to use them for anything. As a workaround, detect these early on before
     // even creating a MYPublicKey:
     NSDictionary *info = $dict({(id)kSecValueRef, (id)itemRef},
-    {(id)kSecReturnAttributes, $true});
+                               {(id)kSecReturnAttributes, $true});
     CFDictionaryRef attrs = NULL;
     OSStatus err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs);
     if (attrs) CFRelease(attrs);

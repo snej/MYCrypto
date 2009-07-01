@@ -1,0 +1,11 @@
+//
+//  MYCrypto_Prefix.h
+//  MYCrypto-iPhone
+//
+//  Created by Jens Alfke on 6/11/09.
+//  Copyright 2009 Jens Alfke. All rights reserved.
+//
+
+#define USE_SECURITY_API 1      /* tells MYErrorUtils it can call Security to look up error names */
+
+#import "MYUtilities_Prefix.pch"

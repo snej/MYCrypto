@@ -12,7 +12,7 @@
 #import <Security/cssmtype.h>
 #endif
 
-@class MYPublicKey, MYIdentity, MYCertificateInfo;
+@class MYPublicKey, MYIdentity, MYCertificateInfo, MYSHA1Digest;
 
 
 /** An X.509 certificate. */
@@ -42,6 +42,9 @@
 
 /** The certificate's public key. */
 @property (readonly) MYPublicKey *publicKey;
+
+/** The certificate's public key's SHA-1 digest. */
+@property (readonly) MYSHA1Digest *publicKeyDigest;
 
 /** The Identity (if any) that this Certificate is part of. */
 @property (readonly) MYIdentity *identity;

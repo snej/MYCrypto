@@ -29,6 +29,9 @@ typedef SecKeychainItemRef MYKeychainItemRef;
 {
     @private
     MYKeychainItemRef _itemRef;
+#if MYCRYPTO_USE_IPHONE_API
+    BOOL _isPersistent;
+#endif
 }
 
 /** The Keychain item reference that this object represents. */
@@ -39,5 +42,9 @@ typedef SecKeychainItemRef MYKeychainItemRef;
 
 /** Removes the item from its keychain, if any. */
 - (BOOL) removeFromKeychain;
+
+#if MYCRYPTO_USE_IPHONE_API
+@property BOOL isPersistent;
+#endif
 
 @end

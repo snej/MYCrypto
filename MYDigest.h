@@ -63,6 +63,9 @@
 /** The length of digests created by this subclass. (Abstract method.) */
 + (size_t) length;
 
+/** Byte-by-byte lexical comparison of digest data. */
+- (NSComparisonResult) compare: (MYDigest*)other;
+
 /** Primitive digest generation method. (Abstract.) */
 + (void) computeDigest: (void*)dstDigest ofBytes: (const void*)bytes length: (size_t)length;
 

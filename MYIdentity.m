@@ -8,6 +8,7 @@
 
 #import "MYIdentity.h"
 #import "MYCrypto_Private.h"
+#import "MYDigest.h"
 
 
 @implementation MYIdentity
@@ -45,7 +46,28 @@
             return nil;
         }
 #else
-        Assert(NO,@"-[MYIdentity initWithCertificateRef] isn't implemented for iPhone yet!");//FIX
+        MYSHA1Digest *keyDigest = self.publicKey.publicKeyDigest;
+        if (!keyDigest) {
+            Warn(@"MYIdentity: Couldn't get key digest of cert %@",certificateRef);
+            [self release];
+            return nil;
+        }
+        _identityRef = [self.keychain identityWithDigest: keyDigest].identityRef;
+        if (!_identityRef) {
+            Warn(@"MYIdentity: Couldn't look up identity for cert %@ with %@",certificateRef, keyDigest);
+            [self release];
+            return nil;
+        }
+        
+        // Debugging: Make sure the cert is correct
+        SecCertificateRef identitysCert = NULL;
+        SecIdentityCopyCertificate(_identityRef, &identitysCert);
+        CFDataRef identitysData = SecCertificateCopyData(identitysCert);
+        AssertEqual(self.certificateData, (NSData*)identitysData);
+        CFRelease(identitysData);
+        CFRelease(identitysCert);
+        
+        CFRetain(_identityRef);
 #endif
     }
     return self;
@@ -74,6 +96,11 @@
                                                            publicKey: self.publicKey];
     CFRelease(keyRef);
     return [privateKey autorelease];
+}
+
+
+- (BOOL) removeFromKeychain {
+    return [self.privateKey removeFromKeychain] && [super removeFromKeychain];
 }
 
 

@@ -315,12 +315,6 @@ static CSSM_RETURN impExpCreatePassKey(
         return "???";
 }
 
-- (unsigned) keySizeInBits {
-    const CSSM_KEY *key = self.cssmKey;
-    Assert(key);
-    return key->KeyHeader.LogicalKeySizeInBits;
-}
-
 
 - (NSString*) description {
     return $sprintf(@"%@[%u-bit %s]", [self class], self.keySizeInBits, self.algorithmName);

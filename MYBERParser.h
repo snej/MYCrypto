@@ -19,5 +19,6 @@ id MYBERParse (NSData *ber, NSError **outError);
 size_t MYBERGetLength (NSData *ber, NSError **outError);
 const void* MYBERGetContents (NSData *ber, NSError **outError);
 
+/** A date formatter with the format string "yyyyMMddHHmmss'Z'" */
 NSDateFormatter* MYBERGeneralizedTimeFormatter();
 NSDateFormatter* MYBERUTCTimeFormatter();

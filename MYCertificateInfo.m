@@ -7,6 +7,7 @@
 //
 
 // References:
+// <http://tools.ietf.org/html/rfc3280> "RFC 3280: Internet X.509 Certificate Profile"
 // <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
 // <http://www.cs.auckland.ac.nz/~pgut001/pubs/x509guide.txt> "X.509 Style Guide"
 // <http://en.wikipedia.org/wiki/X.509> Wikipedia article on X.509
@@ -67,7 +68,7 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
         kSurnameOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 4}
                                                   count: 4];
         kDescriptionOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 4, 13}
-                                                count: 7];
+                                                count: 4];
         kEmailOID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 2, 840, 113549, 1, 9, 1}
                                                 count: 7];
     }
@@ -160,14 +161,18 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 }
 
 
-- (MYPublicKey*) subjectPublicKey {
+- (NSData*) subjectPublicKeyData {
     NSArray *keyInfo = $cast(NSArray, $atIf(self._info, 6));
     MYOID *keyAlgorithmID = $castIf(MYOID, $atIf($castIf(NSArray,$atIf(keyInfo,0)), 0));
     if (!$equal(keyAlgorithmID, kRSAAlgorithmID))
         return nil;
-    MYBitString *keyData = $cast(MYBitString, $atIf(keyInfo, 1));
+    return $cast(MYBitString, $atIf(keyInfo, 1)).bits;
+}
+
+- (MYPublicKey*) subjectPublicKey {
+    NSData *keyData = self.subjectPublicKeyData;
     if (!keyData) return nil;
-    return [[[MYPublicKey alloc] initWithKeyData: keyData.bits] autorelease];
+    return [[[MYPublicKey alloc] initWithKeyData: keyData] autorelease];
 }
 
 - (NSData*) signedData {
@@ -364,10 +369,15 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 
 - (void) setString: (NSString*)value forOID: (MYOID*)oid {
     NSMutableArray *pair = (NSMutableArray*) [self _pairForOID: oid];
-    if (pair)
-        [pair replaceObjectAtIndex: 1 withObject: value];
-    else
-        [(NSMutableArray*)_components addObject: [NSSet setWithObject: $marray(oid,value)]];
+    if (pair) {
+        if (value)
+            [pair replaceObjectAtIndex: 1 withObject: value];
+        else
+            Assert(NO,@"-setString:forOID: removing strings is unimplemented");//FIX
+    } else {
+        if (value)
+            [(NSMutableArray*)_components addObject: [NSSet setWithObject: $marray(oid,value)]];
+    }
 }
 
 - (NSString*) commonName    {return [self stringForOID: kCommonNameOID];}
@@ -384,152 +394,6 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
 
 
 @end
-
-
-
-#pragma mark -
-#pragma mark TEST CASES:
-
-#if DEBUG
-
-
-static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
-    //Log(@"Cert Data =\n%@", certData);
-    CAssert(certData!=nil);
-    NSError *error = nil;
-    MYCertificateInfo *pcert = [[MYCertificateInfo alloc] initWithCertificateData: certData 
-                                                                            error: &error];
-    CAssertNil(error);
-    CAssert(pcert != nil);
-    
-    CAssertEq(pcert.isRoot, selfSigned);
-        
-    Log(@"Subject Public Key = %@", pcert.subjectPublicKey);
-    CAssert(pcert.subjectPublicKey);
-    MYCertificateName *subject = pcert.subject;
-    Log(@"Common Name = %@", subject.commonName);
-    Log(@"Given Name  = %@", subject.givenName);
-    Log(@"Surname     = %@", subject.surname);
-    Log(@"Desc        = %@", subject.nameDescription);
-    Log(@"Email       = %@", subject.emailAddress);
-    CAssert(subject.commonName);
-    
-    // Now go through MYCertificate:
-    Log(@"Creating a MYCertificate from the data...");
-    MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];
-    Log(@"MYCertificate = %@", cert);
-    CAssert(cert);
-    CAssertEqual(cert.info, pcert);
-    Log(@"Trust = %@", MYTrustResultDescribe([cert evaluateTrust]));
-    
-    return pcert;
-}
-
-static NSData* readTestFile(NSString *filename) {
-#if TARGET_OS_IPHONE
-    filename = [[NSBundle mainBundle] pathForResource: filename ofType: @"cer"];
-#else
-    filename = [[@"../../Tests/" stringByAppendingPathComponent: filename]
-                stringByAppendingPathExtension: @"cer"];
-#endif
-    Log(@"--- Testing certificate file %@", filename);
-    NSData *data = [NSData dataWithContentsOfFile: filename];
-    CAssert(data, @"Couldn't read file %@", filename);
-    return data;
-}
-
-static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
-    return testCertData(readTestFile(filename), selfSigned);
-}
-
-
-TestCase(ParsedCert) {
-    testCert(@"selfsigned", YES);
-    testCert(@"iphonedev", NO);
-    
-    // Now test a self-signed cert with a bad signature:
-    MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: readTestFile(@"selfsigned_altered")];
-    Log(@"MYCertificate = %@", cert);
-    CAssertNil(cert);
-
-    Log(@"Checking /tmp/generated.cer");
-    testCertData([NSData dataWithContentsOfFile: @"/tmp/generated.cer"], YES);//TEMP
-}
-
-
-#import "MYCrypto_Private.h"
-
-TestCase(CreateCert) {
-    MYPrivateKey *privateKey = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
-    CAssert(privateKey);
-    MYIdentity *identity = nil;
-    @try{
-        MYCertificateRequest *pcert = [[MYCertificateRequest alloc] initWithPublicKey: privateKey.publicKey];
-        MYCertificateName *subject = pcert.subject;
-        subject.commonName = @"testcase";
-        subject.givenName = @"Test";
-        subject.surname = @"Case";
-        subject.nameDescription = @"Just a test certificate created by MYCrypto";
-        subject.emailAddress = @"testcase@example.com";
-
-        subject = pcert.subject;
-        CAssertEqual(subject.commonName, @"testcase");
-        CAssertEqual(subject.givenName, @"Test");
-        CAssertEqual(subject.surname, @"Case");
-        CAssertEqual(subject.nameDescription, @"Just a test certificate created by MYCrypto");
-        CAssertEqual(subject.emailAddress, @"testcase@example.com");
-        
-        Log(@"Signing...");
-        NSError *error;
-        NSData *certData = [pcert selfSignWithPrivateKey: privateKey error: &error];
-        Log(@"Generated cert = \n%@", certData);
-        CAssert(certData);
-        CAssertNil(error);
-        CAssert(certData);
-#if TARGET_OS_IPHONE
-        NSString *path = [@"/tmp/generated.cer" stringByStandardizingPath]; //TEMP
-        CAssert([certData writeToFile: path atomically: YES]);
-        Log(@"Wrote generated cert to %@",path);
-#else
-        [certData writeToFile: @"../../Tests/generated.cer" atomically: YES];
-#endif
-        MYCertificateInfo *pcert2 = testCertData(certData, YES);
-        
-        Log(@"Verifying Info...");
-        MYCertificateName *subject2 = pcert2.subject;
-        CAssertEqual(subject2,subject);
-        CAssertEqual(subject2.commonName, @"testcase");
-        CAssertEqual(subject2.givenName, @"Test");
-        CAssertEqual(subject2.surname, @"Case");
-        CAssertEqual(subject2.nameDescription, @"Just a test certificate created by MYCrypto");
-        CAssertEqual(subject2.emailAddress, @"testcase@example.com");
-                
-        Log(@"Creating MYCertificate object...");
-        MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];
-        Log(@"Loaded %@", cert);
-        CAssert(cert);
-        MYPublicKey *certKey = cert.publicKey;
-        Log(@"Its public key = %@", certKey);
-        CAssertEqual(certKey.keyData, privateKey.publicKey.keyData);
-        
-        Log(@"Creating Identity...");
-        identity = [pcert createSelfSignedIdentityWithPrivateKey: privateKey error: &error];
-        Log(@"Identity = %@", identity);
-        CAssert(identity);
-        CAssertNil(error);
-        CAssertEqual(identity.keychain, [MYKeychain defaultKeychain]);
-        CAssertEqual(identity.privateKey, privateKey);
-        CAssert([identity isEqualToCertificate: cert]);
-        
-        [pcert release];
-        
-    } @finally {
-        [privateKey removeFromKeychain];
-        [identity removeFromKeychain];
-    }
-}
-
-#endif
 
 
 /*

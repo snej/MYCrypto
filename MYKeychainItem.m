@@ -8,6 +8,7 @@
 
 #import "MYKeychainItem.h"
 #import "MYCrypto_Private.h"
+#import "MYBERParser.h"
 #import "MYErrorUtils.h"
 
 
@@ -25,12 +26,19 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
         _itemRef = itemRef;
         CFRetain(_itemRef);
         LogTo(INIT,@"%@, _itemRef=%@", [self class], itemRef);
+#if MYCRYPTO_USE_IPHONE_API
+        _isPersistent = YES;
+#endif
     }
     return self;
 }
 
 
 @synthesize keychainItemRef=_itemRef;
+
+#if MYCRYPTO_USE_IPHONE_API
+@synthesize isPersistent = _isPersistent;
+#endif
 
 - (void) dealloc
 {
@@ -71,7 +79,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 - (MYKeychain*) keychain {
 #if MYCRYPTO_USE_IPHONE_API
-    return [MYKeychain defaultKeychain];
+    return _isPersistent ? [MYKeychain defaultKeychain] : nil;
 #else
     MYKeychain *keychain = nil;
     SecKeychainRef keychainRef = NULL;
@@ -89,6 +97,8 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     OSStatus err;
 #if MYCRYPTO_USE_IPHONE_API
     err = SecItemDelete((CFDictionaryRef) $dict( {(id)kSecValueRef, (id)_itemRef} ));
+    if (!err)
+        _isPersistent = NO;
 #else
     err = SecKeychainItemDelete((SecKeychainItemRef)_itemRef);
     if (err==errSecInvalidItemRef)
@@ -96,6 +106,43 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 #endif
     return err==errSecItemNotFound || check(err, @"SecKeychainItemDelete");
 }
+
+
+/* (Not useful yet, as only password items have dates.)
+- (NSDate*) dateValueOfAttribute: (SecKeychainAttrType)attr {
+    NSString *dateStr = [self stringValueOfAttribute: attr];
+    if (dateStr.length == 0)
+        return nil;
+    NSDate *date = [MYBERGeneralizedTimeFormatter() dateFromString: dateStr];
+    if (!date)
+        Warn(@"MYKeychainItem: unable to parse date '%@'", dateStr);
+    return date;
+}
+
+- (void) setDateValue: (NSDate*)date ofAttribute: (SecKeychainAttrType)attr {
+    NSString *timeStr = nil;
+    if (date)
+        timeStr = [MYBERGeneralizedTimeFormatter() stringFromDate: date];
+    [self setValue: timeStr ofAttribute: attr];
+}
+
+
+- (NSDate*) creationDate {
+    return [self dateValueOfAttribute: kSecCreationDateItemAttr];
+}
+
+- (void) setCreationDate: (NSDate*)date {
+    [self setDateValue: date ofAttribute: kSecCreationDateItemAttr];
+}
+
+- (NSDate*) modificationDate {
+    return [self dateValueOfAttribute: kSecModDateItemAttr];
+}
+
+- (void) setModificationDate: (NSDate*)date {
+    [self setDateValue: date ofAttribute: kSecModDateItemAttr];
+}
+*/
 
 
 #pragma mark -
@@ -165,6 +212,10 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 }
 
 - (NSString*) stringValueOfAttribute: (SecKeychainAttrType)attr {
+#if MYCRYPTO_USE_IPHONE_API
+    if (!self.isPersistent)
+        return nil;
+#endif
     return [[self class] _getStringAttribute: attr ofItem: _itemRef];
 }
 

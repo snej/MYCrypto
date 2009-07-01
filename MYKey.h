@@ -39,6 +39,9 @@
 /** The key's raw data. */
 @property (readonly) NSData *keyData;
 
+/** The key's size/length, in bits. */
+@property (readonly) unsigned keySizeInBits;
+
 /** The user-visible name (kSecKeyPrintName) associated with this key in the Keychain.
     The user can edit this, so don't expect it to be immutable. */
 @property (copy) NSString *name;

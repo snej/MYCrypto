@@ -13,6 +13,8 @@
 #import "MYPublicKey.h"
 #import "MYPrivateKey.h"
 #import "MYCertificate.h"
+#import "MYCertificateInfo.h"
+
 #import "Test.h"
 #import <Security/Security.h>
 
@@ -32,6 +34,9 @@ typedef CFTypeRef SecExternalItemType;
 @property (readonly) SecKeychainRef keychainRef, keychainRefOrDefault;
 @property (readonly) CSSM_CSP_HANDLE CSPHandle;
 @property (readonly) NSString* path;
+#endif
+#if MYCRYPTO_USE_IPHONE_API
++ (CFTypeRef) _addItemWithInfo: (NSMutableDictionary*)info;
 #endif
 @end
 
@@ -56,9 +61,7 @@ typedef CFTypeRef SecExternalItemType;
 @property (readonly) SecExternalItemType keyClass, keyType;
 @property (readonly) MYSHA1Digest* _keyDigest;
 - (NSData*) _crypt: (NSData *)data operation: (BOOL) op;    // YES to encrypt, NO to decrypt
-#if MYCRYPTO_USE_IPHONE_API
-+ (SecKeyRef) _addKeyWithInfo: (NSMutableDictionary*)info;
-#else
+#if !MYCRYPTO_USE_IPHONE_API
 @property (readonly) const CSSM_KEY* cssmKey;
 @property (readonly) const CSSM_CSP_HANDLE cssmCSPHandle;
 - (CSSM_CC_HANDLE) _createSignatureContext: (CSSM_ALGORITHMS)algorithm;
@@ -79,6 +82,7 @@ typedef CFTypeRef SecExternalItemType;
 
 
 @interface MYPublicKey (Private)
+@property (retain) MYCertificate *certificate;
 - (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
 #if !TARGET_OS_IPHONE
 - (CSSM_WRAP_KEY*) _unwrappedCSSMKey;
@@ -115,6 +119,15 @@ typedef CFTypeRef SecExternalItemType;
                       encoding: (CSSM_CERT_ENCODING) encoding;
 @end
 #endif
+
+
+@interface MYCertificateInfo (Private)
+- (NSData*) subjectPublicKeyData;
+- (MYPublicKey*) subjectPublicKey;
+- (NSData*) signedData;
+- (MYOID*) signatureAlgorithmID;
+- (NSData*) signature;
+@end                    
 
 
 #undef check

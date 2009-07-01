@@ -113,6 +113,8 @@
 /** Enumerates all public keys in the keychain that have the given alias string. */
 - (NSEnumerator*) publicKeysWithAlias: (NSString*)alias;
 
+- (NSEnumerator*) enumerateIdentitiesWithKeyUsage: (CSSM_KEYUSE)keyUsage;
+
 /** Imports a key-pair into the keychain, given the external representations
     of both the public and private keys.
     Since the private key data is wrapped (encrypted), the Security agent will prompt the user to enter
@@ -136,6 +138,16 @@
 - (MYCertificate*) importCertificate: (NSData*)data
                                 type: (CSSM_CERT_TYPE) type
                             encoding: (CSSM_CERT_ENCODING) encoding;
+
+//@}
+#else
+/** @name iPhone-Only
+ *  Functionality only available on iPhone. 
+ */
+//@{
+
+- (BOOL) removeAllCertificates;
+- (BOOL) removeAllKeys;
 
 //@}
 #endif

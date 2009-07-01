@@ -157,7 +157,15 @@
         return nil;
     MYPublicKey *key = [[[MYPublicKey alloc] initWithKeyRef: keyRef] autorelease];
     CFRelease(keyRef);
+#if MYCRYPTO_USE_IPHONE_API
+    key.certificate = self;
+    key.isPersistent = NO;
+#endif
     return key;
+}
+
+- (MYSHA1Digest*) publicKeyDigest {
+    return self.publicKey.publicKeyDigest;
 }
 
 - (MYIdentity*) identity {
@@ -214,7 +222,7 @@
     if (!check(SecTrustEvaluate(trust, &result), @"SecTrustEvaluate"))
         result = kSecTrustResultOtherError;
     
-#if 0
+#if !MYCRYPTO_USE_IPHONE_API
     // This is just to log details:
     CSSM_TP_APPLE_EVIDENCE_INFO *status;
     CFArrayRef certChain;

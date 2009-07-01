@@ -16,6 +16,11 @@
 #import <CommonCrypto/CommonDigest.h>
 
 
+@interface MYPublicKey ()
+@property (retain) MYCertificate *certificate;
+@end
+
+
 #pragma mark -
 @implementation MYPublicKey
 
@@ -34,6 +39,8 @@
     [_digest release];
     [super dealloc];
 }
+
+@synthesize certificate=_certificate;
 
 - (SecExternalItemType) keyClass {
 #if MYCRYPTO_USE_IPHONE_API
@@ -62,6 +69,16 @@
         _digest = [[self _keyDigest] retain];
     return _digest;
 }
+
+#if MYCRYPTO_USE_IPHONE_API
+- (NSData*) keyData {
+    if (_certificate) {
+        return _certificate.info.subjectPublicKeyData;
+    } else {
+        return [super keyData];
+    }
+}
+#endif
 
 #if !MYCRYPTO_USE_IPHONE_API
 - (SecExternalFormat) _externalFormat {

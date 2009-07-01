@@ -7,7 +7,7 @@
 //
 
 #import "MYKey.h"
-@class MYSHA1Digest, MYSymmetricKey;
+@class MYSHA1Digest, MYSymmetricKey, MYCertificate;
 
 #if !TARGET_OS_IPHONE
 #import <Security/SecKey.h>
@@ -20,7 +20,8 @@
 @interface MYPublicKey : MYKey
 {
     @private
-    MYSHA1Digest *_digest;
+    MYSHA1Digest *_digest;              // The key's SHA-1 digest (null if not determined yet)
+    MYCertificate *_certificate;        // The cert this key came from (if any)
 }
 
 /** The public key's SHA-1 digest. This is a convenient short (20-byte) identifier for the key. */

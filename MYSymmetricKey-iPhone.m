@@ -13,6 +13,9 @@
 #if MYCRYPTO_USE_IPHONE_API
 
 
+#define kAlgorithmNone 0xFFFFFFFF
+
+
 typedef uint32_t CSSM_ALGORITHMS;
 enum {
 // Taken from cssmtype.h in OS X 10.5 SDK:
@@ -36,20 +39,27 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 @implementation MYSymmetricKey
 
 
+- (id) initWithKeyRef: (SecKeyRef)key {
+    self = [super initWithKeyRef: key];
+    if (self) {
+        _algorithm = kAlgorithmNone;
+    }
+    return self;
+}
+
 - (id) _initWithKeyData: (NSData*)keyData
               algorithm: (CCAlgorithm)algorithm
              inKeychain: (MYKeychain*)keychain
 {
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
-    NSNumber *keySizeInBits = [NSNumber numberWithUnsignedInt: keyData.length * 8];
-    NSNumber *keyType = [NSNumber numberWithUnsignedInt: kCSSMAlgorithms[algorithm]];
+    unsigned keySizeInBits = keyData.length * 8;
     NSMutableDictionary *keyAttrs = $mdict( {(id)kSecClass, (id)kSecClassKey},
                                             {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                            {(id)kSecAttrKeyType, keyType},
+                                            {(id)kSecAttrKeyType, $object(kCSSMAlgorithms[algorithm])},
                                             {(id)kSecValueData, keyData},
-                                            {(id)kSecAttrKeySizeInBits, keySizeInBits},
-                                            {(id)kSecAttrEffectiveKeySize, keySizeInBits},
+                                            {(id)kSecAttrKeySizeInBits, $object(keySizeInBits)},
+                                            {(id)kSecAttrEffectiveKeySize, $object(keySizeInBits)},
                                             {(id)kSecAttrIsPermanent, keychain ?$true :$false},
                                             {(id)kSecAttrCanEncrypt, $true},
                                             {(id)kSecAttrCanDecrypt, $true},
@@ -57,14 +67,17 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
                                             {(id)kSecAttrCanUnwrap, $false},
                                             {(id)kSecAttrCanDerive, $false},
                                             {(id)kSecAttrCanSign, $false},
-                                            {(id)kSecAttrCanVerify, $false},
-                                            {(id)kSecReturnPersistentRef, $true});
-    SecKeyRef keyRef = [[self class] _addKeyWithInfo: keyAttrs];
+                                            {(id)kSecAttrCanVerify, $false});
+    SecKeyRef keyRef = (SecKeyRef) [MYKeychain _addItemWithInfo: keyAttrs];
     if (!keyRef) {
         [self release];
         return nil;
     }
     self = [self initWithKeyRef: keyRef];
+    if (self) {
+        _algorithm = algorithm;
+        _keySizeInBits = keySizeInBits;
+    }
     CFRelease(keyRef);
     return self;
 }
@@ -98,25 +111,33 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 }
 
 - (CCAlgorithm) algorithm {
-    CSSM_ALGORITHMS cssmAlg;
-    id keyType = [self _attribute: kSecAttrKeyType];
-    Assert(keyType!=nil, @"Key has no kSecAttrKeyType");
-    cssmAlg = [keyType unsignedIntValue];
-    switch(cssmAlg) {
-        case CSSM_ALGID_AES:
-            return kCCAlgorithmAES128;
-        case CSSM_ALGID_DES:
-            return kCCAlgorithmDES;	
-        case CSSM_ALGID_3DES_3KEY:
-            return kCCAlgorithm3DES;
-        case CSSM_ALGID_CAST:
-            return kCCAlgorithmCAST;
-        case CSSM_ALGID_RC4:
-            return kCCAlgorithmRC4;	
-        default:
-            Warn(@"CSSM_ALGORITHMS #%u doesn't map to any CCAlgorithm", cssmAlg);
-            return (CCAlgorithm)-1;
+    if (_algorithm == kAlgorithmNone) {
+        CSSM_ALGORITHMS cssmAlg;
+        id keyType = [self _attribute: kSecAttrKeyType];
+        Assert(keyType!=nil, @"Key has no kSecAttrKeyType");
+        cssmAlg = [keyType unsignedIntValue];
+        switch(cssmAlg) {
+            case CSSM_ALGID_AES:
+                _algorithm = kCCAlgorithmAES128;
+                break;
+            case CSSM_ALGID_DES:
+                _algorithm = kCCAlgorithmDES;
+                break;
+            case CSSM_ALGID_3DES_3KEY:
+                _algorithm = kCCAlgorithm3DES;
+                break;
+            case CSSM_ALGID_CAST:
+                _algorithm = kCCAlgorithmCAST;
+                break;
+            case CSSM_ALGID_RC4:
+                _algorithm = kCCAlgorithmRC4;
+                break;
+            default:
+                Warn(@"CSSM_ALGORITHMS #%u doesn't map to any CCAlgorithm", cssmAlg);
+                break;
+        }
     }
+    return _algorithm;
 }
 
 - (const char*) algorithmName {
@@ -128,9 +149,12 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 }
 
 - (unsigned) keySizeInBits {
-    id keySize = [self _attribute: kSecAttrKeySizeInBits];
-    Assert(keySize!=nil, @"Key has no kSecAttrKeySizeInBits");
-    return [keySize unsignedIntValue];
+    if (_keySizeInBits == 0) {
+        id keySize = [self _attribute: kSecAttrKeySizeInBits];
+        Assert(keySize!=nil, @"Key has no kSecAttrKeySizeInBits");
+        _keySizeInBits = [keySize unsignedIntValue];
+    }
+    return _keySizeInBits;
 }
 
 
