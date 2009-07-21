@@ -124,7 +124,7 @@
 		27B855250FD077A6005631F9 /* MYDEREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYDEREncoder.h; sourceTree = "<group>"; };
 		27B855260FD077A6005631F9 /* MYDEREncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDEREncoder.m; sourceTree = "<group>"; };
 		27CFF4B10F7E8535000B418E /* MYCertificate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCertificate.h; sourceTree = "<group>"; };
-		27CFF4B20F7E8535000B418E /* MYCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificate.m; sourceTree = "<group>"; };
+		27CFF4B20F7E8535000B418E /* MYCertificate.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificate.m; sourceTree = "<group>"; };
 		27CFF4B30F7E8535000B418E /* MYCryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCryptor.h; sourceTree = "<group>"; };
 		27CFF4B40F7E8535000B418E /* MYCryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCryptor.m; sourceTree = "<group>"; };
 		27CFF4B50F7E8535000B418E /* MYKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKeychain.h; sourceTree = "<group>"; };
@@ -227,8 +227,10 @@
 				27EAF0390F8B2D700091AF95 /* README.textile */,
 				27FEB3E60FBA63D200290049 /* MYCrypto.h */,
 			);
+			indentWidth = 4;
 			name = Source;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -257,8 +259,10 @@
 				27CFF4B30F7E8535000B418E /* MYCryptor.h */,
 				27CFF4B40F7E8535000B418E /* MYCryptor.m */,
 			);
+			indentWidth = 4;
 			name = Encryption;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		270B881C0F8D055A00C56781 /* Internal */ = {
 			isa = PBXGroup;
@@ -270,8 +274,10 @@
 				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
 				2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */,
 			);
+			indentWidth = 4;
 			name = Internal;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		274861440F8D757600FE617B /* Certificates */ = {
 			isa = PBXGroup;
@@ -288,8 +294,10 @@
 				27B852FC0FCF4ECB005631F9 /* MYOID.h */,
 				27B852FD0FCF4ECB005631F9 /* MYOID.m */,
 			);
+			indentWidth = 4;
 			name = Certificates;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		27CFF4CC0F7E86E8000B418E /* MYUtilities */ = {
 			isa = PBXGroup;
@@ -306,8 +314,10 @@
 				27CFF5750F7E999B000B418E /* MYErrorUtils.m */,
 				27CFF57C0F7EA117000B418E /* MYError_CSSMErrorDomain.strings */,
 			);
+			indentWidth = 4;
 			name = MYUtilities;
 			sourceTree = MYUtilities;
+			usesTabs = 0;
 		};
 		C6859EA2029092E104C91782 /* Documentation */ = {
 			isa = PBXGroup;

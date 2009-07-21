@@ -14,6 +14,12 @@
 #import "MYErrorUtils.h"
 
 
+@interface MYCertificate ()
+- (BOOL) _verify;
+@end
+
+
+
 @implementation MYCertificate
 
 
@@ -22,6 +28,11 @@
     self = [super initWithKeychainItemRef: (SecKeychainItemRef)certificateRef];
     if (self) {
         _certificateRef = certificateRef;     // superclass has already CFRetained it
+        if (![self _verify]) {
+            Log(@"Self-signed cert failed signature verification (%@)", self);
+            [self release];
+            return nil;
+        }
     }
     return self;
 }
@@ -54,17 +65,10 @@
     self = [self initWithCertificateRef: certificateRef];
     CFRelease(certificateRef);
     
-    // If the cert is self-signed, verify its signature. Apple's frameworks don't do this,
-    // even the SecTrust API; if the signature doesn't verify, they just assume it could be
-    // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
-    MYCertificateInfo *info = self.info;
-    if (info.isRoot) {
-        Log(@"Verifying self-signed certificate %@ ...", self);
-        if (![info verifySignatureWithKey: self.publicKey]) {
-            Log(@"Self-signed cert failed signature verification (%@)", self);
-            [self release];
-            return nil;
-        }
+    if (![self _verify]) {
+          Log(@"Self-signed cert failed signature verification (%@)", self);
+          [self release];
+          return nil;
     }
     
     return self;
@@ -77,6 +81,7 @@
                                 encoding: CSSM_CERT_ENCODING_BER];
 }
 #endif
+
 - (void) dealloc
 {
     [_info release];
@@ -211,6 +216,15 @@
 
 #pragma mark -
 #pragma mark TRUST/POLICY STUFF:
+
+
+- (BOOL) _verify {
+  // If the cert is self-signed, verify its signature. Apple's frameworks don't do this,
+  // even the SecTrust API; if the signature doesn't verify, they just assume it could be
+  // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
+  MYCertificateInfo *info = self.info;
+  return !info.isRoot || [info verifySignatureWithKey: self.publicKey];
+}  
 
 
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy {
