@@ -16,7 +16,7 @@
     NSData *_data;
 }
 
-#if TARGET_OS_MAC
+#if !TARGET_OS_IPHONE
 + (MYOID*) OIDFromCSSM: (CSSM_OID)cssmOid;
 #endif
 

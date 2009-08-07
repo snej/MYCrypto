@@ -106,6 +106,10 @@
     return [self.keyData my_SHA1Digest];
 }
 
+- (unsigned) keySizeInBits {
+    return [[self _attribute: kSecAttrKeySizeInBits] intValue];
+}
+
 - (SecKeyRef) keyRef {
     return (SecKeyRef) self.keychainItemRef;
 }

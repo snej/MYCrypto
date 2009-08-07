@@ -59,7 +59,7 @@
     return [[[self alloc] initWithBEREncoding: encoding] autorelease];
 }
 
-#if TARGET_OS_MAC
+#if !TARGET_OS_IPHONE
 + (MYOID*) OIDFromCSSM: (CSSM_OID)cssmOid
 {
     NSData *ber = [[NSData alloc] initWithBytesNoCopy: cssmOid.Data length: cssmOid.Length freeWhenDone: NO];
