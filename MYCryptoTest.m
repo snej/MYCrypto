@@ -344,6 +344,7 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     // Test creating a standalone public key:
     MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: publicKey.keyRef];
     CAssert( [pub verifySignature: sig ofData: data] );
+    [pub release];
     Log(@"Verified signature.");
     
     // Test creating a public key from data:

@@ -144,7 +144,8 @@
     if( recipient )
         [e addRecipient: recipient];
     [e addData: data];
-    *outError = e.error;
+    if (outError)
+        *outError = e.error;
     NSData *result = e.encodedData;
     [e release];
     return result;

@@ -188,9 +188,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 - (BOOL) addFromStream: (NSInputStream*)input
 {
     uint8_t inputBuffer[1024];
-    size_t avail;
     while (!_error && input.hasBytesAvailable) {
-        avail = sizeof(inputBuffer);
         NSInteger nRead = [input read: inputBuffer maxLength: sizeof(inputBuffer)];
         if (nRead < 0) {
             self.error = input.streamError;

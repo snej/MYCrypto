@@ -107,6 +107,8 @@
 		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
 		27205C430FF2D88200C5E25B /* MYCertificateTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificateTest.m; sourceTree = "<group>"; };
+		2733D7DC100E989E0018E4F9 /* MYUtilities.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYUtilities.xcconfig; sourceTree = "<group>"; };
+		2733D7DD100E989E0018E4F9 /* MYUtilities_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYUtilities_Debug.xcconfig; sourceTree = "<group>"; };
 		27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MYSymmetricKey-iPhone.m"; sourceTree = "<group>"; };
 		2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto_Release.xcconfig; sourceTree = "<group>"; };
 		274863A00F8EF39400FE617B /* MYIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYIdentity.h; sourceTree = "<group>"; };
@@ -302,6 +304,8 @@
 		27CFF4CC0F7E86E8000B418E /* MYUtilities */ = {
 			isa = PBXGroup;
 			children = (
+				2733D7DC100E989E0018E4F9 /* MYUtilities.xcconfig */,
+				2733D7DD100E989E0018E4F9 /* MYUtilities_Debug.xcconfig */,
 				27CFF4CD0F7E8726000B418E /* CollectionUtils.h */,
 				27CFF4CE0F7E8726000B418E /* CollectionUtils.m */,
 				27CFF4CF0F7E8726000B418E /* ExceptionUtils.h */,

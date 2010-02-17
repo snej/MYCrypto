@@ -6,4 +6,5 @@
 //  Copyright 2009 Jens Alfke. All rights reserved.
 //
 
+//FIX: I have not found a way to avoid using a hardcoded relative path to MYUtilities :(
 GCC_PREFIX_HEADER = ../MYUtilities/MYUtilities_Prefix.pch

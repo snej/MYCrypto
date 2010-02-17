@@ -274,7 +274,7 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kCommonNameOID,
         validFrom = self.validFrom = [NSDate date];
     NSDate *validTo = self.validTo;
     if (!validTo)
-        self.validTo = [validFrom addTimeInterval: kDefaultExpirationTime]; 
+        self.validTo = [validFrom dateByAddingTimeInterval: kDefaultExpirationTime]; 
 }
 
 

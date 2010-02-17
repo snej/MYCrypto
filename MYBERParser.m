@@ -227,13 +227,14 @@ static id parseBER(InputData *input) {
 }
     
     
-static void exceptionToError (NSException *x, NSError **outError) {
+static BOOL exceptionToError (NSException *x, NSError **outError) {
     if ($equal(x.name, MYBERParserException)) {
         if (outError)
             *outError = MYError(1,MYASN1ErrorDomain, @"%@", x.reason);
     } else {
         @throw(x);
     }
+    return NO;  // not used by caller, but appeases the static analyzer
 }
 
 

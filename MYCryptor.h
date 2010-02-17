@@ -24,7 +24,6 @@
     NSError *_error;
     NSOutputStream *_outputStream;
     NSMutableData *_output;
-    size_t _outputExtraBytes;
 }
 
 /** Returns a randomly-generated symmetric key of the desired length (in bits).

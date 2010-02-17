@@ -279,9 +279,9 @@ TestCase(MYDigest) {
                           dataUsingEncoding: NSUTF8StringEncoding],
                  @"4F254781ED6C0103BE056DD8418EFBAC0C2EBE3C",
                  @"08AA4BCDDF7654D7AB5CDD25395A4DD8F3BEB5C79FE567D10C1A21B9134F48FD");
-    testDigestOf([NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"],
-                 @"62A17839B3B86D3543EB2E34D2718A0FE044FA31",
-                 @"FBD25FA6CEE794049973DE3BDF752345617FCA81018C8FC65350BCDD901142DB");
+    testDigestOf([NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Aqua Blue.jpg"],
+                 @"FAE309828A6CA67212D7A956C6F673B164BD99CA",
+                 @"E850A3E8AAD5477054C7F38D64755C1DFEF14D2FC1F9620A2E6BDF44B8783B4A");
 }
 
 

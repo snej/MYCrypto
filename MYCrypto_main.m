@@ -12,11 +12,13 @@
 
 
 int main(int argc, const char **argv) {
+#if DEBUG
     if (argc<2) {
         static const char *testArgs[] = {"MYCrypto", "Test_All"};
         argc = 2;
         argv = testArgs;
     }
+#endif
     
     RunTestCases(argc,argv);
     return 0;

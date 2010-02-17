@@ -26,8 +26,9 @@
     if( self ) {
         [self addData: data];
         [self finish];
-        *outError = self.error;
-        if( *outError ) {
+        if (outError)
+            *outError = self.error;
+        if( _error ) {
             [self release];
             return nil;
         }
@@ -351,6 +352,7 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
         CAssertEq(d.certificates.count, 0U);
         CAssertEq(d.signers.count,0U);
     }
+    [d release];
 }
 
 

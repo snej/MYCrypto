@@ -26,7 +26,8 @@
 /** Wraps an existing digest, stored in an NSData object, in a MYDigest object. */
 + (id) digestFromDigestData: (NSData*)digestData;
 
-/** Wraps an existing digest, expressed as a hex string, in a MYDigest object. */
+/** Wraps an existing digest, expressed as a hex string, in a MYDigest object.
+    If the string is invalid (wrong length, or not hexadecimal), returns nil. */
 + (id) digestFromHexString: (NSString*)hexString;
 
 /** Computes a cryptographic digest of the given data. */

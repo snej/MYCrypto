@@ -431,7 +431,7 @@
         
         switch (_itemClass) {
             case kSecPrivateKeyItemClass: {
-                key = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
+                key = [[[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
                 break;
             }
             case kSecCertificateItemClass:

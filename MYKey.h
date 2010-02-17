@@ -28,10 +28,6 @@
 /** Abstract superclass for keys.
     Concrete subclasses are MYSymmetricKey and MYPublicKey. */
 @interface MYKey : MYKeychainItem
-{ 
-    @private
-    NSData *_keyData;
-}
 
 /** Creates a key from encoded data (but does not add it to any keychain.) */
 - (id) initWithKeyData: (NSData*)data;
