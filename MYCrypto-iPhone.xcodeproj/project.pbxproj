@@ -373,7 +373,7 @@
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MYCrypto_Prefix.pch;
-				INFOPLIST_FILE = "MYCrypto_iPhone-Info.plist";
+				INFOPLIST_FILE = "iPhone/MYCrypto_iPhone-Info.plist";
 				PRODUCT_NAME = "MYCrypto-iPhone";
 			};
 			name = Release;
@@ -389,7 +389,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "84D61190-B2EB-4F8E-A189-99F18EE9A07E";
-				SDKROOT = iphonesimulator2.2.1;
+				SDKROOT = iphoneos3.1.2;
 			};
 			name = Debug;
 		};
@@ -402,7 +402,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = iphonesimulator2.2.1;
+				SDKROOT = iphoneos3.1.2;
 			};
 			name = Release;
 		};
