@@ -186,8 +186,10 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
         CAssertEqual(decrypted, cleartext);
         
         // Encrypt large binary data:
-        cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
-        CAssert(cleartext);
+        cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Ladybug.jpg"];
+        if (!cleartext)
+            cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
+        CAssert(cleartext, @"Oops, can't load desktop pic used by testSymmetricKey");
         encrypted = [key encryptData: cleartext];
         Log(@"Encrypted = %u bytes", encrypted.length);
         CAssert(encrypted.length >= cleartext.length);

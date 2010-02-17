@@ -175,8 +175,10 @@ TestCase(MYEncoder) {
     }
     CAssert(me,@"No default identity has been set up in the Keychain");
     
-    NSData *source = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
-    CAssert(source);
+    NSData *source = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Ladybug.jpg"];
+    if (!source)
+        source = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
+    CAssert(source, @"Oops, can't load desktop pic used by testSymmetricKey");
     
     NSError *error;
     NSData *encoded;

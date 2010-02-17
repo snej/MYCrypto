@@ -28,9 +28,15 @@ CSSM_ALGORITHMS CSSMFromCCAlgorithm( CCAlgorithm ccAlgorithm ) {
 static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 
 
-/** Undocumented Security function. Unfortunately this is the only way I can find to create
-    a SecKeyRef from a CSSM_KEY. */
+/** Undocumented Security function that existed prior to OS X 10.6.
+    Unfortunately this is the only way I can find to create a SecKeyRef from a CSSM_KEY
+    in those OSs. (Worse, 10.6 now has a public function with this name but different
+    parameters and purpose; on that platform we should use SecKeyCreateWithCSSMKey. */
 extern OSStatus SecKeyCreate(const CSSM_KEY *key, SecKeyRef* keyRef) WEAK_IMPORT_ATTRIBUTE;
+
+/** New in 10.6 but still undocumented (see SecKeyPriv.h in the open-source repo.) */
+extern OSStatus SecKeyCreateWithCSSMKey(const CSSM_KEY *key, SecKeyRef* keyRef) WEAK_IMPORT_ATTRIBUTE;
+
 
 static CSSM_KEY* cssmKeyFromData( NSData *keyData, CSSM_ALGORITHMS algorithm,
                                  MYKeychain *keychain);
@@ -61,16 +67,20 @@ static CSSM_RETURN impExpCreatePassKey(
         return nil;
     }
     SecKeyRef keyRef = NULL;
-    if (SecKeyCreate == NULL) {
+    
+    if (SecKeyCreateWithCSSMKey != NULL) {
+        check(SecKeyCreateWithCSSMKey(cssmKey,&keyRef), @"SecKeyCreateWithCSSMKey");
+    } else if (SecKeyCreate != NULL) {
+        check(SecKeyCreate(cssmKey,&keyRef), @"SecKeyCreate");
+    } else {
         // If weak-linked SPI fn no longer exists
         Warn(@"Unable to call SecKeyCreate SPI -- not available");
+    }
+    if (!keyRef) {
         [self release];
         return nil;
     }
-    if (!check(SecKeyCreate(cssmKey,&keyRef), @"SecKeyCreate")) {
-        [self release];
-        return nil;
-    }
+
     self = [self initWithKeyRef: keyRef];
     if (self) {
         _ownedCSSMKey = cssmKey;            // (so I'll remember to free it)
