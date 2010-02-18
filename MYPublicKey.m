@@ -112,7 +112,7 @@
     uint8_t digest[CC_SHA1_DIGEST_LENGTH];
     CC_SHA1(data.bytes,data.length, digest);
     OSStatus err = SecKeyRawVerify(self.keyRef, kSecPaddingPKCS1SHA1,
-                                   digest,sizeof(digest), //data.bytes, data.length,
+                                   digest,sizeof(digest),
                                    signature.bytes, signature.length);
     return err==noErr;
     

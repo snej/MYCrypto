@@ -209,7 +209,8 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
         [key2 release];
     #endif
 
-    #if !TARGET_OS_IPHONE
+    #if 0 // !TARGET_OS_IPHONE
+        // Disabled this until I finish implementing unwrapCssmKeyFromData. --jpa 2/2010
         // Try exporting and importing a wrapped key:
         Log(@"Testing export/import...");
         NSData *exported = [key exportWrappedKeyWithPassphrasePrompt: @"Export symmetric key with passphrase:"];

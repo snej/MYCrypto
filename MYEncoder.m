@@ -165,6 +165,7 @@ TestCase(MYEncoder) {
         NSArray *idents = [[[MYKeychain allKeychains] enumerateIdentities] allObjects];
         SFChooseIdentityPanel *panel = [SFChooseIdentityPanel sharedChooseIdentityPanel];
         [panel setAlternateButtonTitle: @"Cancel"];
+        Log(@"Waiting for user to select from choose-identity panel (if you can't see it, move the Xcode window aside!");
         if ([panel my_runModalForIdentities: idents 
                                     message: @"Choose an identity for the MYEncoder test case:"]
                 != NSOKButton) {
@@ -178,7 +179,7 @@ TestCase(MYEncoder) {
     NSData *source = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Ladybug.jpg"];
     if (!source)
         source = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
-    CAssert(source, @"Oops, can't load desktop pic used by testSymmetricKey");
+    CAssert(source, @"Oops, can't load desktop pic used by MYEncoder test-case");
     
     NSError *error;
     NSData *encoded;

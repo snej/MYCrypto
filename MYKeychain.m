@@ -465,11 +465,26 @@
 }
 
 - (id) nextObject {
-    SecIdentityRef identityRef = NULL;
-    OSStatus err = SecIdentitySearchCopyNext(_searchRef, &identityRef);
-    if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
-        return nil;
-    return [[[MYIdentity alloc] initWithIdentityRef: identityRef] autorelease];
+    MYIdentity* identity = nil;
+    do {
+        SecIdentityRef identityRef = NULL;
+        OSStatus err = SecIdentitySearchCopyNext(_searchRef, &identityRef);
+        NSLog(@"SecIdentitySearchCopyNext => %p, err=%ld",identityRef,err);//TEMP
+        if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
+            break;
+        identity = [[[MYIdentity alloc] initWithIdentityRef: identityRef] autorelease];
+    } while (!identity);
+    return identity;
+}
+
+- (void) dealloc {
+    if (_searchRef) CFRelease(_searchRef);
+    [super dealloc];
+}
+
+- (void) finalize {
+    if (_searchRef) CFRelease(_searchRef);
+    [super finalize];
 }
 
 @end
