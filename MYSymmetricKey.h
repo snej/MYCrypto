@@ -86,6 +86,6 @@
 + (NSString*) promptForPassphraseWithAlertTitle: (NSString*)alertTitle
                                     alertPrompt: (NSString*)prompt
                                        creating: (BOOL)creating;
-#endif TARGET_OS_IPHONE
+#endif //TARGET_OS_IPHONE
 
 @end

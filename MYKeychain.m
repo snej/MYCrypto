@@ -469,7 +469,6 @@
     do {
         SecIdentityRef identityRef = NULL;
         OSStatus err = SecIdentitySearchCopyNext(_searchRef, &identityRef);
-        NSLog(@"SecIdentitySearchCopyNext => %p, err=%ld",identityRef,err);//TEMP
         if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
             break;
         identity = [[[MYIdentity alloc] initWithIdentityRef: identityRef] autorelease];
