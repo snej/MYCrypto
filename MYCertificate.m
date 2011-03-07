@@ -241,7 +241,7 @@
     CSSM_TP_APPLE_EVIDENCE_INFO *status;
     CFArrayRef certChain;
     if (check(SecTrustGetResult(trust, &result, &certChain, &status), @"SecTrustGetResult")) {
-        Log(@"evaluateTrust: result=%@, bits=%X, certChain=%@", MYTrustResultDescribe(result),status->StatusBits, certChain);
+        Log(@"evaluateTrust: result=%@, bits=0x%X, certChain=%@", MYTrustResultDescribe(result),status->StatusBits, certChain);
         for (unsigned i=0; i<status->NumStatusCodes; i++)
             Log(@"    #%i: %X", i, status->StatusCodes[i]);
         CFRelease(certChain);
@@ -319,6 +319,25 @@
         return nil;
     return [(id)CFMakeCollectable(settings) autorelease];
 }
+
+- (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
+                                               string: (NSString*) policyString
+{
+    for( NSDictionary* setting in [self trustSettings]) {
+        if (![[setting objectForKey: (id)kSecTrustSettingsPolicy] isEqual: (id)policy])
+            continue;
+        if (policyString)
+            if (![policyString isEqual: [setting objectForKey: (id)kSecTrustSettingsPolicyString]])
+                continue;
+        // OK, this entry matches, so check the result:
+        NSNumber* result = [setting objectForKey: (id)kSecTrustSettingsResult];
+        if (result != nil)
+            return [result intValue];
+        else
+            return kSecTrustSettingsResultTrustRoot;
+    }
+    return kSecTrustSettingsResultUnspecified;
+}
         
 
 - (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting
@@ -332,7 +351,7 @@
                                                            kSecTrustSettingsDomainUser);
         return err == errSecItemNotFound || check(err, @"SecTrustSettingsRemoveTrustSettings");
     } else
-        return paramErr;
+        return NO;
 }
 #endif
 

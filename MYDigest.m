@@ -8,7 +8,6 @@
 
 #import "MYDigest.h"
 #import <CommonCrypto/CommonDigest.h>
-#import "MYCrypto_Private.h"
 
 
 #if MYCRYPTO_USE_IPHONE_API
@@ -254,6 +253,7 @@ enum {
 
 static void testDigestOf( NSData *src, NSString *expectedSHA1Hex, NSString *expectedSHA256Hex )
 {
+    CAssert(src, @"Couldn't load test file");
     MYSHA1Digest *d1 = [src my_SHA1Digest];
     NSString *hex = d1.hexString;
     Log(@"Digesting %u bytes to %@",src.length,hex);

@@ -61,6 +61,9 @@
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy;
 - (SecTrustResultType) evaluateTrust;
 
+- (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
+                                               string: (NSString*) policyString;
+
 
 /** @name Mac-Only
  *  Functionality not available on iPhone. 

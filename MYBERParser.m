@@ -85,7 +85,7 @@ static int32_t readBigEndianSignedInteger (InputData *input, size_t length) {
 }
 
 
-NSDateFormatter* MYBERGeneralizedTimeFormatter() {
+NSDateFormatter* MYBERGeneralizedTimeFormatter(void) {
     static NSDateFormatter *sFmt;
     if (!sFmt) {
         sFmt = [[NSDateFormatter alloc] init];
@@ -95,7 +95,7 @@ NSDateFormatter* MYBERGeneralizedTimeFormatter() {
     return sFmt;
 }
 
-NSDateFormatter* MYBERUTCTimeFormatter() {
+NSDateFormatter* MYBERUTCTimeFormatter(void) {
     static NSDateFormatter *sFmt;
     if (!sFmt) {
         sFmt = [[NSDateFormatter alloc] init];
@@ -180,8 +180,6 @@ static id parseBER(InputData *input) {
             case 3: // bitstring
             {
                 UInt8 unusedBits = *(const UInt8*) readOrDie(input, 1);
-                if (unusedBits)
-                    Log(@"Bit-string has %u unused bits", (unsigned)unusedBits);
                 if (unusedBits > 7 || length < 1)
                     [NSException raise: MYBERParserException format: @"Bogus bit-string"];
                 return [[[MYBitString alloc] initWithBits: readDataOrDie(input, length-1)
@@ -330,7 +328,7 @@ TestCase(ParseBER) {
 #import "MYPublicKey.h"
 
 TestCase(ParseCert) {
-    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned.cer"];
+    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned_email.cer"];
     NSError *error = nil;
     id parsed = MYBERParse(cert,&error);
     CAssert(parsed);

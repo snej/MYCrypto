@@ -84,7 +84,19 @@
 }
 
 
-@synthesize policy=_policy;
+- (SecPolicyRef) policy
+{
+    return _policy;
+}
+
+- (void)setPolicy:(SecPolicyRef)policy
+{
+    if (policy != _policy) {
+        if (_policy) CFRelease(_policy);
+        if (policy) CFRetain(policy);
+        _policy = policy;
+    }
+}
 
 
 - (NSData*) _dataFromFunction: (OSStatus (*)(CMSDecoderRef,CFDataRef*))function
