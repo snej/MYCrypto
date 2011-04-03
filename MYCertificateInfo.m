@@ -60,7 +60,8 @@ static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kRSAWithSHA256Algorith
              *kCommonNameOID, *kGivenNameOID, *kSurnameOID, *kDescriptionOID, *kEmailOID;
 MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
       *kExtendedKeyUsageServerAuthOID, *kExtendedKeyUsageClientAuthOID,
-      *kExtendedKeyUsageCodeSigningOID, *kExtendedKeyUsageEmailProtectionOID;
+      *kExtendedKeyUsageCodeSigningOID, *kExtendedKeyUsageEmailProtectionOID, 
+      *kExtendedKeyUsageAnyOID;
 
 
 + (void) initialize {
@@ -97,8 +98,9 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
         kExtendedKeyUsageCodeSigningOID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 3, 6, 1, 5, 5, 7, 3, 3}
                                                                      count: 9];
         kExtendedKeyUsageEmailProtectionOID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 3, 6, 1, 5, 5, 7, 3, 4}
-                                                                     count: 9];
-
+                                                                          count: 9];
+        kExtendedKeyUsageAnyOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 37, 0}
+                                                                          count: 5];
     }
 }
 
@@ -570,7 +572,7 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
     // RFC 3280 sec. 4.2.1.3
     MYBitString* bits = $castIf(MYBitString, [self extensionForOID:kKeyUsageOID isCritical:NULL]);
     if (!bits)
-        return 0;
+        return kKeyUsageUnspecified;
     const UInt8* bytes = [bits.bits bytes];
     UInt16 value = bytes[0];
     if (bits.bitCount > 8)      // 9 bits are defined, so the value could be multi-byte
@@ -580,7 +582,8 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
 
 - (void) setKeyUsage: (UInt16)keyUsage {
     MYBitString* bitString = nil;
-    if (keyUsage != 0) {
+    if (keyUsage != 0 && keyUsage != kKeyUsageUnspecified) {
+        Assert((keyUsage & ~0x1FF) == 0, @"Invalid flags in keyUsage: 0x%x", keyUsage);
         UInt8 bytes[2] = {keyUsage & 0xFF, keyUsage >> 8};
         size_t length = 1 + (bytes[1] != 0);
         NSData* data = [NSData dataWithBytes: bytes length: length];
@@ -590,6 +593,16 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
             isCritical: YES 
                 forOID: kKeyUsageOID];
     [bitString release];
+}
+
+
+- (BOOL) allowsKeyUsage: (UInt16)requestedKeyUsage {
+    BOOL critical;
+    if ([self extensionForOID: kKeyUsageOID isCritical:&critical] && critical) {
+        if ((self.keyUsage & requestedKeyUsage) != requestedKeyUsage)
+            return NO;
+    }
+    return YES;
 }
 
 
@@ -605,6 +618,17 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
     [self setExtension: (usage.count ?[usage allObjects] :nil)
             isCritical: YES
                 forOID: kExtendedKeyUsageOID];
+}
+
+- (BOOL) allowsExtendedKeyUsage: (NSSet*) requestedKeyUsage {
+    BOOL critical;
+    if ([self extensionForOID: kExtendedKeyUsageOID isCritical:&critical] && critical) {
+        NSSet* keyUsage = self.extendedKeyUsage;
+        if (![requestedKeyUsage isSubsetOfSet: keyUsage]
+                && ![keyUsage containsObject: kExtendedKeyUsageAnyOID])
+            return NO;
+    }
+    return YES;
 }
 
 @end

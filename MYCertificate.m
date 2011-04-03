@@ -65,7 +65,7 @@
     self = [self initWithCertificateRef: certificateRef];
     CFRelease(certificateRef);
     
-    if (![self _verify]) {
+    if (self && ![self _verify]) {
           Log(@"Self-signed cert failed signature verification (%@)", self);
           [self release];
           return nil;
@@ -117,7 +117,7 @@
     return check(SecCertificateSetPreference(_certificateRef, (CFStringRef)name, 0, NULL),
                  @"SecCertificateSetPreference");
 }
-#endif TARGET_OS_IPHONE
+#endif //TARGET_OS_IPHONE
 
 
 @synthesize certificateRef=_certificateRef;
@@ -338,21 +338,45 @@
     }
     return kSecTrustSettingsResultUnspecified;
 }
-        
+
 
 - (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting
 {
-    if (trustSetting == kSecTrustResultProceed) {
-        return check(SecTrustSettingsSetTrustSettings(_certificateRef, 
-                                                      kSecTrustSettingsDomainUser, nil),
-                     @"SecTrustSettingsSetTrustSettings");
-    } else if (trustSetting == kSecTrustResultDeny) {
-        OSStatus err = SecTrustSettingsRemoveTrustSettings(_certificateRef, 
-                                                           kSecTrustSettingsDomainUser);
-        return err == errSecItemNotFound || check(err, @"SecTrustSettingsRemoveTrustSettings");
-    } else
+    if (trustSetting == kSecTrustResultProceed)
+        return [self addUserTrustForPolicy: NULL string: nil];
+    else if (trustSetting == kSecTrustResultDeny)
+        return [self removeUserTrust];
+    else
         return NO;
 }
+
+
+- (BOOL) addUserTrustForPolicy: (SecPolicyRef)policy
+                        string: (NSString*) string
+{
+    NSDictionary* settings = nil;
+    if (policy) {
+        SecTrustSettingsResult result = self.info.isRoot ? kSecTrustSettingsResultTrustRoot
+                                                         : kSecTrustSettingsResultTrustAsRoot;
+        settings = $dict({(id)kSecTrustSettingsPolicy, (id)policy},
+                         {(id)kSecTrustSettingsPolicyString, string},
+                         {(id)kSecTrustSettingsResult, $object(result)});
+    }
+    OSStatus err = SecTrustSettingsSetTrustSettings(_certificateRef, 
+                                                    kSecTrustSettingsDomainUser, settings);
+    return err != errAuthorizationCanceled && check(err, @"SecTrustSettingsSetTrustSettings");
+}
+
+
+- (BOOL) removeUserTrust
+{
+    OSStatus err = SecTrustSettingsRemoveTrustSettings(_certificateRef, 
+                                                       kSecTrustSettingsDomainUser);
+    if (err == errSecItemNotFound)
+        return YES;
+    return err != errAuthorizationCanceled && check(err, @"SecTrustSettingsRemoveTrustSettings");
+}
+
 #endif
 
 
@@ -370,7 +394,7 @@ NSString* MYTrustResultDescribe( SecTrustResultType result ) {
         @"FatalTrustFailure",
         @"OtherError"
     };
-    if (result>=0 && result <=kSecTrustResultOtherError)
+    if (result <=kSecTrustResultOtherError)
         return kTrustResultNames[result];
     else
         return $sprintf(@"(Unknown trust result %i)", result);

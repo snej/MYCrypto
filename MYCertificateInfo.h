@@ -138,7 +138,19 @@
 
 @property UInt16 keyUsage;
 
+/** Checks whether the given key usage(s) are allowed by the certificate signer.
+    Returns NO if the KeyUsage extension is present, and marked critical, and does not include
+    all of the requested usages.
+    @param keyUsage  One or more kKeyUsage flags, OR'ed together. */
+- (BOOL) allowsKeyUsage: (UInt16)keyUsage;
+
 @property (copy) NSSet* extendedKeyUsage;
+
+/** Checks whether the given extended key usage(s) are allowed by the certificate signer.
+    Returns NO if the ExtendedKeyUsage extension is present, and marked critical,
+    and does not include all of the requested usages.
+    @param extendedKeyUsage  A set of kExtendedKeyUsage OIDs. */
+- (BOOL) allowsExtendedKeyUsage: (NSSet*) extendedKeyUsage;
 
 @end
 
@@ -154,7 +166,8 @@ enum {
     kKeyUsageKeyCertSign        = 0x04,
     kKeyUsageCRLSign            = 0x02,
     kKeyUsageEncipherOnly       = 0x01,
-    kKeyUsageDecipherOnly       = 0x100
+    kKeyUsageDecipherOnly       = 0x100,
+    kKeyUsageUnspecified        = 0xFFFF        // Returned if key-usage extension is not present
 };
 
 /** These are the constants that can appear in the extendedKeyUsage set. */

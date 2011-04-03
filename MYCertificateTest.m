@@ -94,6 +94,17 @@ TestCase(ParsedCert) {
     MYCertificateExtensions* ext = pcert.extensions;
     CAssertEq(ext.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
     CAssertEqual(ext.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID, nil]));
+    
+    CAssert([ext allowsKeyUsage:0]);
+    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature]);
+    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature | kKeyUsageDataEncipherment]);
+    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation]);
+    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation | kKeyUsageDigitalSignature]);
+
+    CAssert([ext allowsExtendedKeyUsage:[NSSet set]]);
+    CAssert([ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageEmailProtectionOID]]);
+    CAssert(![ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageServerAuthOID]]);
+    CAssert(![ext allowsExtendedKeyUsage:([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID,kExtendedKeyUsageServerAuthOID, nil])]);
 
     testCert(@"selfsigned", YES);
     testCert(@"iphonedev", NO);
@@ -135,7 +146,7 @@ TestCase(CreateCert) {
         MYCertificateExtensions* ext = pcert.extensions;
         CAssert(ext != nil);
         CAssertEqual(ext.extensionOIDs, $array());
-        CAssertEq(ext.keyUsage, 0x00);
+        CAssertEq(ext.keyUsage, kKeyUsageUnspecified);
         CAssertEqual(ext.extendedKeyUsage, nil);
         ext.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment;
         ext.extendedKeyUsage = [NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil];

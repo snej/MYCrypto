@@ -98,6 +98,9 @@
 - (CSSM_CERT_TYPE) certificateType;
 - (NSArray*) trustSettings;
 - (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting;
+- (BOOL) addUserTrustForPolicy: (SecPolicyRef)policy
+                        string: (NSString*) string;
+- (BOOL) removeUserTrust;
 #endif
     
 //@}
