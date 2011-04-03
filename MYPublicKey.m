@@ -104,20 +104,15 @@
 }
 
 
-- (BOOL) verifySignature: (NSData*)signature ofData: (NSData*)data {
+#if !MYCRYPTO_USE_IPHONE_API
+- (BOOL) verifySignature: (NSData*)signature 
+                  ofData: (NSData*)data
+           withAlgorithm:(CSSM_ALGORITHMS)algorithm 
+{
     Assert(data);
     Assert(signature);
     
-#if MYCRYPTO_USE_IPHONE_API
-    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1(data.bytes,data.length, digest);
-    OSStatus err = SecKeyRawVerify(self.keyRef, kSecPaddingPKCS1SHA1,
-                                   digest,sizeof(digest),
-                                   signature.bytes, signature.length);
-    return err==noErr;
-    
-#else
-    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: CSSM_ALGID_SHA1WithRSA];
+    CSSM_CC_HANDLE ccHandle = [self _createSignatureContext: algorithm];
     if (!ccHandle) return NO;
     CSSM_DATA original = {data.length, (void*)data.bytes};
     CSSM_DATA sig = {signature.length, (void*)signature.bytes};
@@ -128,6 +123,23 @@
     if (cssmErr != CSSMERR_CSP_VERIFY_FAILED)
         Warn(@"CSSM error verifying signature: %u", MYErrorName(MYCSSMErrorDomain,cssmErr));
     return NO;
+}
+#endif
+
+
+- (BOOL) verifySignature: (NSData*)signature ofData: (NSData*)data {
+#if MYCRYPTO_USE_IPHONE_API
+    Assert(data);
+    Assert(signature);
+    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1(data.bytes,data.length, digest);
+    OSStatus err = SecKeyRawVerify(self.keyRef, kSecPaddingPKCS1SHA1,
+                                   digest,sizeof(digest),
+                                   signature.bytes, signature.length);
+    return err==noErr;
+    
+#else
+    return [self verifySignature: signature ofData: data withAlgorithm: CSSM_ALGID_SHA1WithRSA];
 #endif
 }
 

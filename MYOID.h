@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 
 
-/* An ASN.1 Object-ID, which is a sequence of integer components that define namespaces.
-    This is mostly used internally by MYParsedCertificate. */
+/** An ASN.1 Object-ID, which is a sequence of integer components that define namespaces.
+    This is mostly used internally by MYCertificateInfo. */
 @interface MYOID : NSObject <NSCopying>
 {
     NSData *_data;

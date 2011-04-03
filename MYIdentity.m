@@ -40,8 +40,8 @@
     self = [super initWithCertificateRef: certificateRef];
     if (self) {
 #if !MYCRYPTO_USE_IPHONE_API
-        if (!check(SecIdentityCreateWithCertificate(NULL, certificateRef, &_identityRef),
-                   @"SecIdentityCreateWithCertificate")) {
+        OSStatus err = SecIdentityCreateWithCertificate(NULL, certificateRef, &_identityRef);
+        if (err == errKCItemNotFound || !check(err, @"SecIdentityCreateWithCertificate")) {
             [self release];
             return nil;
         }

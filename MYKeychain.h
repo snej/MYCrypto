@@ -64,6 +64,11 @@
     (This method only looks for keys embedded in certificates, not 'bare' public keys.) */
 - (MYCertificate*) certificateWithDigest: (MYSHA1Digest*)pubKeyDigest;
 
+/** Enumerates all certificates in the keychain whose public keys have the given digest.
+    (Usually there will be at most one, but in some cases there may be multiple certificates
+    for the same public key.) */
+- (NSEnumerator*) enumerateCertificatesWithDigest: (MYSHA1Digest*)pubKeyDigest;
+
 /** Enumerates all certificates in the keychain. */
 - (NSEnumerator*) enumerateCertificates;
 

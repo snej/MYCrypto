@@ -215,18 +215,21 @@
 #pragma mark SEARCHING:
 
 
-- (MYKeychainItem*) itemOfClass: (SecItemClass)itemClass 
-                     withDigest: (MYSHA1Digest*)pubKeyDigest 
+- (MYKeyEnumerator*) enumerateItemsOfClass: (SecItemClass)itemClass 
+                                withDigest: (MYSHA1Digest*)pubKeyDigest 
 {
     SecKeychainAttribute attr = {.tag= (itemClass==kSecCertificateItemClass ?kSecPublicKeyHashItemAttr :kSecKeyLabel), 
                                  .length= pubKeyDigest.length, 
                                  .data= (void*) pubKeyDigest.bytes};
-    MYKeyEnumerator *e = [[MYKeyEnumerator alloc] initWithKeychain: self
-                                                         itemClass: itemClass
-                                                        attributes: &attr count: 1];
-    MYKeychainItem *item = e.nextObject;
-    [e release];
-    return item;
+    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+                                            itemClass: itemClass
+                                           attributes: &attr count: 1] autorelease];
+}
+
+- (MYKeychainItem*) itemOfClass: (SecItemClass)itemClass 
+                     withDigest: (MYSHA1Digest*)pubKeyDigest 
+{
+    return [[self enumerateItemsOfClass: itemClass withDigest: pubKeyDigest] nextObject];
 }
 
 - (MYPublicKey*) publicKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
@@ -262,10 +265,23 @@
     return (MYCertificate*) [self itemOfClass: kSecCertificateItemClass withDigest: pubKeyDigest];
 }
 
+- (NSEnumerator*) enumerateCertificatesWithDigest: (MYSHA1Digest*)pubKeyDigest {
+    return [self enumerateItemsOfClass: kSecCertificateItemClass withDigest: pubKeyDigest];
+}
+
 - (NSEnumerator*) enumerateCertificates {
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecCertificateItemClass
                                            attributes: NULL count: 0] autorelease];
+}
+
+- (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
+    for (MYCertificate* cert in [self enumerateCertificatesWithDigest:pubKeyDigest]) {
+        MYIdentity* identity = cert.identity;
+        if (identity)
+            return identity;
+    }
+    return nil;
 }
 
 - (NSEnumerator*) enumerateIdentities {

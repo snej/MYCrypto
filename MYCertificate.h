@@ -61,6 +61,9 @@
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy;
 - (SecTrustResultType) evaluateTrust;
 
+- (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
+                                               string: (NSString*) policyString;
+
 
 /** @name Mac-Only
  *  Functionality not available on iPhone. 
@@ -95,6 +98,9 @@
 - (CSSM_CERT_TYPE) certificateType;
 - (NSArray*) trustSettings;
 - (BOOL) setUserTrust: (SecTrustUserSetting)trustSetting;
+- (BOOL) addUserTrustForPolicy: (SecPolicyRef)policy
+                        string: (NSString*) string;
+- (BOOL) removeUserTrust;
 #endif
     
 //@}

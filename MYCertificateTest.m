@@ -31,7 +31,16 @@ static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     Log(@"Surname     = %@", subject.surname);
     Log(@"Desc        = %@", subject.nameDescription);
     Log(@"Email       = %@", subject.emailAddress);
-    CAssert(subject.commonName);
+
+    MYCertificateExtensions* extensions = pcert.extensions;
+    for (MYOID* oid in extensions.extensionOIDs) {
+        BOOL isCritical;
+        id value = [extensions extensionForOID:oid isCritical:&isCritical];
+        CAssert(value != nil);
+        Log(@"Extension %@%@ = %@", oid, (isCritical ?@" (critical)" :@""), value);
+    }
+    Log(@"Key Usage = 0x%x", extensions.keyUsage);
+    Log(@"Extended Key Usage = %@", extensions.extendedKeyUsage);
     
     MYPublicKey *pcertKey = pcert.subjectPublicKey;
     Log(@"Subject Public Key = %@", pcertKey);
@@ -81,6 +90,22 @@ static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
 
 
 TestCase(ParsedCert) {
+    MYCertificateInfo* pcert = testCert(@"selfsigned_email", YES);
+    MYCertificateExtensions* ext = pcert.extensions;
+    CAssertEq(ext.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+    CAssertEqual(ext.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID, nil]));
+    
+    CAssert([ext allowsKeyUsage:0]);
+    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature]);
+    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature | kKeyUsageDataEncipherment]);
+    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation]);
+    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation | kKeyUsageDigitalSignature]);
+
+    CAssert([ext allowsExtendedKeyUsage:[NSSet set]]);
+    CAssert([ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageEmailProtectionOID]]);
+    CAssert(![ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageServerAuthOID]]);
+    CAssert(![ext allowsExtendedKeyUsage:([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID,kExtendedKeyUsageServerAuthOID, nil])]);
+
     testCert(@"selfsigned", YES);
     testCert(@"iphonedev", NO);
     
@@ -100,6 +125,9 @@ TestCase(CreateCert) {
     MYIdentity *identity = nil;
     @try{
         MYCertificateRequest *pcert = [[MYCertificateRequest alloc] initWithPublicKey: privateKey.publicKey];
+        CAssertEqual(pcert.subjectPublicKey.keyData, privateKey.publicKey.keyData);
+        
+        Log(@"---- Subject names...");
         MYCertificateName *subject = pcert.subject;
         subject.commonName = @"testcase";
         subject.givenName = @"Test";
@@ -114,7 +142,16 @@ TestCase(CreateCert) {
         CAssertEqual(subject.nameDescription, @"Just a test certificate created by MYCrypto");
         CAssertEqual(subject.emailAddress, @"testcase@example.com");
         
-        CAssertEqual(pcert.subjectPublicKey.keyData, privateKey.publicKey.keyData);
+        Log(@"---- Extensions...");
+        MYCertificateExtensions* ext = pcert.extensions;
+        CAssert(ext != nil);
+        CAssertEqual(ext.extensionOIDs, $array());
+        CAssertEq(ext.keyUsage, kKeyUsageUnspecified);
+        CAssertEqual(ext.extendedKeyUsage, nil);
+        ext.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment;
+        ext.extendedKeyUsage = [NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil];
+        CAssertEq(ext.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+        CAssertEqual(ext.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
         
         Log(@"---- Signing...");
         NSError *error;
@@ -133,7 +170,10 @@ TestCase(CreateCert) {
         CAssertEqual(subject2.surname, @"Case");
         CAssertEqual(subject2.nameDescription, @"Just a test certificate created by MYCrypto");
         CAssertEqual(subject2.emailAddress, @"testcase@example.com");
-                
+        MYCertificateExtensions* ext2 = pcert2.extensions;
+        CAssertEq(ext2.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+        CAssertEqual(ext2.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
+
         Log(@"---- Creating MYCertificate object...");
         MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];
         Log(@"Loaded %@", cert);

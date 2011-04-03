@@ -45,12 +45,10 @@
 		270B879F0F8C565000C56781 /* MYPrivateKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 270B879E0F8C565000C56781 /* MYPrivateKey.m */; };
 		27205C440FF2D88200C5E25B /* MYCertificateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27205C430FF2D88200C5E25B /* MYCertificateTest.m */; };
 		27205C450FF2D88200C5E25B /* MYCertificateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27205C430FF2D88200C5E25B /* MYCertificateTest.m */; };
-		273A003712D2B2D200008699 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 273A003612D2B2D200008699 /* MYMockKeys.m */; };
-		273A003812D2B2D200008699 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 273A003612D2B2D200008699 /* MYMockKeys.m */; };
-		273A003912D2B2D200008699 /* MYMockKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 273A003512D2B2D200008699 /* MYMockKeys.h */; };
-		273A003A12D2B2D200008699 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 273A003612D2B2D200008699 /* MYMockKeys.m */; };
-		273A003B12D2B2D200008699 /* MYMockKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 273A003512D2B2D200008699 /* MYMockKeys.h */; };
-		273A003C12D2B2D200008699 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 273A003612D2B2D200008699 /* MYMockKeys.m */; };
+		27292361129F2EE800B694B1 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 27292360129F2EE800B694B1 /* MYMockKeys.m */; };
+		27292362129F2EE800B694B1 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 27292360129F2EE800B694B1 /* MYMockKeys.m */; };
+		2729236B129F307100B694B1 /* MYMockKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 2729235F129F2EE800B694B1 /* MYMockKeys.h */; };
+		2729236C129F307200B694B1 /* MYMockKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 27292360129F2EE800B694B1 /* MYMockKeys.m */; };
 		273BC13C112DB06F000583D7 /* MYCryptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CFF4B30F7E8535000B418E /* MYCryptor.h */; };
 		273BC13D112DB070000583D7 /* MYCryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4B40F7E8535000B418E /* MYCryptor.m */; };
 		27410FF00F99200A00AD413F /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */; };
@@ -151,6 +149,10 @@
 		27CFF5220F7E94DF000B418E /* MYCrypto_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5210F7E94DF000B418E /* MYCrypto_main.m */; };
 		27CFF5760F7E999B000B418E /* MYErrorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5750F7E999B000B418E /* MYErrorUtils.m */; };
 		27E820720F7EA6260019BE60 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E820710F7EA6260019BE60 /* CoreServices.framework */; };
+		27EABE81129F77D10005DA73 /* generated.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE7E129F77D10005DA73 /* generated.cer */; };
+		27EABE82129F77D10005DA73 /* iphonedev.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE7F129F77D10005DA73 /* iphonedev.cer */; };
+		27EABE83129F77D10005DA73 /* selfsigned.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE80129F77D10005DA73 /* selfsigned.cer */; };
+		27EABE85129F784C0005DA73 /* selfsigned_reencoded.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE84129F784C0005DA73 /* selfsigned_reencoded.cer */; };
 		27FEB3E70FBA63D200290049 /* MYCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FEB3E60FBA63D200290049 /* MYCrypto.h */; };
 		8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -183,6 +185,8 @@
 		270B879D0F8C565000C56781 /* MYPrivateKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYPrivateKey.h; sourceTree = "<group>"; };
 		270B879E0F8C565000C56781 /* MYPrivateKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYPrivateKey.m; sourceTree = "<group>"; };
 		27205C430FF2D88200C5E25B /* MYCertificateTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCertificateTest.m; sourceTree = "<group>"; };
+		2729235F129F2EE800B694B1 /* MYMockKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYMockKeys.h; sourceTree = "<group>"; };
+		27292360129F2EE800B694B1 /* MYMockKeys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYMockKeys.m; sourceTree = "<group>"; };
 		2733D7DC100E989E0018E4F9 /* MYUtilities.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYUtilities.xcconfig; sourceTree = "<group>"; };
 		2733D7DD100E989E0018E4F9 /* MYUtilities_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYUtilities_Debug.xcconfig; sourceTree = "<group>"; };
 		273A003512D2B2D200008699 /* MYMockKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYMockKeys.h; sourceTree = "<group>"; };
@@ -222,14 +226,14 @@
 		27CFF4BE0F7E8535000B418E /* MYCrypto_Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCrypto_Private.h; sourceTree = "<group>"; };
 		27CFF4BF0F7E8535000B418E /* MYDigest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYDigest.h; sourceTree = "<group>"; };
 		27CFF4C00F7E8535000B418E /* MYDigest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDigest.m; sourceTree = "<group>"; };
-		27CFF4CD0F7E8726000B418E /* CollectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CollectionUtils.h; path = ../MYUtilities/CollectionUtils.h; sourceTree = SOURCE_ROOT; };
-		27CFF4CE0F7E8726000B418E /* CollectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CollectionUtils.m; path = ../MYUtilities/CollectionUtils.m; sourceTree = SOURCE_ROOT; };
-		27CFF4CF0F7E8726000B418E /* ExceptionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExceptionUtils.h; path = ../MYUtilities/ExceptionUtils.h; sourceTree = SOURCE_ROOT; };
-		27CFF4D00F7E8726000B418E /* ExceptionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExceptionUtils.m; path = ../MYUtilities/ExceptionUtils.m; sourceTree = SOURCE_ROOT; };
-		27CFF4D10F7E8726000B418E /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Logging.h; path = ../MYUtilities/Logging.h; sourceTree = SOURCE_ROOT; };
-		27CFF4D20F7E8726000B418E /* Logging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Logging.m; path = ../MYUtilities/Logging.m; sourceTree = SOURCE_ROOT; };
-		27CFF4D30F7E8726000B418E /* Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Test.h; path = ../MYUtilities/Test.h; sourceTree = SOURCE_ROOT; };
-		27CFF4D40F7E8726000B418E /* Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Test.m; path = ../MYUtilities/Test.m; sourceTree = SOURCE_ROOT; };
+		27CFF4CD0F7E8726000B418E /* CollectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectionUtils.h; sourceTree = "<group>"; };
+		27CFF4CE0F7E8726000B418E /* CollectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectionUtils.m; sourceTree = "<group>"; };
+		27CFF4CF0F7E8726000B418E /* ExceptionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExceptionUtils.h; sourceTree = "<group>"; };
+		27CFF4D00F7E8726000B418E /* ExceptionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExceptionUtils.m; sourceTree = "<group>"; };
+		27CFF4D10F7E8726000B418E /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
+		27CFF4D20F7E8726000B418E /* Logging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Logging.m; sourceTree = "<group>"; };
+		27CFF4D30F7E8726000B418E /* Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test.h; sourceTree = "<group>"; };
+		27CFF4D40F7E8726000B418E /* Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test.m; sourceTree = "<group>"; };
 		27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MYCrypto.xcconfig; sourceTree = "<group>"; };
 		27CFF51E0F7E94AE000B418E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		27CFF5210F7E94DF000B418E /* MYCrypto_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYCrypto_main.m; sourceTree = "<group>"; };
@@ -240,9 +244,13 @@
 		27E820710F7EA6260019BE60 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		27E822A00F81C5660019BE60 /* MYKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKey.h; sourceTree = "<group>"; };
 		27E822A10F81C5660019BE60 /* MYKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKey.m; sourceTree = "<group>"; };
+		27EABE7E129F77D10005DA73 /* generated.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = generated.cer; path = Tests/generated.cer; sourceTree = "<group>"; };
+		27EABE7F129F77D10005DA73 /* iphonedev.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = iphonedev.cer; path = Tests/iphonedev.cer; sourceTree = "<group>"; };
+		27EABE80129F77D10005DA73 /* selfsigned.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned.cer; path = Tests/selfsigned.cer; sourceTree = "<group>"; };
+		27EABE84129F784C0005DA73 /* selfsigned_reencoded.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned_reencoded.cer; path = Tests/selfsigned_reencoded.cer; sourceTree = "<group>"; };
 		27EAF0390F8B2D700091AF95 /* README.textile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.textile; sourceTree = "<group>"; };
 		27FEB3E60FBA63D200290049 /* MYCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCrypto.h; sourceTree = "<group>"; };
-		8DD76FA10486AA7600D96B5E /* MYCrypto */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = MYCrypto; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DD76FA10486AA7600D96B5E /* MYCrypto */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MYCrypto; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -328,8 +336,8 @@
 				27AAD97B0F892A0D0064DD7C /* MYCryptoConfig.h */,
 				27059D750F8FA23100A8422F /* MYCrypto+Cocoa.h */,
 				27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */,
-				273A003512D2B2D200008699 /* MYMockKeys.h */,
-				273A003612D2B2D200008699 /* MYMockKeys.m */,
+				2729235F129F2EE800B694B1 /* MYMockKeys.h */,
+				27292360129F2EE800B694B1 /* MYMockKeys.m */,
 				27EAF0390F8B2D700091AF95 /* README.textile */,
 				27FEB3E60FBA63D200290049 /* MYCrypto.h */,
 			);
@@ -379,6 +387,10 @@
 				27A42CBE0F8578B40063D362 /* MYCryptoTest.m */,
 				27CFF5210F7E94DF000B418E /* MYCrypto_main.m */,
 				273BC14D112DB182000583D7 /* MYCrypto_iPhone-Info.plist */,
+				27EABE7E129F77D10005DA73 /* generated.cer */,
+				27EABE7F129F77D10005DA73 /* iphonedev.cer */,
+				27EABE80129F77D10005DA73 /* selfsigned.cer */,
+				27EABE84129F784C0005DA73 /* selfsigned_reencoded.cer */,
 				27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */,
 				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
 				2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */,
@@ -464,7 +476,7 @@
 				27B855270FD077A6005631F9 /* MYDEREncoder.h in Headers */,
 				270A7A730FD58FF200770C4D /* MYBERParser.h in Headers */,
 				275DA1270FD980D400D85A86 /* MYCertificateInfo.h in Headers */,
-				273A003912D2B2D200008699 /* MYMockKeys.h in Headers */,
+				2729236B129F307100B694B1 /* MYMockKeys.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -575,6 +587,9 @@
 			buildConfigurationList = 1DEB927808733DD40010E9CD /* Build configuration list for PBXProject "MYCrypto" */;
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* MYCrypto */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -596,6 +611,10 @@
 				27552FAB112DA410006C2C7C /* MYError_CSSMErrorDomain.strings in Resources */,
 				27552FAD112DA412006C2C7C /* MYUtilities.xcconfig in Resources */,
 				27552FAE112DA413006C2C7C /* MYUtilities_Debug.xcconfig in Resources */,
+				27EABE81129F77D10005DA73 /* generated.cer in Resources */,
+				27EABE82129F77D10005DA73 /* iphonedev.cer in Resources */,
+				27EABE83129F77D10005DA73 /* selfsigned.cer in Resources */,
+				27EABE85129F784C0005DA73 /* selfsigned_reencoded.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -643,7 +662,7 @@
 				270A7A740FD58FF200770C4D /* MYBERParser.m in Sources */,
 				275DA1280FD980D400D85A86 /* MYCertificateInfo.m in Sources */,
 				27205C440FF2D88200C5E25B /* MYCertificateTest.m in Sources */,
-				273A003A12D2B2D200008699 /* MYMockKeys.m in Sources */,
+				2729236C129F307200B694B1 /* MYMockKeys.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -704,7 +723,7 @@
 				27552FAF112DA41C006C2C7C /* Test.m in Sources */,
 				27552FB2112DA42C006C2C7C /* MYCrypto_main.m in Sources */,
 				27552FB3112DA42D006C2C7C /* MYCryptoTest.m in Sources */,
-				273A003712D2B2D200008699 /* MYMockKeys.m in Sources */,
+				27292362129F2EE800B694B1 /* MYMockKeys.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -739,7 +758,7 @@
 				270A7A750FD58FF200770C4D /* MYBERParser.m in Sources */,
 				275DA1290FD980D400D85A86 /* MYCertificateInfo.m in Sources */,
 				27205C450FF2D88200C5E25B /* MYCertificateTest.m in Sources */,
-				273A003812D2B2D200008699 /* MYMockKeys.m in Sources */,
+				27292361129F2EE800B694B1 /* MYMockKeys.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -777,6 +796,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 			};
 			name = Debug;
 		};
@@ -786,6 +806,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 			};
 			name = Release;
 		};
@@ -815,7 +836,12 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"MYERRORUTILS_USE_SECURITY_API=1",
+					"DEBUG=1",
+				);
 				PRODUCT_NAME = "MYCrypto-iPhone";
+				SDKROOT = iphoneos3.2;
 			};
 			name = Debug;
 		};
@@ -823,11 +849,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				PRODUCT_NAME = "MYCrypto-iPhone";
-				SDKROOT = iphonesimulator3.1.2;
+				SDKROOT = iphoneos3.2;
 			};
 			name = Release;
 		};

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-@class MYCertificateName, MYCertificate, MYIdentity, MYPublicKey, MYPrivateKey, MYOID;
+@class MYCertificateName, MYCertificateExtensions, MYCertificate, MYIdentity, MYPublicKey, MYPrivateKey, MYOID;
 
 /** A parsed X.509 certificate; provides access to the names and metadata. */
 @interface MYCertificateInfo : NSObject 
@@ -32,6 +32,8 @@
 
 /** Information about the identity that signed/authorized this certificate. */
 @property (readonly) MYCertificateName *issuer;
+
+@property (readonly) MYCertificateExtensions* extensions;
 
 /** Returns YES if the issuer is the same as the subject. (Aka a "self-signed" certificate.) */
 @property (readonly) BOOL isRoot;
@@ -116,3 +118,58 @@
 - (void) setString: (NSString*)value forOID: (MYOID*)oid;
 
 @end
+
+
+
+/** An X.509 Extensions structure, describing optional extensions in a certificate.
+    The properties are settable only if this instance belongs to a MYCertificateRequest;
+    otherwise trying to set them will raise an exception. */
+@interface MYCertificateExtensions : NSObject
+{
+    @private
+    NSArray *_extensions;
+}
+
+@property (readonly) NSArray* extensionOIDs;
+
+- (id) extensionForOID: (MYOID*)oid isCritical: (BOOL*)outIsCritical;
+
+- (void) setExtension: (id)extension isCritical: (BOOL)isCritical forOID: (MYOID*)oid;
+
+@property UInt16 keyUsage;
+
+/** Checks whether the given key usage(s) are allowed by the certificate signer.
+    Returns NO if the KeyUsage extension is present, and marked critical, and does not include
+    all of the requested usages.
+    @param keyUsage  One or more kKeyUsage flags, OR'ed together. */
+- (BOOL) allowsKeyUsage: (UInt16)keyUsage;
+
+@property (copy) NSSet* extendedKeyUsage;
+
+/** Checks whether the given extended key usage(s) are allowed by the certificate signer.
+    Returns NO if the ExtendedKeyUsage extension is present, and marked critical,
+    and does not include all of the requested usages.
+    @param extendedKeyUsage  A set of kExtendedKeyUsage OIDs. */
+- (BOOL) allowsExtendedKeyUsage: (NSSet*) extendedKeyUsage;
+
+@end
+
+
+extern MYOID *kKeyUsageOID, *kExtendedKeyUsageOID;
+
+enum {
+    kKeyUsageDigitalSignature   = 0x80,
+    kKeyUsageNonRepudiation     = 0x40,
+    kKeyUsageKeyEncipherment    = 0x20,
+    kKeyUsageDataEncipherment   = 0x10,
+    kKeyUsageKeyAgreement       = 0x08,
+    kKeyUsageKeyCertSign        = 0x04,
+    kKeyUsageCRLSign            = 0x02,
+    kKeyUsageEncipherOnly       = 0x01,
+    kKeyUsageDecipherOnly       = 0x100,
+    kKeyUsageUnspecified        = 0xFFFF        // Returned if key-usage extension is not present
+};
+
+/** These are the constants that can appear in the extendedKeyUsage set. */
+extern MYOID *kExtendedKeyUsageServerAuthOID, *kExtendedKeyUsageClientAuthOID,
+             *kExtendedKeyUsageCodeSigningOID, *kExtendedKeyUsageEmailProtectionOID;

@@ -181,9 +181,9 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 	SecKeychainAttributeInfo info = {.count=1, .tag=(UInt32*)&attr, .format=&format};
     SecKeychainAttributeList *list = NULL;
 	
-    if (check(SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)item, &info,
-                                                   NULL, &list, NULL, NULL),
-              @"SecKeychainItemCopyAttributesAndData")) {
+    OSStatus err = SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)item, &info,
+                                                        NULL, &list, NULL, NULL);
+    if (err != errKCNotAvailable && check(err, @"SecKeychainItemCopyAttributesAndData")) {
         if (list) {
             if (list->count == 1)
                 value = [NSData dataWithBytes: list->attr->data

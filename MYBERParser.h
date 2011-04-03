@@ -12,13 +12,13 @@
 #define MYASN1ErrorDomain @"MYASN1ErrorDomain"
 
 
-/** Parses a block of BER-formatted data into an object tree.
-    This is mostly used internally by MYParsedCertificate. */
+/* Parses a block of BER-formatted data into an object tree.
+    This is mostly used internally by MYCertificateInfo. */
 id MYBERParse (NSData *ber, NSError **outError);
 
 size_t MYBERGetLength (NSData *ber, NSError **outError);
 const void* MYBERGetContents (NSData *ber, NSError **outError);
 
 /** A date formatter with the format string "yyyyMMddHHmmss'Z'" */
-NSDateFormatter* MYBERGeneralizedTimeFormatter();
-NSDateFormatter* MYBERUTCTimeFormatter();
+NSDateFormatter* MYBERGeneralizedTimeFormatter(void);
+NSDateFormatter* MYBERUTCTimeFormatter(void);

@@ -35,6 +35,7 @@
 
 - (id) initWithRootObject: (id)rootObject
 {
+    Assert(rootObject != nil);
     self = [super init];
     if (self != nil) {
         _rootObject = [rootObject retain];
@@ -57,13 +58,6 @@
     [_error release];
     [super dealloc];
 }
-
-- (id) copyWithZone: (NSZone*)zone {
-    MYDEREncoder *copy = [[[self class] alloc] init];
-    copy->_forcePrintableStrings = _forcePrintableStrings;
-    return copy;
-}
-
 
 static unsigned sizeOfUnsignedInt (UInt64 n) {
     unsigned bytes = 0;
@@ -233,7 +227,8 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
 
 
 - (void) _encodeCollection: (id)collection tag: (unsigned)tag class: (unsigned)tagClass {
-    MYDEREncoder *subEncoder = [self copy];
+    MYDEREncoder *subEncoder = [[[self class] alloc] init];
+    subEncoder->_forcePrintableStrings = _forcePrintableStrings;
     for (id object in collection)
         [subEncoder _encode: object];
     [self _writeTag: tag class: tagClass constructed: YES data: subEncoder.output];
@@ -279,14 +274,18 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
 
 - (NSData*) output {
     if (!_output && !_error) {
-        @try{
-            [self _encode: _rootObject];
-        }@catch (NSException *x) {
-            if ($equal(x.name, MYDEREncoderException)) {
-                self.error = MYError(2,MYASN1ErrorDomain, @"%@", x.reason);
-                return nil;
-            } else
-                @throw(x);
+        if (_rootObject) {
+            @try{
+                [self _encode: _rootObject];
+            }@catch (NSException *x) {
+                if ($equal(x.name, MYDEREncoderException)) {
+                    self.error = MYError(2,MYASN1ErrorDomain, @"%@", x.reason);
+                    return nil;
+                } else
+                    @throw(x);
+            }
+        } else {
+            _output = [[NSMutableData alloc] init];
         }
     }
     return _output;
