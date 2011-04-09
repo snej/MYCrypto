@@ -254,6 +254,8 @@ BOOL check(OSStatus err, NSString *what) {
         if (err < -2000000000)
             return checkcssm(err,what);
 #endif
+        if (err == userCanceledErr) // don't warn about userCanceledErr
+            return NO;
         Warn(@"MYCrypto error, %@: %@", what, MYErrorName(NSOSStatusErrorDomain,err));
         if (err==-50)
             [NSException raise: NSGenericException format: @"%@ failed with paramErr (-50)",what];

@@ -10,6 +10,8 @@
 #import "MYCrypto_Private.h"
 #import "MYDigest.h"
 
+#import "MYErrorUtils.h"
+
 
 @implementation MYIdentity
 
@@ -73,6 +75,60 @@
     return self;
 }
 
+
+static SecIdentityRef importIdentity(NSData *data, 
+                                     SecKeychainRef keychain,
+                                     SecExternalFormat inputFormat,
+                                     OSStatus* outError) {
+    CAssert(keychain);
+    CFArrayRef items = NULL;
+    
+    SecKeyImportExportParameters params = {};
+    params.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
+    params.flags = kSecKeySecurePassphrase | kSecKeyImportOnlyOne;
+    params.keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT;
+    params.keyUsage = CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN;
+    params.alertPrompt = (CFStringRef)@"This certificate archive is encrypted with a password. "
+                                       "Please enter it:";
+    
+    SecExternalItemType type = kSecItemTypeAggregate;
+    *outError = SecKeychainItemImport((CFDataRef)data, NULL, &inputFormat, &type,
+                                      0, &params, keychain, &items);
+    if (!check(*outError, @"SecKeychainItemImport"))
+        return NULL;
+    if (!items)
+        return NULL;
+    if (CFArrayGetCount(items) != 1 || type != kSecItemTypeAggregate) {
+        CFRelease(items);
+        return NULL;
+    }
+    SecIdentityRef identity = (SecIdentityRef)CFRetain(CFArrayGetValueAtIndex(items,0));
+    CFRelease(items);
+    if (CFGetTypeID(identity) != SecIdentityGetTypeID()) {
+        CFRelease(identity);
+        return NULL;
+    }
+    return identity; // caller must CFRelease
+}
+
+
+- (id) _initWithData: (NSData*)data
+              format: (SecExternalFormat)format
+            keychain: (MYKeychain*)keychain
+               error: (NSError**)outError
+{
+    OSStatus err;
+    SecIdentityRef idRef = importIdentity(data, keychain.keychainRef, format, &err);
+    if (!idRef) {
+        [self release];
+        MYReturnError(outError, err, NSOSStatusErrorDomain, @"%@", 
+                      MYErrorName(NSOSStatusErrorDomain, err));
+        return nil;
+    }
+    return [self initWithIdentityRef: idRef];
+}
+
+
 - (void) dealloc
 {
     if (_identityRef) CFRelease(_identityRef);
@@ -105,6 +161,28 @@
 
 
 #if !TARGET_OS_IPHONE
+
+- (NSData*) exportInFormat: (SecExternalFormat)format 
+                   withPEM: (BOOL)withPEM
+                alertTitle: (NSString*)title
+               alertPrompt: (NSString*)prompt
+{
+    SecKeyImportExportParameters params = {
+        .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
+        .flags = kSecKeySecurePassphrase,
+        .alertTitle = (CFStringRef)title,
+        .alertPrompt = (CFStringRef)prompt
+    };
+    CFDataRef data = NULL;
+    if (check(SecKeychainItemExport(self.identityRef,
+                                    format, (withPEM ?kSecItemPemArmour :0), 
+                                    &params, &data),
+              @"SecKeychainItemExport"))
+        return [(id)CFMakeCollectable(data) autorelease];
+    else
+        return nil;
+}
+
 
 + (MYIdentity*) preferredIdentityForName: (NSString*)name
 {

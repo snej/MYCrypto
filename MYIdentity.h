@@ -33,6 +33,12 @@
 //@{
 #if !TARGET_OS_IPHONE
 
+/** Exports the identity as an encrypted data blob containing the cert and private key. */
+- (NSData*) exportInFormat: (SecExternalFormat)format 
+                   withPEM: (BOOL)withPEM
+                alertTitle: (NSString*)title
+               alertPrompt: (NSString*)prompt;
+
 /** Returns the identity that's been set as the preferred one for the given name, or nil. */
 + (MYIdentity*) preferredIdentityForName: (NSString*)name;
 

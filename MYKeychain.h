@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MYCryptoConfig.h"
-@class MYSymmetricKey, MYPublicKey, MYPrivateKey, MYCertificate, MYSHA1Digest;
+@class MYSymmetricKey, MYPublicKey, MYPrivateKey, MYCertificate, MYIdentity, MYSHA1Digest;
 
 
 /** A Keychain, a secure database of cryptographic keys.
@@ -58,6 +58,12 @@
 
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data;
+
+/** Imports a certificate into the keychain, given its external representation.
+    The usual format is PKCS12 (a .p12 file). */
+- (MYIdentity*) importIdentity: (NSData*)data
+                      inFormat: (SecExternalFormat)format
+                         error: (NSError**)outError;
 
 /** Looks up an existing certificate with the given public-key digest.
     Returns nil if there is no such certificate in the keychain.

@@ -368,6 +368,15 @@
 }
 
 
+- (MYIdentity*) importIdentity: (NSData*)data
+                      inFormat: (SecExternalFormat)format
+                         error: (NSError**)outError
+{
+    return [[[MYIdentity alloc] _initWithData: data format: format keychain: self error:outError]
+                autorelease];
+}
+
+
 - (MYSymmetricKey*) generateSymmetricKeyOfSize: (unsigned)keySizeInBits
                                      algorithm: (CCAlgorithm)algorithm
 {

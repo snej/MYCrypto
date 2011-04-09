@@ -14,6 +14,7 @@
 #import "MYPrivateKey.h"
 #import "MYCertificate.h"
 #import "MYCertificateInfo.h"
+#import "MYIdentity.h"
 
 #import "Test.h"
 #import <Security/Security.h>
@@ -127,7 +128,15 @@ typedef CFTypeRef SecExternalItemType;
 - (NSData*) signedData;
 - (MYOID*) signatureAlgorithmID;
 - (NSData*) signature;
-@end                    
+@end
+
+
+@interface MYIdentity (Private)
+- (id) _initWithData: (NSData*)data
+              format: (SecExternalFormat)format
+            keychain:(MYKeychain*)keychain
+               error: (NSError**)outError;
+@end
 
 
 #undef check

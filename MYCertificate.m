@@ -214,6 +214,47 @@
 }
 
 
++ (NSArray*) readCertificatesFromData: (NSData*)data
+                               format: (SecExternalFormat)format
+{
+    SecKeyImportExportParameters params = {};
+    params.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
+    params.flags = kSecKeySecurePassphrase;
+    params.keyAttributes = CSSM_KEYATTR_EXTRACTABLE;
+    params.keyUsage = CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN;
+
+    SecExternalItemType type = kSecItemTypeAggregate;
+    CFArrayRef items;
+    if (!check(SecKeychainItemImport((CFDataRef)data, NULL, &format, &type,
+                                     0, &params, NULL, &items),
+               @"SecKeychainItemImport"))
+        return NULL;
+    if (!items)
+        return NULL;
+    if (CFArrayGetCount(items) == 0 || type != kSecItemTypeAggregate) {
+        CFRelease(items);
+        return NULL;
+    }
+    
+    Log(@"Read %i items from data:", CFArrayGetCount(items)); //TEMP
+    NSMutableArray* result = $marray();
+    for (int i=0; i<CFArrayGetCount(items); i++) {
+        CFTypeRef item = CFArrayGetValueAtIndex(items,i);
+        Log(@"    item #%i: %@", i, item);  //TEMP
+        CFTypeID type = CFGetTypeID(item);
+        MYKeychainItem* object = nil;
+        if (type == SecCertificateGetTypeID()) {
+            object = [[self alloc] initWithCertificateRef: (SecCertificateRef)item];
+        }
+        if (object)
+            [result addObject: object];
+        [object release];
+    }
+    CFRelease(items);
+    return result;       
+}
+
+
 #pragma mark -
 #pragma mark TRUST/POLICY STUFF:
 

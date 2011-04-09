@@ -31,6 +31,9 @@
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data;
 
++ (NSArray*) readCertificatesFromData: (NSData*)data
+                               format: (SecExternalFormat)format;
+
 /** Checks whether two MYCertificate objects have bit-for-bit identical certificate data. */
 - (BOOL)isEqualToCertificate:(MYCertificate*)cert;
 
