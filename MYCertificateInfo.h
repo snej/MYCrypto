@@ -130,12 +130,23 @@
     NSArray *_extensions;
 }
 
+/** The list of raw extension names, each a MYOID object. */
 @property (readonly) NSArray* extensionOIDs;
 
+/** Looks up an extension by name.
+    @param oid  The extension's name.
+    @param outIsCritical  On return, the BOOL variable this points to is set to YES if the extension is marked critical, else NO.
+    @return  The parsed ASN.1 value, or nil if the extension is not present. This could be an NSValue or NSString, or any of the classes defined in MYASN1Object.h. */
 - (id) extensionForOID: (MYOID*)oid isCritical: (BOOL*)outIsCritical;
 
+/** Sets the value of an extension.
+    @param extension  The ASN.1 value of the extension. Could be an NSValue, NSString or any of the classes defined in MYASN1Object.h. Pass nil to remove the extension.
+    @param isCritical  The X.509-defined 'critical' flag for this extension.
+    @param oid  The name of the extension. */
 - (void) setExtension: (id)extension isCritical: (BOOL)isCritical forOID: (MYOID*)oid;
 
+/** A convenience that returns the standard KeyUsage extension value.
+    @return  A combination of the kKeyUsage flags defined in this header; or kKeyUsageUnspecified if the extension is not present. */
 @property UInt16 keyUsage;
 
 /** Checks whether the given key usage(s) are allowed by the certificate signer.
@@ -144,6 +155,8 @@
     @param keyUsage  One or more kKeyUsage flags, OR'ed together. */
 - (BOOL) allowsKeyUsage: (UInt16)keyUsage;
 
+/** A convenience that returns the standard ExtendedKeyUsage extension value, as a set of MYOIDs.
+    @return  A set containing zero or more of the kExtendedKeyUsage contstants defined in this header, or nil if the extension is not present. */
 @property (copy) NSSet* extendedKeyUsage;
 
 /** Checks whether the given extended key usage(s) are allowed by the certificate signer.
@@ -157,6 +170,7 @@
 
 extern MYOID *kKeyUsageOID, *kExtendedKeyUsageOID;
 
+/** These are the flag bits in the standard KeyUsage extension value. */
 enum {
     kKeyUsageDigitalSignature   = 0x80,
     kKeyUsageNonRepudiation     = 0x40,
