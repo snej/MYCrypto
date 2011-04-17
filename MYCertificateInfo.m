@@ -271,6 +271,12 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
 }
 
 - (BOOL) verifySignatureWithKey: (MYPublicKey*)issuerPublicKey {
+    NSData *signedData = self.signedData;
+    NSData *signature = self.signature;
+    if (!signedData || !signature)
+        return NO;
+    
+#if !MYCRYPTO_USE_IPHONE_API
     // Determine which signature algorithm to use:
     CSSM_ALGORITHMS algorithm;
     MYOID* algID = self.signatureAlgorithmID;
@@ -286,12 +292,14 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
         Warn(@"MYCertificateInfo can't verify: unknown signature algorithm %@", algID);
         return NO;
     }
+#endif
     
-    NSData *signedData = self.signedData;
-    NSData *signature = self.signature;
-    return signedData && signature && [issuerPublicKey verifySignature: self.signature
-                                                                ofData: self.signedData
-                                                         withAlgorithm: algorithm];
+    return [issuerPublicKey verifySignature: signature
+                                     ofData: signedData
+#if !MYCRYPTO_USE_IPHONE_API
+                              withAlgorithm: algorithm
+#endif
+            ];
 }
 
 

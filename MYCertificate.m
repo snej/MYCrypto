@@ -214,6 +214,7 @@
 }
 
 
+#if !MYCRYPTO_USE_IPHONE_API
 + (NSArray*) readCertificatesFromData: (NSData*)data
                                format: (SecExternalFormat)format
 {
@@ -253,6 +254,7 @@
     CFRelease(items);
     return result;       
 }
+#endif
 
 
 #pragma mark -

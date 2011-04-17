@@ -166,9 +166,9 @@
     CFArrayRef certRefs = NULL;
     if( ! checksave( CMSDecoderCopyAllCerts(_decoder, &certRefs) ) || ! certRefs )
         return nil;
-    unsigned n = CFArrayGetCount(certRefs);
+    CFIndex n = CFArrayGetCount(certRefs);
     NSMutableArray *certs = [NSMutableArray arrayWithCapacity: n];
-    for( unsigned i=0; i<n; i++ ) {
+    for( CFIndex i=0; i<n; i++ ) {
         SecCertificateRef certRef = (SecCertificateRef) CFArrayGetValueAtIndex(certRefs, i);
         [certs addObject: [MYCertificate certificateWithCertificateRef: certRef]];
     }

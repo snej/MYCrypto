@@ -128,7 +128,7 @@
     return value;
 }
 
-- (BOOL) setValue: (NSString*)value ofAttribute: (SecKeychainAttrType)attribute {
+- (BOOL) setValue: (NSString*)value ofAttribute: (MYKeychainAttrType)attribute {
     if (!value)
         value = (id)[NSNull null];
     NSDictionary *query = $dict( {(id)kSecValueRef, (id)self.keyRef} );

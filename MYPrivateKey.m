@@ -213,7 +213,7 @@
     return nil;
 }
 
-- (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr {
+- (BOOL) setValue: (NSString*)valueStr ofAttribute: (MYKeychainAttrType)attr {
     return [super setValue: valueStr ofAttribute: attr]
         && [_publicKey setValue: valueStr ofAttribute: attr];
 }

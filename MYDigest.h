@@ -47,8 +47,8 @@
     32 bits isn't nearly enough to provide any useful uniqueness. */
 @property (readonly) NSString *abbreviatedHexString;
 
-/** The algorithm that created this digest. 
-    Values are defined in the CSSM_ALGORITHMS enum in cssmtype.h.
+/** The algorithm that created this digest. There is no universal way to name these,
+    so on Mac OS values are interpreted as CSSM_ALGORITHMS; on iOS, as CCHmacAlgorithm.
     (Abstract method.) */
 @property (readonly) uint32_t algorithm;
 
@@ -58,7 +58,8 @@
 /** A pointer to the raw bytes of digest data. */
 @property (readonly) const void* bytes;
 
-/** The algorithm used by this subclass. (Abstract method.) */
+/** The algorithm used by this subclass. (Abstract method.)
+    For interpreting the results, see the comment on the instance method of the same name. */
 + (uint32_t) algorithm;
 
 /** The length of digests created by this subclass. (Abstract method.) */

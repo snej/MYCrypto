@@ -97,7 +97,7 @@
 
 - (NSData*) componentData       {return _data;}
 - (const UInt32*) components    {return (const UInt32*)_data.bytes;}
-- (unsigned) componentCount     {return _data.length / sizeof(UInt32);}
+- (unsigned) componentCount     {return (unsigned)(_data.length / sizeof(UInt32));}
 
 - (NSUInteger)hash {
     return _data.hash;

@@ -76,6 +76,7 @@
 }
 
 
+#if !MYCRYPTO_USE_IPHONE_API
 static SecIdentityRef importIdentity(NSData *data, 
                                      SecKeychainRef keychain,
                                      SecExternalFormat inputFormat,
@@ -127,6 +128,7 @@ static SecIdentityRef importIdentity(NSData *data,
     }
     return [self initWithIdentityRef: idRef];
 }
+#endif
 
 
 - (void) dealloc

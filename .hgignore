@@ -4,6 +4,7 @@ build
 Documentation
 Doxyfile
 .svn
+xcuserdata
 *.pbxuser
 *.perspectivev3
 *.mpkg

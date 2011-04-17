@@ -11,6 +11,9 @@
 #import "MYBERParser.h"
 #import "MYErrorUtils.h"
 
+#if MYCRYPTO_USE_IPHONE_API
+#import <MacErrors.h>
+#endif
 
 NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
@@ -109,7 +112,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 
 /* (Not useful yet, as only password items have dates.)
-- (NSDate*) dateValueOfAttribute: (SecKeychainAttrType)attr {
+- (NSDate*) dateValueOfAttribute: (MYKeychainAttrType)attr {
     NSString *dateStr = [self stringValueOfAttribute: attr];
     if (dateStr.length == 0)
         return nil;
@@ -119,7 +122,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return date;
 }
 
-- (void) setDateValue: (NSDate*)date ofAttribute: (SecKeychainAttrType)attr {
+- (void) setDateValue: (NSDate*)date ofAttribute: (MYKeychainAttrType)attr {
     NSString *timeStr = nil;
     if (date)
         timeStr = [MYBERGeneralizedTimeFormatter() stringFromDate: date];
@@ -164,7 +167,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return contents;
 }
 
-+ (NSData*) _getAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
++ (NSData*) _getAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
     NSData *value = nil;
 #if MYCRYPTO_USE_IPHONE_API
     NSDictionary *info = $dict( {(id)kSecValueRef, (id)item},
@@ -197,7 +200,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return value;
 }
 
-+ (NSString*) _getStringAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
++ (NSString*) _getStringAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
     NSData *value = [self _getAttribute: attr ofItem: item];
     if (!value) return nil;
     const char *bytes = value.bytes;
@@ -211,7 +214,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     return [str autorelease];
 }
 
-- (NSString*) stringValueOfAttribute: (SecKeychainAttrType)attr {
+- (NSString*) stringValueOfAttribute: (MYKeychainAttrType)attr {
 #if MYCRYPTO_USE_IPHONE_API
     if (!self.isPersistent)
         return nil;
@@ -220,7 +223,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 }
 
 
-+ (BOOL) _setAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item
++ (BOOL) _setAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item
            stringValue: (NSString*)stringValue
 {
 #if MYCRYPTO_USE_IPHONE_API
@@ -231,14 +234,14 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     
 #else
     NSData *data = [stringValue dataUsingEncoding: NSUTF8StringEncoding];
-    SecKeychainAttribute attribute = {.tag=attr, .length=data.length, .data=(void*)data.bytes};
+    SecKeychainAttribute attribute = {.tag=attr, .length=(UInt32)data.length, .data=(void*)data.bytes};
 	SecKeychainAttributeList list = {.count=1, .attr=&attribute};
     return check(SecKeychainItemModifyAttributesAndData((SecKeychainItemRef)item, &list, 0, NULL),
                  @"SecKeychainItemModifyAttributesAndData");
 #endif
 }
 
-- (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr {
+- (BOOL) setValue: (NSString*)valueStr ofAttribute: (MYKeychainAttrType)attr {
     return [[self class] _setAttribute: attr ofItem: _itemRef stringValue: valueStr];
 }
 
@@ -257,7 +260,7 @@ BOOL check(OSStatus err, NSString *what) {
         if (err == userCanceledErr) // don't warn about userCanceledErr
             return NO;
         Warn(@"MYCrypto error, %@: %@", what, MYErrorName(NSOSStatusErrorDomain,err));
-        if (err==-50)
+        if (err==paramErr)
             [NSException raise: NSGenericException format: @"%@ failed with paramErr (-50)",what];
         return NO;
     } else

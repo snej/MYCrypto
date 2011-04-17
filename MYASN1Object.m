@@ -160,7 +160,7 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 @implementation MYBitString
 
 
-- (id)initWithBits: (NSData*)bits count: (unsigned)bitCount {
+- (id)initWithBits: (NSData*)bits count: (NSUInteger)bitCount {
     Assert(bits);
     Assert(bitCount <= 8*bits.length);
     self = [super init];
@@ -187,7 +187,7 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
     return $sprintf(@"%@%@", [self class], _bits);
 }
 
-- (unsigned) hash {
+- (NSUInteger) hash {
     return _bits.hash ^ _bitCount;
 }
 

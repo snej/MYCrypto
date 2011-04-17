@@ -31,9 +31,6 @@
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data;
 
-+ (NSArray*) readCertificatesFromData: (NSData*)data
-                               format: (SecExternalFormat)format;
-
 /** Checks whether two MYCertificate objects have bit-for-bit identical certificate data. */
 - (BOOL)isEqualToCertificate:(MYCertificate*)cert;
 
@@ -64,15 +61,15 @@
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy;
 - (SecTrustResultType) evaluateTrust;
 
-- (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
-                                               string: (NSString*) policyString;
-
 
 /** @name Mac-Only
  *  Functionality not available on iPhone. 
  */
 //@{
 #if !TARGET_OS_IPHONE
+
++ (NSArray*) readCertificatesFromData: (NSData*)data
+                               format: (SecExternalFormat)format;
 
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
 - (id) initWithCertificateData: (NSData*)data
@@ -84,6 +81,9 @@
 
 /** Associates the receiver as the preferred certificate for the given name string. */
 - (BOOL) setPreferredCertificateForName: (NSString*)name;
+
+- (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
+                                               string: (NSString*) policyString;
 
 #endif
 //@}

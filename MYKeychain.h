@@ -59,12 +59,6 @@
 /** Imports a certificate into the keychain, given its external representation. */
 - (MYCertificate*) importCertificate: (NSData*)data;
 
-/** Imports a certificate into the keychain, given its external representation.
-    The usual format is PKCS12 (a .p12 file). */
-- (MYIdentity*) importIdentity: (NSData*)data
-                      inFormat: (SecExternalFormat)format
-                         error: (NSError**)outError;
-
 /** Looks up an existing certificate with the given public-key digest.
     Returns nil if there is no such certificate in the keychain.
     (This method only looks for keys embedded in certificates, not 'bare' public keys.) */
@@ -149,6 +143,13 @@
 - (MYCertificate*) importCertificate: (NSData*)data
                                 type: (CSSM_CERT_TYPE) type
                             encoding: (CSSM_CERT_ENCODING) encoding;
+
+/** Imports an identity into the keychain, given its external representation.
+    The usual format is PKCS12 (a .p12 file). */
+- (MYIdentity*) importIdentity: (NSData*)data
+                      inFormat: (SecExternalFormat)format
+                         error: (NSError**)outError;
+
 
 //@}
 #else

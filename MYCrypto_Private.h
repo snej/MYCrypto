@@ -21,10 +21,12 @@
 
 
 #if MYCRYPTO_USE_IPHONE_API
-typedef CFTypeRef SecKeychainAttrType;
-typedef CFTypeRef SecKeychainItemRef;
-typedef CFTypeRef SecKeychainRef;
 typedef CFTypeRef SecExternalItemType;
+typedef struct OpaqueSecKeychainRef*    SecKeychainRef;
+typedef struct OpaqueSecKeychainItemRef*  SecKeychainItemRef;
+typedef CFTypeRef MYKeychainAttrType;
+#else
+typedef OSType MYKeychainAttrType;
 #endif
 
 
@@ -45,13 +47,13 @@ typedef CFTypeRef SecExternalItemType;
 @interface MYKeychainItem (Private);
 - (id) initWithKeychainItemRef: (MYKeychainItemRef)itemRef;
 - (NSData*) _getContents: (OSStatus*)outError;
-- (NSString*) stringValueOfAttribute: (SecKeychainAttrType)attr;
-- (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
-+ (NSData*) _getAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item;
-- (id) _attribute: (SecKeychainAttrType)attribute;
-+ (NSString*) _getStringAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item;
-+ (BOOL) _setAttribute: (SecKeychainAttrType)attr ofItem: (MYKeychainItemRef)item
+- (NSString*) stringValueOfAttribute: (MYKeychainAttrType)attr;
+- (BOOL) setValue: (NSString*)valueStr ofAttribute: (MYKeychainAttrType)attr;
++ (NSData*) _getAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item;
++ (NSString*) _getStringAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item;
++ (BOOL) _setAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item
            stringValue: (NSString*)stringValue;
+- (id) _attribute: (MYKeychainAttrType)attribute;
 @end      
 
 
@@ -84,7 +86,7 @@ typedef CFTypeRef SecExternalItemType;
 
 @interface MYPublicKey (Private)
 @property (retain) MYCertificate *certificate;
-- (BOOL) setValue: (NSString*)valueStr ofAttribute: (SecKeychainAttrType)attr;
+- (BOOL) setValue: (NSString*)valueStr ofAttribute: (MYKeychainAttrType)attr;
 #if !TARGET_OS_IPHONE
 - (CSSM_WRAP_KEY*) _unwrappedCSSMKey;
 #endif
@@ -131,12 +133,14 @@ typedef CFTypeRef SecExternalItemType;
 @end
 
 
+#if !TARGET_OS_IPHONE
 @interface MYIdentity (Private)
 - (id) _initWithData: (NSData*)data
               format: (SecExternalFormat)format
             keychain:(MYKeychain*)keychain
                error: (NSError**)outError;
 @end
+#endif
 
 
 #undef check

@@ -22,7 +22,7 @@
 NSString* const CryptorErrorDomain = @"CCCryptor";
 
 #if !MYCRYPTO_USE_IPHONE_API
-static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, void *dstBytes);
+static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, void *dstBytes);
 #endif
 
 
@@ -263,7 +263,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, 
 
 
 #if !MYCRYPTO_USE_IPHONE_API
-static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, uint32_t lengthInBytes, void *dstBytes) {
+static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, void *dstBytes) {
     // Adapted from code in Keychain.framework's KeychainUtils.m by Wade Tregaskis.
     CSSM_CC_HANDLE ccHandle;
     if (!checkcssm(CSSM_CSP_CreateRandomGenContext(module, CSSM_ALGID_APPLE_YARROW, NULL,

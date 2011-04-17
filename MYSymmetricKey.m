@@ -385,7 +385,7 @@ static CSSM_KEY* cssmKeyFromData( NSData *keyData,
             .Format = CSSM_KEYBLOB_RAW_FORMAT_NONE,
             .AlgorithmId = algorithm,
             .KeyClass = CSSM_KEYCLASS_SESSION_KEY,
-            .LogicalKeySizeInBits = keyData.length*8,
+            .LogicalKeySizeInBits = (uint32)keyData.length*8,
             .KeyAttr = CSSM_KEYATTR_EXTRACTABLE,
             .KeyUsage = CSSM_KEYUSE_ANY
         },
@@ -581,7 +581,7 @@ static CSSM_RETURN impExpCreatePassKey(
 {
 	CSSM_RETURN crtn;
 	CSSM_CC_HANDLE ccHand;
-	uint32 verifyAttr;
+	size_t verifyAttr;
 	CSSM_DATA dummyLabel;
 	CSSM_KEY_PTR ourKey = NULL;
 	

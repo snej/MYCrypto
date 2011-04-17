@@ -769,6 +769,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"MYERRORUTILS_USE_SECURITY_API=1",
@@ -776,6 +777,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = MYCrypto;
+				SDKROOT = macosx10.6;
 			};
 			name = Debug;
 		};
@@ -783,9 +785,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = MYCrypto;
+				SDKROOT = macosx10.6;
 			};
 			name = Release;
 		};
@@ -797,6 +801,7 @@
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				SDKROOT = macosx10.6;
 			};
 			name = Debug;
 		};
@@ -807,6 +812,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				SDKROOT = macosx10.6;
 			};
 			name = Release;
 		};
@@ -878,7 +884,7 @@
 					UIKit,
 				);
 				PRODUCT_NAME = MYCryptoiPhone;
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphonesimulator4.0;
 			};
 			name = Debug;
 		};
@@ -899,7 +905,7 @@
 					UIKit,
 				);
 				PRODUCT_NAME = "MYCrypto iPhone";
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphonesimulator4.0;
 			};
 			name = Release;
 		};

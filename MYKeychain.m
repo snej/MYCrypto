@@ -89,7 +89,7 @@
     const char *passwordStr = [password UTF8String];
     SecKeychainRef keychainRef = NULL;
     if (!check(SecKeychainCreate(path.fileSystemRepresentation,
-                                 passwordStr ?strlen(passwordStr) :0,
+                                 passwordStr ?(UInt32)strlen(passwordStr) :0,
                                  passwordStr, 
                                  (password==nil), 
                                  NULL, 
@@ -219,7 +219,7 @@
                                 withDigest: (MYSHA1Digest*)pubKeyDigest 
 {
     SecKeychainAttribute attr = {.tag= (itemClass==kSecCertificateItemClass ?kSecPublicKeyHashItemAttr :kSecKeyLabel), 
-                                 .length= pubKeyDigest.length, 
+                                 .length= (UInt32)pubKeyDigest.length, 
                                  .data= (void*) pubKeyDigest.bytes};
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: itemClass
@@ -244,7 +244,7 @@
 
 - (NSEnumerator*) publicKeysWithAlias: (NSString*)alias {
     NSData *utf8 = [alias dataUsingEncoding: NSUTF8StringEncoding];
-    SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=utf8.length, .data=(void*)utf8.bytes};
+    SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=(UInt32)utf8.length, .data=(void*)utf8.bytes};
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecPublicKeyItemClass
                                            attributes: &attr count: 1] autorelease];
@@ -300,7 +300,7 @@
 
 - (NSEnumerator*) symmetricKeysWithAlias: (NSString*)alias {
     NSData *utf8 = [alias dataUsingEncoding: NSUTF8StringEncoding];
-    SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=utf8.length, .data=(void*)utf8.bytes};
+    SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=(UInt32)utf8.length, .data=(void*)utf8.bytes};
     return [[[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecSymmetricKeyItemClass
                                            attributes: &attr count: 1] autorelease];

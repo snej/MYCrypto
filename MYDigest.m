@@ -9,12 +9,8 @@
 #import "MYDigest.h"
 #import <CommonCrypto/CommonDigest.h>
 
-
-#if MYCRYPTO_USE_IPHONE_API
-enum {
-    CSSM_ALGID_SHA1 = 8,
-    CSSM_ALGID_SHA256 = 0x80000000 + 14
-};
+#if TARGET_OS_IPHONE
+#import <CommonCrypto/CommonHMAC.h>
 #endif
 
 
@@ -123,8 +119,7 @@ enum {
 
 - (BOOL) isEqual: (id)digest
 {
-    return [digest isKindOfClass: [MYDigest class]]
-        && [digest algorithm] == self.algorithm
+    return [digest class] == [self class]
         && memcmp(self.bytes, [digest bytes], self.length)==0;
 }
 
@@ -181,10 +176,14 @@ enum {
 + (void) computeDigest: (void*)dstDigest ofBytes: (const void*)bytes length: (size_t)length {
     NSParameterAssert(bytes!=NULL);
     NSParameterAssert(length>0);
-    CC_SHA1(bytes,length, dstDigest);
+    CC_SHA1(bytes,(CC_LONG)length, dstDigest);
 }
 
-+ (uint32_t) algorithm            {return CSSM_ALGID_SHA1;}
+#if TARGET_OS_IPHONE
++ (uint32_t) algorithm          {return kCCHmacAlgSHA1;}
+#else
++ (uint32_t) algorithm          {return CSSM_ALGID_SHA1;}
+#endif
 + (size_t) length               {return sizeof(RawSHA1Digest);}
 
 - (MYSHA1Digest*) initWithRawSHA1Digest: (const RawSHA1Digest*)rawDigest {
@@ -209,10 +208,14 @@ enum {
 + (void) computeDigest: (void*)dstDigest ofBytes: (const void*)bytes length: (size_t)length {
     NSParameterAssert(bytes!=NULL);
     NSParameterAssert(length>0);
-    CC_SHA256(bytes,length, dstDigest);
+    CC_SHA256(bytes,(CC_LONG)length, dstDigest);
 }
 
-+ (uint32_t) algorithm            {return CSSM_ALGID_SHA256;}
+#if TARGET_OS_IPHONE
++ (uint32_t) algorithm          {return kCCHmacAlgSHA256;}
+#else
++ (uint32_t) algorithm          {return CSSM_ALGID_SHA256;}
+#endif
 + (size_t) length               {return sizeof(RawSHA256Digest);}
 
 - (MYSHA256Digest*) initWithRawSHA256Digest: (const RawSHA256Digest*)rawDigest {

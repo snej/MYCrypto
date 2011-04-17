@@ -109,6 +109,12 @@ enum {
     return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
 }
 
+- (NSEnumerator*) enumerateCertificatesWithDigest: (MYSHA1Digest*)pubKeyDigest {
+    NSMutableDictionary* query = $mdict({(id)kSecClass, (id)kSecClassCertificate},
+                                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData});
+    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+}
+
 - (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
                 $mdict({(id)kSecClass, (id)kSecClassIdentity},
@@ -182,7 +188,7 @@ enum {
 
 - (MYPublicKey*) importPublicKey: (NSData*)keyData {
     return [[[MYPublicKey alloc] _initWithKeyData: keyData 
-                                      forKeychain: self]
+                                      forKeychain: (void*)self]
             autorelease];
 }
 
