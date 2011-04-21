@@ -7,7 +7,7 @@
 //
 
 // Reference:
-// <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
+// <http://luca.ntop.org/Teaching/Appunti/asn1.html> "Layman's Guide To ASN.1/BER/DER"
 
 #import "MYBERParser.h"
 #import "MYASN1Object.h"
@@ -148,17 +148,22 @@ static id parseBER(InputData *input) {
         input->nextChar += length;
         input->length -= length;
 
-        switch (header.tag) {
-            case 16: // sequence
-                return items;
-            case 17: // set
-                return [NSSet setWithArray: items];
-            default:
-                return [[[MYASN1Object alloc] initWithTag: header.tag
-                                                  ofClass: header.tagClass
-                                               components: items] autorelease];
+        if (header.tagClass == 0) {
+            switch (header.tag) {
+                case 16: // sequence
+                    return items;
+                case 17: // set
+                    return [NSSet setWithArray: items];
+                default:
+                    Warn(@"MYBERParser: Unrecognized constructed tag %u", header.tag);
+                    break;
+            }
         }
-    } else {
+        return [[[MYASN1Object alloc] initWithTag: header.tag
+                                          ofClass: header.tagClass
+                                       components: items] autorelease];
+
+    } else if (header.tagClass == 0) {
         // Primitive:
         switch (header.tag) {
             case 1: { // boolean
@@ -209,19 +214,17 @@ static id parseBER(InputData *input) {
             case 24: // Generalized time:
                 return parseDate(readStringOrDie(input,length,NSASCIIStringEncoding), header.tag);
             default:
+                Warn(@"MYBERParser: Unrecognized primitive tag %u", header.tag);
                 break;
         }
     }
-
+    
     // Generic case -- create and return a MYASN1Object:
     NSData *value = readDataOrDie(input, length);
-    id result = [[[defaultClass alloc] initWithTag: header.tag
-                                           ofClass: header.tagClass 
-                                       constructed: header.isConstructed
-                                             value: value] autorelease];
-    if( defaultClass == [MYASN1Object class])
-        Warn(@"parseBER: Returning default %@", result);
-    return result;
+    return [[[defaultClass alloc] initWithTag: header.tag
+                                      ofClass: header.tagClass 
+                                  constructed: header.isConstructed
+                                        value: value] autorelease];
 }
     
     
@@ -328,6 +331,7 @@ TestCase(ParseBER) {
 #import "MYPublicKey.h"
 
 TestCase(ParseCert) {
+    RequireTestCase(ParseBER);
     NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned_email.cer"];
     NSError *error = nil;
     id parsed = MYBERParse(cert,&error);

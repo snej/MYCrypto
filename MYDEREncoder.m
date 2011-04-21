@@ -360,6 +360,7 @@ TestCase(DEREncoder) {
 
 
 TestCase(EncodeCert) {
+    RequireTestCase(DEREncoder);
     NSError *error = nil;
     NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned.cer"];
     id certObjects = MYBERParse(cert,&error);
