@@ -57,6 +57,10 @@
 @synthesize tag=_tag, tagClass=_tagClass, constructed=_constructed, value=_value, components=_components;
 
 
+- (NSString*) ASCIIValue {
+    return [[[NSString alloc] initWithData: _value encoding: NSASCIIStringEncoding] autorelease];
+}
+
 - (NSString*)description {
     if (_components)
         return $sprintf(@"%@[%hhu/%u/%u]%@", self.class, _tagClass,(unsigned)_constructed,_tag, _components);

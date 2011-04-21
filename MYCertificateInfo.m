@@ -42,10 +42,6 @@ static id $atIf(NSArray *array, NSUInteger index) {
 - (id) _initWithComponents: (NSArray*)components;
 @end
 
-@interface MYCertificateExtensions ()
-- (id) _initWithComponents: (NSArray*)components;
-@end
-
 @interface MYCertificateInfo ()
 @property (retain) NSArray *_root;
 @end
@@ -58,10 +54,10 @@ static id $atIf(NSArray *array, NSUInteger index) {
 static MYOID *kRSAAlgorithmID, *kRSAWithSHA1AlgorithmID, *kRSAWithSHA256AlgorithmID,
              *kRSAWithMD5AlgorithmID, *kRSAWithMD2AlgorithmID,
              *kCommonNameOID, *kGivenNameOID, *kSurnameOID, *kDescriptionOID, *kEmailOID;
-MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
+MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
       *kExtendedKeyUsageServerAuthOID, *kExtendedKeyUsageClientAuthOID,
       *kExtendedKeyUsageCodeSigningOID, *kExtendedKeyUsageEmailProtectionOID, 
-      *kExtendedKeyUsageAnyOID;
+      *kExtendedKeyUsageAnyOID, *kSubjectAltNameOID;
 
 
 + (void) initialize {
@@ -86,6 +82,8 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
                                                 count: 4];
         kEmailOID = [[MYOID alloc] initWithComponents: (UInt32[]){1, 2, 840, 113549, 1, 9, 1}
                                                 count: 7];
+        kBasicConstraintsOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 19}
+                                                           count: 4];
         kKeyUsageOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 15}
                                                            count: 4];
         kExtendedKeyUsageOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 37}
@@ -101,6 +99,8 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
                                                                           count: 9];
         kExtendedKeyUsageAnyOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 37, 0}
                                                                           count: 5];
+        kSubjectAltNameOID = [[MYOID alloc] initWithComponents: (UInt32[]){2, 5, 29, 17}
+                                                         count: 4];
     }
 }
 
@@ -207,20 +207,6 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
     return [[[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 3]] autorelease];
 }
 
-- (MYCertificateExtensions*)extensions {
-    NSArray* info = self._info;
-    for (NSUInteger i=7; i<info.count; i++) {
-        MYASN1Object* obj = $castIf(MYASN1Object, [info objectAtIndex:i]);
-        if (obj.tag == 3) {
-            NSArray* extensions = $castIf(NSArray, $atIf(obj.components, 0));
-            if (!extensions)
-                return nil;
-            return [[[MYCertificateExtensions alloc] _initWithComponents: extensions] autorelease];
-        }
-    }
-    return nil;
-}
-
 - (BOOL) isSigned           {return [_root count] >= 3;}
 
 - (BOOL) isRoot {
@@ -303,6 +289,168 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
 }
 
 
+#pragma mark EXTENSIONS:
+
+
+- (NSArray*)_extensions {
+    if (!_extensions) {
+        // The extensions field doesn't have a fixed index:
+        // it comes after the 7 fixed info fields, and is identified by a tag value of 3.
+        NSArray* info = self._info;
+        for (NSUInteger i=7; i<info.count; i++) {
+            MYASN1Object* obj = $castIf(MYASN1Object, [info objectAtIndex:i]);
+            if (obj.tag == 3) {
+                _extensions = $castIf(NSArray, $atIf(obj.components, 0));
+                break;
+            }
+        }
+    }
+    return _extensions;
+}
+
+
+- (NSArray*) _itemForOID: (MYOID*)oid {
+    for (id item in self._extensions) {
+        NSArray* extension = $castIf(NSArray, item);
+        if ([$atIf(extension, 0) isEqual: oid])
+            return extension;
+    }
+    return nil;
+}
+
+
+- (NSArray*) extensionOIDs {
+    NSMutableArray* oids = $marray();
+    for (id item in self._extensions) {
+        NSArray* extension = $castIf(NSArray, item);
+        MYOID* oid = $castIf(MYOID, $atIf(extension, 0));
+        if (oid)
+            [oids addObject:oid];
+    }
+    return oids;
+}
+
+
+- (id) extensionForOID: (MYOID*)oid isCritical: (BOOL*)outIsCritical {
+    NSArray* extension = [self _itemForOID:oid];
+    if (!extension)
+        return nil;
+    if (outIsCritical)
+        *outIsCritical = extension.count >= 3 &&
+                            [$castIf(NSNumber, [extension objectAtIndex: 1]) boolValue];
+    NSData* ber = $castIf(NSData, [extension lastObject]);
+    if (!ber)
+        return nil;
+    return MYBERParse(ber, NULL);
+}
+
+
+- (BOOL) isCertificateAuthority {
+    id ext = [self extensionForOID:kBasicConstraintsOID
+                        isCritical:NULL];
+    NSArray* constraints = $castIf(NSArray, ext);
+    Assert(!(ext && !constraints)); // type mismatch
+    if (!constraints || [constraints count] < 1)
+        return NO;
+    return [$castIf(NSNumber, [constraints objectAtIndex: 0]) boolValue];
+}
+
+
+- (UInt16) keyUsage {
+    // RFC 3280 sec. 4.2.1.3
+    MYBitString* bits = $castIf(MYBitString, [self extensionForOID:kKeyUsageOID isCritical:NULL]);
+    if (!bits)
+        return kKeyUsageUnspecified;
+    const UInt8* bytes = [bits.bits bytes];
+    UInt16 value = bytes[0];
+    if (bits.bitCount > 8)      // 9 bits are defined, so the value could be multi-byte
+        value |= bytes[1] << 8;
+    return value;
+}
+
+- (BOOL) allowsKeyUsage: (UInt16)requestedKeyUsage {
+    if ([self extensionForOID: kKeyUsageOID isCritical:NULL]) {
+        if ((self.keyUsage & requestedKeyUsage) != requestedKeyUsage)
+            return NO;
+    }
+    return YES;
+}
+
+
+- (NSSet*) extendedKeyUsage {
+    // RFC 3280 sec. 4.2.1.13
+    NSArray* oids = $castIf(NSArray, [self extensionForOID: kExtendedKeyUsageOID isCritical: NULL]);
+    if (!oids)
+        return nil;
+    return [NSSet setWithArray:oids];
+}
+
+- (BOOL) allowsExtendedKeyUsage: (NSSet*) requestedKeyUsage {
+    if ([self extensionForOID: kExtendedKeyUsageOID isCritical:NULL]) {
+        NSSet* keyUsage = self.extendedKeyUsage;
+        if (![requestedKeyUsage isSubsetOfSet: keyUsage]
+                && ![keyUsage containsObject: kExtendedKeyUsageAnyOID])
+            return NO;
+    }
+    return YES;
+}
+
+
+- (NSDictionary*) subjectAlternativeName {
+    // RFC 3280 sec. 4.2.1.7
+    NSArray* names = $castIf(NSArray, [self extensionForOID: kSubjectAltNameOID isCritical:NULL]);
+    if (!names)
+        return nil;
+    NSMutableDictionary* result = $mdict();
+    for (id entry in names) {
+        MYASN1Object* name = $castIf(MYASN1Object, entry);
+        if (name && name.tagClass == 2) {
+            id key, value;
+            switch(name.tag) {
+                case 1:
+                    key = @"RFC822";
+                    value = name.ASCIIValue;
+                    break;
+                case 2:
+                    key = @"DNS";
+                    value = name.ASCIIValue;
+                    break;
+                case 6:
+                    key = @"URI";
+                    value = name.ASCIIValue;
+                    break;
+                default:
+                    key = $object(name.tag);
+                    value = name;
+            }
+            if (value) {
+                NSMutableArray* values = [result objectForKey: key];
+                if (!values) {
+                    values = $marray();
+                    [result setObject: values forKey: key];
+                }
+                [values addObject: value];
+            }
+        }
+    }
+    return result;
+}
+
+
+- (NSArray*) emailAddresses {
+    NSMutableArray* addrs = [[self subjectAlternativeName] objectForKey: @"RFC822"];
+    NSString* subjectEmail = self.subject.emailAddress;
+    if (subjectEmail) {
+        if (addrs)
+            [addrs removeObject: subjectEmail];
+        else
+            addrs = $marray();
+        [addrs insertObject: subjectEmail atIndex: 0];
+    }
+    return addrs;
+}
+
+
 @end
 
 
@@ -354,6 +502,55 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
 
 - (void) setValidTo: (NSDate*)validTo {
     [(NSMutableArray*)self._validDates replaceObjectAtIndex: 1 withObject: validTo];
+}
+
+
+- (void) setExtension: (id)value isCritical: (BOOL)isCritical forOID: (MYOID*)oid {
+    NSArray* item = nil;
+    if (value) {
+        NSData* ber = [MYDEREncoder encodeRootObject: value error: NULL];
+        Assert(ber != nil);
+        item = $marray(oid, (isCritical ?$true :$false), ber);
+    }
+    
+    NSMutableArray* extensions = (NSMutableArray*)self._extensions;
+    NSMutableArray* extension = (NSMutableArray*) [self _itemForOID:oid];
+    if (extension) {
+        if (item)
+            [extension replaceObjectsInRange:NSMakeRange(0,2) withObjectsFromArray:item];
+        else
+            [extensions removeObject: extension];
+    } else {
+        if (item)
+            [extensions addObject: item];
+    }
+}
+
+
+- (UInt16) keyUsage {return [super keyUsage];}
+
+- (void) setKeyUsage: (UInt16)keyUsage {
+    MYBitString* bitString = nil;
+    if (keyUsage != 0 && keyUsage != kKeyUsageUnspecified) {
+        Assert((keyUsage & ~0x1FF) == 0, @"Invalid flags in keyUsage: 0x%x", keyUsage);
+        UInt8 bytes[2] = {keyUsage & 0xFF, keyUsage >> 8};
+        size_t length = 1 + (bytes[1] != 0);
+        NSData* data = [NSData dataWithBytes: bytes length: length];
+        bitString = [[MYBitString alloc] initWithBits: data count: 8*length];
+    }
+    [self setExtension: bitString 
+            isCritical: YES 
+                forOID: kKeyUsageOID];
+    [bitString release];
+}
+
+
+- (NSSet*) extendedKeyUsage {return [super extendedKeyUsage];}
+
+- (void) setExtendedKeyUsage: (NSSet*)usage {
+    [self setExtension: (usage.count ?[usage allObjects] :nil)
+            isCritical: YES
+                forOID: kExtendedKeyUsageOID];
 }
 
 
@@ -494,150 +691,6 @@ MYOID *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (void) setNameDescription: (NSString*)desc    {[self setString: desc forOID: kDescriptionOID];}
 - (void) setEmailAddress: (NSString*)email      {[self setString: email forOID: kEmailOID];}
 
-
-@end
-
-
-
-
-
-
-#pragma mark -
-@implementation MYCertificateExtensions
-
-- (id) _initWithComponents: (NSArray*)extensions
-{
-    self = [super init];
-    if (self != nil) {
-        _extensions = [extensions retain];
-    }
-    return self;
-}
-
-- (void) dealloc
-{
-    [_extensions release];
-    [super dealloc];
-}
-
-- (NSArray*) _itemForOID: (MYOID*)oid {
-    for (id item in _extensions) {
-        NSArray* extension = $castIf(NSArray, item);
-        if (extension.count == 3 && [[extension objectAtIndex:0] isEqual: oid])
-            return extension;
-    }
-    return nil;
-}
-
-- (NSArray*) extensionOIDs {
-    NSMutableArray* oids = $marray();
-    for (id item in _extensions) {
-        NSArray* extension = $castIf(NSArray, item);
-        if (extension.count == 3) {
-            MYOID* oid = $castIf(MYOID, [extension objectAtIndex:0]);
-            if (oid)
-                [oids addObject:oid];
-        }
-    }
-    return oids;
-}
-
-
-- (id) extensionForOID: (MYOID*)oid isCritical: (BOOL*)outIsCritical {
-    NSArray* extension = [self _itemForOID:oid];
-    if (!extension)
-        return nil;
-    if (outIsCritical)
-        *outIsCritical = [$castIf(NSNumber, [extension objectAtIndex: 1]) boolValue];
-    NSData* ber = $castIf(NSData, [extension objectAtIndex: 2]);
-    if (!ber)
-        return nil;
-    return MYBERParse(ber, NULL);
-}
-
-- (void) setExtension: (id)value isCritical: (BOOL)isCritical forOID: (MYOID*)oid {
-    NSArray* item = nil;
-    if (value) {
-        NSData* ber = [MYDEREncoder encodeRootObject: value error: NULL];
-        Assert(ber != nil);
-        item = $marray(oid, (isCritical ?$true :$false), ber);
-    }
-    
-    NSMutableArray* extension = (NSMutableArray*) [self _itemForOID:oid];
-    if (extension) {
-        if (item)
-            [extension replaceObjectsInRange:NSMakeRange(0,2) withObjectsFromArray:item];
-        else
-            [(NSMutableArray*)_extensions removeObject: extension];
-    } else {
-        if (item)
-            [(NSMutableArray*)_extensions addObject: item];
-    }
-}
-
-
-- (UInt16) keyUsage {
-    // RFC 3280 sec. 4.2.1.3
-    MYBitString* bits = $castIf(MYBitString, [self extensionForOID:kKeyUsageOID isCritical:NULL]);
-    if (!bits)
-        return kKeyUsageUnspecified;
-    const UInt8* bytes = [bits.bits bytes];
-    UInt16 value = bytes[0];
-    if (bits.bitCount > 8)      // 9 bits are defined, so the value could be multi-byte
-        value |= bytes[1] << 8;
-    return value;
-}
-
-- (void) setKeyUsage: (UInt16)keyUsage {
-    MYBitString* bitString = nil;
-    if (keyUsage != 0 && keyUsage != kKeyUsageUnspecified) {
-        Assert((keyUsage & ~0x1FF) == 0, @"Invalid flags in keyUsage: 0x%x", keyUsage);
-        UInt8 bytes[2] = {keyUsage & 0xFF, keyUsage >> 8};
-        size_t length = 1 + (bytes[1] != 0);
-        NSData* data = [NSData dataWithBytes: bytes length: length];
-        bitString = [[MYBitString alloc] initWithBits: data count: 8*length];
-    }
-    [self setExtension: bitString 
-            isCritical: YES 
-                forOID: kKeyUsageOID];
-    [bitString release];
-}
-
-
-- (BOOL) allowsKeyUsage: (UInt16)requestedKeyUsage {
-    BOOL critical;
-    if ([self extensionForOID: kKeyUsageOID isCritical:&critical] && critical) {
-        if ((self.keyUsage & requestedKeyUsage) != requestedKeyUsage)
-            return NO;
-    }
-    return YES;
-}
-
-
-- (NSSet*) extendedKeyUsage {
-    // RFC 3280 sec. 4.2.1.13
-    NSArray* oids = $castIf(NSArray, [self extensionForOID: kExtendedKeyUsageOID isCritical: NULL]);
-    if (!oids)
-        return nil;
-    return [NSSet setWithArray:oids];
-}
-
-- (void) setExtendedKeyUsage: (NSSet*)usage {
-    [self setExtension: (usage.count ?[usage allObjects] :nil)
-            isCritical: YES
-                forOID: kExtendedKeyUsageOID];
-}
-
-- (BOOL) allowsExtendedKeyUsage: (NSSet*) requestedKeyUsage {
-    BOOL critical;
-    if ([self extensionForOID: kExtendedKeyUsageOID isCritical:&critical] && critical) {
-        NSSet* keyUsage = self.extendedKeyUsage;
-        if (![requestedKeyUsage isSubsetOfSet: keyUsage]
-                && ![keyUsage containsObject: kExtendedKeyUsageAnyOID])
-            return NO;
-    }
-    return YES;
-}
 
 @end
 

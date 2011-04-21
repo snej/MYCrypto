@@ -31,16 +31,17 @@ static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     Log(@"Surname     = %@", subject.surname);
     Log(@"Desc        = %@", subject.nameDescription);
     Log(@"Email       = %@", subject.emailAddress);
+    Log(@"All Emails  = %@", pcert.emailAddresses);
 
-    MYCertificateExtensions* extensions = pcert.extensions;
-    for (MYOID* oid in extensions.extensionOIDs) {
+    for (MYOID* oid in pcert.extensionOIDs) {
         BOOL isCritical;
-        id value = [extensions extensionForOID:oid isCritical:&isCritical];
+        id value = [pcert extensionForOID:oid isCritical:&isCritical];
         CAssert(value != nil);
         Log(@"Extension %@%@ = %@", oid, (isCritical ?@" (critical)" :@""), value);
     }
-    Log(@"Key Usage = 0x%x", extensions.keyUsage);
-    Log(@"Extended Key Usage = %@", extensions.extendedKeyUsage);
+    Log(@"Key Usage = 0x%x", pcert.keyUsage);
+    Log(@"Extended Key Usage = %@", pcert.extendedKeyUsage);
+    Log(@"Subject Alt Name = %@", pcert.subjectAlternativeName);
     
     MYPublicKey *pcertKey = pcert.subjectPublicKey;
     Log(@"Subject Public Key = %@", pcertKey);
@@ -90,21 +91,21 @@ static MYCertificateInfo* testCert(NSString *filename, BOOL selfSigned) {
 
 
 TestCase(ParsedCert) {
+    RequireTestCase(ParseCert);
     MYCertificateInfo* pcert = testCert(@"selfsigned_email", YES);
-    MYCertificateExtensions* ext = pcert.extensions;
-    CAssertEq(ext.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
-    CAssertEqual(ext.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID, nil]));
+    CAssertEq(pcert.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+    CAssertEqual(pcert.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID, nil]));
     
-    CAssert([ext allowsKeyUsage:0]);
-    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature]);
-    CAssert([ext allowsKeyUsage:kKeyUsageDigitalSignature | kKeyUsageDataEncipherment]);
-    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation]);
-    CAssert(![ext allowsKeyUsage:kKeyUsageNonRepudiation | kKeyUsageDigitalSignature]);
+    CAssert([pcert allowsKeyUsage:0]);
+    CAssert([pcert allowsKeyUsage:kKeyUsageDigitalSignature]);
+    CAssert([pcert allowsKeyUsage:kKeyUsageDigitalSignature | kKeyUsageDataEncipherment]);
+    CAssert(![pcert allowsKeyUsage:kKeyUsageNonRepudiation]);
+    CAssert(![pcert allowsKeyUsage:kKeyUsageNonRepudiation | kKeyUsageDigitalSignature]);
 
-    CAssert([ext allowsExtendedKeyUsage:[NSSet set]]);
-    CAssert([ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageEmailProtectionOID]]);
-    CAssert(![ext allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageServerAuthOID]]);
-    CAssert(![ext allowsExtendedKeyUsage:([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID,kExtendedKeyUsageServerAuthOID, nil])]);
+    CAssert([pcert allowsExtendedKeyUsage:[NSSet set]]);
+    CAssert([pcert allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageEmailProtectionOID]]);
+    CAssert(![pcert allowsExtendedKeyUsage:[NSSet setWithObject: kExtendedKeyUsageServerAuthOID]]);
+    CAssert(![pcert allowsExtendedKeyUsage:([NSSet setWithObjects: kExtendedKeyUsageEmailProtectionOID,kExtendedKeyUsageServerAuthOID, nil])]);
 
     testCert(@"selfsigned", YES);
     testCert(@"iphonedev", NO);
@@ -119,6 +120,7 @@ TestCase(ParsedCert) {
 #import "MYCrypto_Private.h"
 
 TestCase(CreateCert) {
+    RequireTestCase(EncodeCert);
     MYPrivateKey *privateKey = [[MYKeychain defaultKeychain] generateRSAKeyPairOfSize: 512];
     CAssert(privateKey);
     Log(@"---- Generated key-pair with %@, %@", privateKey.publicKey, privateKey);
@@ -143,15 +145,13 @@ TestCase(CreateCert) {
         CAssertEqual(subject.emailAddress, @"testcase@example.com");
         
         Log(@"---- Extensions...");
-        MYCertificateExtensions* ext = pcert.extensions;
-        CAssert(ext != nil);
-        CAssertEqual(ext.extensionOIDs, $array());
-        CAssertEq(ext.keyUsage, kKeyUsageUnspecified);
-        CAssertEqual(ext.extendedKeyUsage, nil);
-        ext.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment;
-        ext.extendedKeyUsage = [NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil];
-        CAssertEq(ext.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
-        CAssertEqual(ext.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
+        CAssertEqual(pcert.extensionOIDs, $array());
+        CAssertEq(pcert.keyUsage, kKeyUsageUnspecified);
+        CAssertEqual(pcert.extendedKeyUsage, nil);
+        pcert.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment;
+        pcert.extendedKeyUsage = [NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil];
+        CAssertEq(pcert.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+        CAssertEqual(pcert.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
         
         Log(@"---- Signing...");
         NSError *error;
@@ -170,9 +170,8 @@ TestCase(CreateCert) {
         CAssertEqual(subject2.surname, @"Case");
         CAssertEqual(subject2.nameDescription, @"Just a test certificate created by MYCrypto");
         CAssertEqual(subject2.emailAddress, @"testcase@example.com");
-        MYCertificateExtensions* ext2 = pcert2.extensions;
-        CAssertEq(ext2.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
-        CAssertEqual(ext2.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
+        CAssertEq(pcert2.keyUsage, kKeyUsageDigitalSignature | kKeyUsageDataEncipherment);
+        CAssertEqual(pcert2.extendedKeyUsage, ([NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil]));
 
         Log(@"---- Creating MYCertificate object...");
         MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: certData];

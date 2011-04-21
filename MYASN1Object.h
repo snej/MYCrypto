@@ -34,6 +34,7 @@
 @property (readonly) uint8_t tagClass;
 @property (readonly) BOOL constructed;
 @property (readonly) NSData *value;
+@property (readonly) NSString *ASCIIValue;
 @property (readonly) NSArray *components;
 
 + (NSString*) dump: (id)object;
