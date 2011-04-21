@@ -281,6 +281,7 @@
     
 #if !MYCRYPTO_USE_IPHONE_API
     // This is just to log details:
+#if 0
     CSSM_TP_APPLE_EVIDENCE_INFO *status;
     CFArrayRef certChain;
     if (check(SecTrustGetResult(trust, &result, &certChain, &status), @"SecTrustGetResult")) {
@@ -289,6 +290,7 @@
             Log(@"    #%i: %X", i, status->StatusCodes[i]);
         CFRelease(certChain);
     }
+#endif
 #endif
     
     CFRelease(trust);
