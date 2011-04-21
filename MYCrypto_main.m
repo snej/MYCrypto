@@ -1,5 +1,5 @@
 /*
- *  MYCrypto_main.c
+ *  MYCrypto_main.m
  *  MYCrypto
  *
  *  Created by Jens Alfke on 3/28/09.

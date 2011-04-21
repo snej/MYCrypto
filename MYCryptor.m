@@ -1,5 +1,5 @@
 //
-//  Cryptor.m
+//  MYCryptor.m
 //  MYCrypto
 //
 //  Created by Jens Alfke on 3/21/09.
@@ -19,7 +19,7 @@
 #endif
 
 
-NSString* const CryptorErrorDomain = @"CCCryptor";
+NSString* const MYCryptorErrorDomain = @"MYCryptor";
 
 #if !MYCRYPTO_USE_IPHONE_API
 static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, void *dstBytes);
@@ -121,7 +121,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
         return YES;
     else {
         Warn(@"MYCryptor: CCCryptor error %i", status);
-        self.error = [NSError errorWithDomain: CryptorErrorDomain code: status userInfo: nil];
+        self.error = [NSError errorWithDomain: MYCryptorErrorDomain code: status userInfo: nil];
         return NO;
     }
 }

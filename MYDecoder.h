@@ -1,6 +1,6 @@
 //
-//  CryptoDecoder.h
-//  Cloudy
+//  MYDecoder.h
+//  MYCrypto
 //
 //  Created by Jens Alfke on 1/16/08.
 //  Copyright 2008 Jens Alfke. All rights reserved.

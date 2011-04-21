@@ -103,7 +103,6 @@
 		27552F44112DA2F9006C2C7C /* MYPublicKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4BD0F7E8535000B418E /* MYPublicKey.m */; };
 		27552F45112DA2FA006C2C7C /* MYSymmetricKey-iPhone.m in Sources */ = {isa = PBXBuildFile; fileRef = 27410FEF0F99200A00AD413F /* MYSymmetricKey-iPhone.m */; };
 		27552F46112DA2FC006C2C7C /* MYSymmetricKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42D410F858ED80063D362 /* MYSymmetricKey.m */; };
-		27552F47112DA2FD006C2C7C /* README.textile in Resources */ = {isa = PBXBuildFile; fileRef = 27EAF0390F8B2D700091AF95 /* README.textile */; };
 		27552F4C112DA322006C2C7C /* MYASN1Object.m in Sources */ = {isa = PBXBuildFile; fileRef = 27B852F40FCF4EB7005631F9 /* MYASN1Object.m */; };
 		27552F4D112DA323006C2C7C /* MYBERParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 270A7A720FD58FF200770C4D /* MYBERParser.m */; };
 		27552F4E112DA324006C2C7C /* MYCertificateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 275DA1260FD980D400D85A86 /* MYCertificateInfo.m */; };
@@ -248,7 +247,6 @@
 		27EABE7F129F77D10005DA73 /* iphonedev.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = iphonedev.cer; path = Tests/iphonedev.cer; sourceTree = "<group>"; };
 		27EABE80129F77D10005DA73 /* selfsigned.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned.cer; path = Tests/selfsigned.cer; sourceTree = "<group>"; };
 		27EABE84129F784C0005DA73 /* selfsigned_reencoded.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned_reencoded.cer; path = Tests/selfsigned_reencoded.cer; sourceTree = "<group>"; };
-		27EAF0390F8B2D700091AF95 /* README.textile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.textile; sourceTree = "<group>"; };
 		27FEB3E60FBA63D200290049 /* MYCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYCrypto.h; sourceTree = "<group>"; };
 		8DD76FA10486AA7600D96B5E /* MYCrypto */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MYCrypto; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -338,7 +336,6 @@
 				27059D760F8FA23100A8422F /* MYCrypto+Cocoa.m */,
 				2729235F129F2EE800B694B1 /* MYMockKeys.h */,
 				27292360129F2EE800B694B1 /* MYMockKeys.m */,
-				27EAF0390F8B2D700091AF95 /* README.textile */,
 				27FEB3E60FBA63D200290049 /* MYCrypto.h */,
 			);
 			indentWidth = 4;
@@ -606,7 +603,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27552F47112DA2FD006C2C7C /* README.textile in Resources */,
 				27552FAB112DA410006C2C7C /* MYError_CSSMErrorDomain.strings in Resources */,
 				27552FAD112DA412006C2C7C /* MYUtilities.xcconfig in Resources */,
 				27552FAE112DA413006C2C7C /* MYUtilities_Debug.xcconfig in Resources */,

@@ -1,5 +1,5 @@
 //
-//  Cryptor.h
+//  MYCryptor.h
 //  MYCrypto
 //
 //  Created by Jens Alfke on 3/21/09.
@@ -96,7 +96,7 @@
 
 /** NSError domain for MYCryptor operations. Error code is interpreted as a CCCryptorStatus,
     with additional error code(s) defined below. */
-extern NSString* const CryptorErrorDomain;
+extern NSString* const MYCryptorErrorDomain;
 
 enum {
     /** Indicates that the outputStream couldn't write all the bytes given to it (this is legal

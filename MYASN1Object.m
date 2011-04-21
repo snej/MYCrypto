@@ -1,6 +1,6 @@
 //
 //  MYASN1Object.m
-//  MYCrypto-iPhone
+//  MYCrypto
 //
 //  Created by Jens Alfke on 5/28/09.
 //  Copyright 2009 Jens Alfke. All rights reserved.

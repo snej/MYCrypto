@@ -11,10 +11,6 @@
 #import "MYDigest.h"
 #import <CommonCrypto/CommonDigest.h>
 
-#if !TARGET_OS_IPHONE
-#import "MYCertGen.h"
-#endif
-
 @implementation MYPrivateKey
 
 
