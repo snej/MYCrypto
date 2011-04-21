@@ -38,9 +38,8 @@
 
 
 - (NSString*) description {
-    NSString* keyStr = [[NSString alloc] initWithData: _keyData encoding: NSUTF8StringEncoding];
+    NSString* keyStr = [[[NSString alloc] initWithData: _keyData encoding: NSUTF8StringEncoding] autorelease];
     return $sprintf(@"%@[%@]", [self class], keyStr);
-    [keyStr release];
 }
 
 
