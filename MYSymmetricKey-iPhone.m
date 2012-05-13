@@ -142,7 +142,7 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 
 - (const char*) algorithmName {
     CCAlgorithm a = self.algorithm;
-    if (a >= 0 && a <= kCCAlgorithmRC4)
+    if (a <= kCCAlgorithmRC4)
         return kCCAlgorithmNames[a];
     else
         return "???";
@@ -194,7 +194,7 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
 @end
 
 
-#endif MYCRYPTO_USE_IPHONE_API
+#endif //MYCRYPTO_USE_IPHONE_API
 
 
 

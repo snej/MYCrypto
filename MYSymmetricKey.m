@@ -19,7 +19,7 @@ CSSM_ALGORITHMS CSSMFromCCAlgorithm( CCAlgorithm ccAlgorithm ) {
     static const CSSM_ALGORITHMS kCSSMAlgorithms[] = {
         CSSM_ALGID_AES, CSSM_ALGID_DES, CSSM_ALGID_3DES_3KEY, CSSM_ALGID_CAST, CSSM_ALGID_RC4
     };
-    if (ccAlgorithm >=0 && ccAlgorithm <= kCCAlgorithmRC4)
+    if (ccAlgorithm <= kCCAlgorithmRC4)
         return kCSSMAlgorithms[ccAlgorithm];
     else
         return CSSM_ALGID_NONE;
@@ -319,7 +319,7 @@ static CSSM_RETURN impExpCreatePassKey(
 
 - (const char*) algorithmName {
     CCAlgorithm a = self.algorithm;
-    if (a >= 0 && a <= kCCAlgorithmRC4)
+    if (a <= kCCAlgorithmRC4)
         return kCCAlgorithmNames[a];
     else
         return "???";
@@ -661,7 +661,7 @@ errOut:
 }
 	
 
-#endif !MYCRYPTO_USE_IPHONE_API
+#endif //!MYCRYPTO_USE_IPHONE_API
 
 
 

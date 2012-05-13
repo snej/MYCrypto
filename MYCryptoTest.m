@@ -549,5 +549,5 @@ TestCase(KeyPairExportWithUI) {
 }
 
 
-#endif DEBUG
+#endif //DEBUG
 

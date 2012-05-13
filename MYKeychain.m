@@ -442,7 +442,7 @@
 - (id) nextObject {
     if (!_search)
         return nil;
-    MYPublicKey *key = nil;
+    MYKeychainItem *item = nil;
     do{
         SecKeychainItemRef found = NULL;
         OSStatus err = SecKeychainSearchCopyNext(_search, &found);
@@ -456,19 +456,19 @@
         
         switch (_itemClass) {
             case kSecPrivateKeyItemClass: {
-                key = [[[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+                item = [[[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
                 break;
             }
             case kSecCertificateItemClass:
-                key = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
+                item = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
                 break;
             case kSecPublicKeyItemClass:
-                key = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+                item = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
                 break;
         }
         CFRelease(found);
-    } while (key==nil);
-    return key;
+    } while (item==nil);
+    return item;
 }
 
 @end
@@ -514,7 +514,7 @@
 @end
 
 
-#endif !MYCRYPTO_USE_IPHONE_API
+#endif //!MYCRYPTO_USE_IPHONE_API
 
 
 

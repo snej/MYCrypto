@@ -354,7 +354,7 @@ enum {
 
 @end
 
-#endif MYCRYPTO_USE_IPHONE_API
+#endif //MYCRYPTO_USE_IPHONE_API
 
 
 /*

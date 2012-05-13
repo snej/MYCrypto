@@ -117,7 +117,7 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
     header.tagClass = tagClass;
     if (length < 128) {
         header.isLengthLong = NO;
-        header.length = length;
+        header.length = (unsigned)length;
     } else {
         header.isLengthLong = YES;
         header.length = encodeUnsignedInt(length, header.extraLength, NO);
@@ -362,7 +362,7 @@ TestCase(DEREncoder) {
 TestCase(EncodeCert) {
     RequireTestCase(DEREncoder);
     NSError *error = nil;
-    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned.cer"];
+    NSData *cert = [NSData dataWithContentsOfFile: @"selfsigned.cer"];
     id certObjects = MYBERParse(cert,&error);
     CAssertNil(error);
     Log(@"Decoded as:\n%@", [MYASN1Object dump: certObjects]);

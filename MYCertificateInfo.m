@@ -569,7 +569,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     NSDate *validTo = self.validTo;
     if (!validTo) {
 #if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_5
-        self.validTo = [validFrom addTimeInterval: kDefaultExpirationTime];
+        self.validTo = [validFrom dateByAddingTimeInterval: kDefaultExpirationTime];
 #else
         self.validTo = [validFrom dateByAddingTimeInterval: kDefaultExpirationTime];
 #endif

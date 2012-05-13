@@ -240,6 +240,7 @@ static BOOL exceptionToError (NSException *x, NSError **outError) {
 
 
 id MYBERParse (NSData *ber, NSError **outError) {
+    CAssert(ber);
     @try{
         InputData input = {ber.bytes, ber.length};
         return parseBER(&input);
@@ -251,6 +252,7 @@ id MYBERParse (NSData *ber, NSError **outError) {
 
 
 size_t MYBERGetLength (NSData *ber, NSError **outError) {
+    CAssert(ber);
     @try{
         InputData input = {ber.bytes, ber.length};
         BERHeader header;
@@ -332,7 +334,7 @@ TestCase(ParseBER) {
 
 TestCase(ParseCert) {
     RequireTestCase(ParseBER);
-    NSData *cert = [NSData dataWithContentsOfFile: @"../../Tests/selfsigned_email.cer"];
+    NSData *cert = [NSData dataWithContentsOfFile: @"selfsigned_email.cer"];
     NSError *error = nil;
     id parsed = MYBERParse(cert,&error);
     CAssert(parsed);
@@ -346,7 +348,7 @@ TestCase(ParseCert) {
     id parsedPubKey = MYBERParse(myCert.publicKey.keyData, NULL);
     Log(@"Parsed public key:\n%@", [MYASN1Object dump: parsedPubKey]);
 
-    cert = [NSData dataWithContentsOfFile: @"../../Tests/iphonedev.cer"];
+    cert = [NSData dataWithContentsOfFile: @"iphonedev.cer"];
     parsed = MYBERParse(cert,&error);
     CAssert(parsed);
     CAssertNil(error);

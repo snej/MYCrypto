@@ -157,7 +157,7 @@ TestCase(MYMockPrivateKey) {
     Log(@"Verified signature from reconstituted key.");
 }
 
-#endif DEBUG
+#endif //DEBUG
 
 
 

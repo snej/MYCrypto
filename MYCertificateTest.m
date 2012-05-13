@@ -76,8 +76,7 @@ static NSData* readTestFile(NSString *filename) {
 #if TARGET_OS_IPHONE
     filename = [[NSBundle mainBundle] pathForResource: filename ofType: @"cer"];
 #else
-    filename = [[@"../../Tests/" stringByAppendingPathComponent: filename]
-                stringByAppendingPathExtension: @"cer"];
+    filename = [filename stringByAppendingPathExtension: @"cer"];
 #endif
     Log(@"--- Testing certificate file %@", filename);
     NSData *data = [NSData dataWithContentsOfFile: filename];

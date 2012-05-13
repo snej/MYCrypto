@@ -129,7 +129,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
 
 - (BOOL) _outputBytes: (const void*)bytes length: (size_t)length {
     if (_outputStream) {
-        size_t written = [_outputStream write: bytes maxLength: length];
+        NSInteger written = [_outputStream write: bytes maxLength: length];
         if (written < 0) {
             self.error = _outputStream.streamError;
             if (_error)
@@ -137,7 +137,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
             else
                 [self _check: kMYCryptorErrorOutputStreamChoked];
             return NO;
-        } else if (written < length) {
+        } else if ((size_t)written < length) {
             [self _check: kMYCryptorErrorOutputStreamChoked];
             return NO;
         }

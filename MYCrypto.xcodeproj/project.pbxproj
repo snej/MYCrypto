@@ -116,8 +116,6 @@
 		27552FAA112DA40E006C2C7C /* Logging.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4D20F7E8726000B418E /* Logging.m */; };
 		27552FAB112DA410006C2C7C /* MYError_CSSMErrorDomain.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CFF57C0F7EA117000B418E /* MYError_CSSMErrorDomain.strings */; };
 		27552FAC112DA411006C2C7C /* MYErrorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5750F7E999B000B418E /* MYErrorUtils.m */; };
-		27552FAD112DA412006C2C7C /* MYUtilities.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 2733D7DC100E989E0018E4F9 /* MYUtilities.xcconfig */; };
-		27552FAE112DA413006C2C7C /* MYUtilities_Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 2733D7DD100E989E0018E4F9 /* MYUtilities_Debug.xcconfig */; };
 		27552FAF112DA41C006C2C7C /* Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF4D40F7E8726000B418E /* Test.m */; };
 		27552FB2112DA42C006C2C7C /* MYCrypto_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5210F7E94DF000B418E /* MYCrypto_main.m */; };
 		27552FB3112DA42D006C2C7C /* MYCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A42CBE0F8578B40063D362 /* MYCryptoTest.m */; };
@@ -149,6 +147,12 @@
 		27CFF51F0F7E94AE000B418E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CFF51E0F7E94AE000B418E /* Security.framework */; };
 		27CFF5220F7E94DF000B418E /* MYCrypto_main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5210F7E94DF000B418E /* MYCrypto_main.m */; };
 		27CFF5760F7E999B000B418E /* MYErrorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 27CFF5750F7E999B000B418E /* MYErrorUtils.m */; };
+		27D90AF1155F2AC60000735E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27D90AF0155F2AC60000735E /* Foundation.framework */; };
+		27D90AF3155F2DFE0000735E /* selfsigned_email.cer in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D90AF2155F2DFE0000735E /* selfsigned_email.cer */; };
+		27D90AF4155F2E560000735E /* iphonedev.cer in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27EABE7F129F77D10005DA73 /* iphonedev.cer */; };
+		27D90AF5155F2E9D0000735E /* selfsigned.cer in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27EABE80129F77D10005DA73 /* selfsigned.cer */; };
+		27D90AF7155F2EBB0000735E /* selfsigned_altered.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27D90AF6155F2EBB0000735E /* selfsigned_altered.cer */; };
+		27D90AF8155F2EE30000735E /* selfsigned_altered.cer in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D90AF6155F2EBB0000735E /* selfsigned_altered.cer */; };
 		27E820720F7EA6260019BE60 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E820710F7EA6260019BE60 /* CoreServices.framework */; };
 		27EABE81129F77D10005DA73 /* generated.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE7E129F77D10005DA73 /* generated.cer */; };
 		27EABE82129F77D10005DA73 /* iphonedev.cer in Resources */ = {isa = PBXBuildFile; fileRef = 27EABE7F129F77D10005DA73 /* iphonedev.cer */; };
@@ -165,6 +169,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				27D90AF4155F2E560000735E /* iphonedev.cer in CopyFiles */,
+				27D90AF5155F2E9D0000735E /* selfsigned.cer in CopyFiles */,
+				27D90AF8155F2EE30000735E /* selfsigned_altered.cer in CopyFiles */,
+				27D90AF3155F2DFE0000735E /* selfsigned_email.cer in CopyFiles */,
 				27552E54112CB56C006C2C7C /* MYError_CSSMErrorDomain.strings in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -240,6 +248,9 @@
 		27CFF5740F7E999B000B418E /* MYErrorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYErrorUtils.h; sourceTree = "<group>"; };
 		27CFF5750F7E999B000B418E /* MYErrorUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYErrorUtils.m; sourceTree = "<group>"; };
 		27CFF57C0F7EA117000B418E /* MYError_CSSMErrorDomain.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = MYError_CSSMErrorDomain.strings; sourceTree = "<group>"; };
+		27D90AF0155F2AC60000735E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		27D90AF2155F2DFE0000735E /* selfsigned_email.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned_email.cer; path = Tests/selfsigned_email.cer; sourceTree = "<group>"; };
+		27D90AF6155F2EBB0000735E /* selfsigned_altered.cer */ = {isa = PBXFileReference; lastKnownFileType = file; name = selfsigned_altered.cer; path = Tests/selfsigned_altered.cer; sourceTree = "<group>"; };
 		27E820710F7EA6260019BE60 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		27E822A00F81C5660019BE60 /* MYKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYKey.h; sourceTree = "<group>"; };
 		27E822A10F81C5660019BE60 /* MYKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYKey.m; sourceTree = "<group>"; };
@@ -270,6 +281,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27D90AF1155F2AC60000735E /* Foundation.framework in Frameworks */,
 				27552FA5112DA3FC006C2C7C /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -299,10 +311,6 @@
 				C6859EA2029092E104C91782 /* Documentation */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
-				27CFF51E0F7E94AE000B418E /* Security.framework */,
-				27E820710F7EA6260019BE60 /* CoreServices.framework */,
-				27059D830F8FA82500A8422F /* SecurityInterface.framework */,
-				27552FA4112DA3FC006C2C7C /* Security.framework */,
 			);
 			name = MYCrypto;
 			sourceTree = "<group>";
@@ -346,7 +354,12 @@
 		08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				27CFF51E0F7E94AE000B418E /* Security.framework */,
+				27E820710F7EA6260019BE60 /* CoreServices.framework */,
+				27059D830F8FA82500A8422F /* SecurityInterface.framework */,
+				27552FA4112DA3FC006C2C7C /* Security.framework */,
 				08FB779EFE84155DC02AAC07 /* Foundation.framework */,
+				27D90AF0155F2AC60000735E /* Foundation.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -387,6 +400,8 @@
 				27EABE7E129F77D10005DA73 /* generated.cer */,
 				27EABE7F129F77D10005DA73 /* iphonedev.cer */,
 				27EABE80129F77D10005DA73 /* selfsigned.cer */,
+				27D90AF6155F2EBB0000735E /* selfsigned_altered.cer */,
+				27D90AF2155F2DFE0000735E /* selfsigned_email.cer */,
 				27EABE84129F784C0005DA73 /* selfsigned_reencoded.cer */,
 				27CFF5120F7E9212000B418E /* MYCrypto.xcconfig */,
 				27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */,
@@ -580,8 +595,12 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+			};
 			buildConfigurationList = 1DEB927808733DD40010E9CD /* Build configuration list for PBXProject "MYCrypto" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,
@@ -590,10 +609,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8DD76F960486AA7600D96B5E /* Tests */,
 				2706F1AA0F9D3C5F00292CCF /* Static Lib */,
-				27552F33112DA2B8006C2C7C /* iPhone Tests */,
 				27552D8D112C68E6006C2C7C /* iPhone Static Lib */,
+				8DD76F960486AA7600D96B5E /* Tests */,
+				27552F33112DA2B8006C2C7C /* iPhone Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -604,12 +623,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				27552FAB112DA410006C2C7C /* MYError_CSSMErrorDomain.strings in Resources */,
-				27552FAD112DA412006C2C7C /* MYUtilities.xcconfig in Resources */,
-				27552FAE112DA413006C2C7C /* MYUtilities_Debug.xcconfig in Resources */,
 				27EABE81129F77D10005DA73 /* generated.cer in Resources */,
 				27EABE82129F77D10005DA73 /* iphonedev.cer in Resources */,
 				27EABE83129F77D10005DA73 /* selfsigned.cer in Resources */,
 				27EABE85129F784C0005DA73 /* selfsigned_reencoded.cer in Resources */,
+				27D90AF7155F2EBB0000735E /* selfsigned_altered.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -773,7 +791,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = MYCrypto;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -785,7 +803,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = MYCrypto;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -794,10 +812,12 @@
 			baseConfigurationReference = 27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				SDKROOT = macosx10.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -806,9 +826,11 @@
 			baseConfigurationReference = 2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				HEADER_SEARCH_PATHS = "/Code/MYCrypto/**";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				SDKROOT = macosx10.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -837,13 +859,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"MYERRORUTILS_USE_SECURITY_API=1",
 					"DEBUG=1",
 				);
 				PRODUCT_NAME = "MYCrypto-iPhone";
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -851,11 +874,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				PRODUCT_NAME = "MYCrypto-iPhone";
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};
@@ -863,6 +887,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 27CFF5400F7E9653000B418E /* MYCrypto_Debug.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -873,14 +898,8 @@
 				);
 				INFOPLIST_FILE = "iPhone/MYCrypto_iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					UIKit,
-				);
 				PRODUCT_NAME = MYCryptoiPhone;
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -888,20 +907,15 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2748604D0F8D5C4C00FE617B /* MYCrypto_Release.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				INFOPLIST_FILE = "MYCrypto iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					UIKit,
-				);
 				PRODUCT_NAME = "MYCrypto iPhone";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};

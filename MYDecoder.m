@@ -385,7 +385,7 @@ TestCase(MYDecoder) {
     TestRoundTrip(@"signing+encryption", source, me,  me);
 }
 
-#endif DEBUG
+#endif //DEBUG
 
 
 

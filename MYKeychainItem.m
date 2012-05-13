@@ -11,9 +11,15 @@
 #import "MYBERParser.h"
 #import "MYErrorUtils.h"
 
+
 #if MYCRYPTO_USE_IPHONE_API
-#import <MacErrors.h>
+// <MacErrors.h> is missing in iPhone SDK
+enum {
+    paramErr = -50,
+    userCanceledErr = -128
+};
 #endif
+
 
 NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
