@@ -28,6 +28,10 @@
     self = [super initWithKeychainItemRef: (SecKeychainItemRef)certificateRef];
     if (self) {
         _certificateRef = certificateRef;     // superclass has already CFRetained it
+        if (self.certificateData.length == 0) {
+            [self release];
+            return nil;
+        }
         if (![self _verify]) {
             Log(@"Self-signed cert failed signature verification (%@)", self);
             [self release];
@@ -123,16 +127,8 @@
 @synthesize certificateRef=_certificateRef;
 
 - (NSData*) certificateData {
-#if MYCRYPTO_USE_IPHONE_API
     CFDataRef data = SecCertificateCopyData(_certificateRef);
-    return data ?[(id)CFMakeCollectable(data) autorelease] :nil;
-#else
-    CSSM_DATA cssmData;
-    if (!check(SecCertificateGetData(_certificateRef, &cssmData),
-               @"SecCertificateGetData"))
-        return nil;
-    return [NSData dataWithBytes: cssmData.Data length: cssmData.Length];
-#endif
+    return data ?[NSMakeCollectable(data) autorelease] :nil;
 }
 
 - (MYPublicKey*) publicKey {
@@ -179,9 +175,12 @@
 
 - (MYCertificateInfo*) info {
     if (!_info) {
-        NSError *error;
-        _info = [[MYCertificateInfo alloc] initWithCertificateData: self.certificateData
-                                                             error: &error];
+        NSError *error = nil;
+        NSData* data = self.certificateData;
+        if (data) {
+            _info = [[MYCertificateInfo alloc] initWithCertificateData: data
+                                                                 error: &error];
+        }
         if (!_info)
             Warn(@"Couldn't parse certificate %@: %@", self, error);
     }
@@ -237,7 +236,7 @@
         return NULL;
     }
     
-    Log(@"Read %i items from data:", CFArrayGetCount(items)); //TEMP
+    Log(@"Read %lu items from data:", CFArrayGetCount(items)); //TEMP
     NSMutableArray* result = $marray();
     for (int i=0; i<CFArrayGetCount(items); i++) {
         CFTypeRef item = CFArrayGetValueAtIndex(items,i);
@@ -262,11 +261,13 @@
 
 
 - (BOOL) _verify {
-  // If the cert is self-signed, verify its signature. Apple's frameworks don't do this,
-  // even the SecTrust API; if the signature doesn't verify, they just assume it could be
-  // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
-  MYCertificateInfo *info = self.info;
-  return !info.isRoot || [info verifySignatureWithKey: self.publicKey];
+    if (self.certificateData.length == 0)
+        return NO;
+    // If the cert is self-signed, verify its signature. Apple's frameworks don't do this,
+    // even the SecTrust API; if the signature doesn't verify, they just assume it could be
+    // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
+    MYCertificateInfo *info = self.info;
+    return info && (!info.isRoot || [info verifySignatureWithKey: self.publicKey]);
 }  
 
 
@@ -367,13 +368,20 @@
 
 - (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
                                                string: (NSString*) policyString
+                                              options: (NSStringCompareOptions)compareOptions
 {
     for( NSDictionary* setting in [self trustSettings]) {
         if (![[setting objectForKey: (id)kSecTrustSettingsPolicy] isEqual: (id)policy])
             continue;
-        if (policyString)
-            if (![policyString isEqual: [setting objectForKey: (id)kSecTrustSettingsPolicyString]])
+        if (policyString) {
+            // Policy string may end with a NUL byte, so trim it
+            NSString* certPolicy = [setting objectForKey: (id)kSecTrustSettingsPolicyString];
+            if (!certPolicy)
                 continue;
+            certPolicy = [certPolicy stringByTrimmingCharactersInSet: [NSCharacterSet controlCharacterSet]];
+            if ([policyString compare: certPolicy options: compareOptions] != 0)
+                continue;
+        }
         // OK, this entry matches, so check the result:
         NSNumber* result = [setting objectForKey: (id)kSecTrustSettingsResult];
         if (result != nil)
@@ -464,7 +472,7 @@ NSString* MYTrustDescribe( SecTrustRef trust ) {
     if (err)
         desc = $sprintf(@"SecTrust[%p, err=%@]", trust, MYErrorName(NSOSStatusErrorDomain, err));
     else
-        desc = $sprintf(@"SecTrust[%@, %u in chain]", 
+        desc = $sprintf(@"SecTrust[%@, %lu in chain]", 
                         MYTrustResultDescribe(result),
                         CFArrayGetCount(certChain));
     if (certChain) CFRelease(certChain);

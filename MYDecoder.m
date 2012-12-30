@@ -193,10 +193,10 @@
                                                               "\tsigners =\n",
                               self.class, self,
                               OIDAsString(contentType), @"??"/*nameOfOID(&contentType)*/,
-                              self.content.length,
+                              (unsigned)self.content.length,
                               self.isSigned,self.isEncrypted,
                               MYPolicyGetName(_policy),
-                              self.certificates.count];
+                              (unsigned)self.certificates.count];
     for( MYSigner *signer in self.signers ) {
         CMSSignerStatus status = signer.status;
         const char *statusName = (status<=kCMSSignerInvalidIndex) ?kStatusNames[status] :"??";
@@ -338,7 +338,7 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
     NSData *encoded = [MYEncoder encodeData: source signer: signer recipient: recipient error: &error];
     CAssertEq(error,nil);
     CAssert([encoded length]);
-    Log(@"MYEncoder encoded %u bytes into %u bytes", source.length,encoded.length);
+    Log(@"MYEncoder encoded %lu bytes into %lu bytes", source.length,encoded.length);
     Log(@"Decoding...");
     MYDecoder *d = [[MYDecoder alloc] init];
     d.policy = [MYCertificate X509Policy];

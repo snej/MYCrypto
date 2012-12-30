@@ -174,8 +174,7 @@
 @implementation MYSHA1Digest
 
 + (void) computeDigest: (void*)dstDigest ofBytes: (const void*)bytes length: (size_t)length {
-    NSParameterAssert(bytes!=NULL);
-    NSParameterAssert(length>0);
+    NSParameterAssert(bytes != NULL || length == 0);
     CC_SHA1(bytes,(CC_LONG)length, dstDigest);
 }
 
@@ -259,7 +258,7 @@ static void testDigestOf( NSData *src, NSString *expectedSHA1Hex, NSString *expe
     CAssert(src, @"Couldn't load test file");
     MYSHA1Digest *d1 = [src my_SHA1Digest];
     NSString *hex = d1.hexString;
-    Log(@"Digesting %u bytes to %@",src.length,hex);
+    Log(@"Digesting %lu bytes to %@",src.length,hex);
     if( expectedSHA1Hex )
         CAssertEqual(hex,expectedSHA1Hex);
     MYSHA1Digest *d2 = (MYSHA1Digest*) [MYSHA1Digest digestFromHexString: hex];
@@ -268,7 +267,7 @@ static void testDigestOf( NSData *src, NSString *expectedSHA1Hex, NSString *expe
 
     MYSHA256Digest *d256 = [src my_SHA256Digest];
     hex = d256.hexString;
-    Log(@"Digesting %u bytes to %@",src.length,hex);
+    Log(@"Digesting %lu bytes to %@",src.length,hex);
     if( expectedSHA256Hex )
         CAssertEqual(hex,expectedSHA256Hex);
     MYSHA256Digest *d256_2 = (MYSHA256Digest*) [MYSHA256Digest digestFromHexString: hex];

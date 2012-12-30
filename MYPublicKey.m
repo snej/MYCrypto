@@ -121,7 +121,7 @@
     if (cssmErr == CSSM_OK)
         return YES;
     if (cssmErr != CSSMERR_CSP_VERIFY_FAILED)
-        Warn(@"CSSM error verifying signature: %u", MYErrorName(MYCSSMErrorDomain,cssmErr));
+        Warn(@"CSSM error verifying signature: %@", MYErrorName(MYCSSMErrorDomain,cssmErr));
     return NO;
 }
 #endif

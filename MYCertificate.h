@@ -118,7 +118,8 @@
     @param policyString  A policy-specific parameter. For example, SMIMEPolicy interprets this as the sender's email address, and SSLPolicy interprets it as the peer's hostname.
     @result  The trust setting. If kSecTrustSettingsResultTrustRoot or kSecTrustSettingsResultTrustAsRoot, the user has explicitly marked this cert as trusted for this policy and policyString. */
 - (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
-                                               string: (NSString*) policyString;
+                                               string: (NSString*) policyString
+                                              options: (NSStringCompareOptions)compareOptions;
 
 #endif
 //@}

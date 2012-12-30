@@ -56,7 +56,7 @@ static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     Log(@"Trust = %@", MYTrustResultDescribe([cert evaluateTrust]));
     
     MYPublicKey *certKey = cert.publicKey;
-    Log(@"MYCertificate public key = ", certKey);
+    Log(@"MYCertificate public key = %@", certKey);
     CAssertEqual(certKey.keyData, pcert.subjectPublicKey.keyData);
     [cert release];
     /*TEMP

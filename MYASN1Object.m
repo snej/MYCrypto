@@ -65,12 +65,12 @@
     if (_components)
         return $sprintf(@"%@[%hhu/%u/%u]%@", self.class, _tagClass,(unsigned)_constructed,_tag, _components);
     else
-        return $sprintf(@"%@[%hhu/%u/%u, %u bytes]", self.class, _tagClass,(unsigned)_constructed,_tag, _value.length);
+        return $sprintf(@"%@[%hhu/%u/%u, %u bytes]", self.class, _tagClass,(unsigned)_constructed,_tag, (unsigned)_value.length);
 }
 
 - (BOOL) isEqual: (id)object {
     return [object isKindOfClass: [MYASN1Object class]] 
-        && _tag==[object tag] 
+        && _tag==[(MYASN1Object*)object tag]
         && _tagClass==[object tagClass] 
         && _constructed==[object constructed] 
         && $equal(_value,[object value])

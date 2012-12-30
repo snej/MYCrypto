@@ -69,7 +69,7 @@
 
 - (id) init
 {
-    NSString *key = [NSString stringWithFormat: @"MOCK_%08X:", random()];
+    NSString *key = [NSString stringWithFormat: @"MOCK_%08lX:", random()];
     return [self initWithKeyData: [key dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
@@ -142,7 +142,7 @@ TestCase(MYMockPrivateKey) {
     // Let's sign data:
     NSData *data = [@"This is a test. This is only a test!" dataUsingEncoding: NSUTF8StringEncoding];
     NSData *sig = [privateKey signData: data];
-    Log(@"Signature = %@ (%u bytes)",sig,sig.length);
+    Log(@"Signature = %@ (%lu bytes)",sig,sig.length);
     CAssert(sig);
     CAssert( [publicKey verifySignature: sig ofData: data] );    
 

@@ -188,19 +188,19 @@ TestCase(MYEncoder) {
     encoded = [MYEncoder encodeData: source signer: me recipient: nil error: &error];
     CAssertEq(error,nil);
     CAssert([encoded length]);
-    Log(@"MYEncoder signed %u bytes into %u bytes", source.length,encoded.length);
+    Log(@"MYEncoder signed %lu bytes into %lu bytes", source.length,encoded.length);
     
     Log(@"Testing encryption...");
     encoded = [MYEncoder encodeData: source signer: nil recipient: me error: &error];
     CAssertEq(error,nil);
     CAssert([encoded length]);
-    Log(@"MYEncoder encrypted %u bytes into %u bytes", source.length,encoded.length);
+    Log(@"MYEncoder encrypted %lu bytes into %lu bytes", source.length,encoded.length);
     
     Log(@"Testing signing+encryption...");
     encoded = [MYEncoder encodeData: source signer: me recipient: me error: &error];
     CAssertEq(error,nil);
     CAssert([encoded length]);
-    Log(@"MYEncoder signed/encrypted %u bytes into %u bytes", source.length,encoded.length);
+    Log(@"MYEncoder signed/encrypted %lu bytes into %lu bytes", source.length,encoded.length);
 }
 #endif
 
