@@ -63,7 +63,6 @@ static CSSM_RETURN impExpCreatePassKey(
 
 - (id) _initWithCSSMKey: (CSSM_KEY*)cssmKey {
     if (!cssmKey) {
-        [self release];
         return nil;
     }
     SecKeyRef keyRef = NULL;
@@ -77,7 +76,6 @@ static CSSM_RETURN impExpCreatePassKey(
         Warn(@"Unable to call SecKeyCreate SPI -- not available");
     }
     if (!keyRef) {
-        [self release];
         return nil;
     }
 
@@ -126,7 +124,7 @@ static CSSM_RETURN impExpCreatePassKey(
                @"SecKeyGenerate")) {
         return nil;
     }
-    return [[[self alloc] initWithKeyRef: keyRef] autorelease];
+    return [[self alloc] initWithKeyRef: keyRef];
 }
 
 + (MYSymmetricKey*) generateSymmetricKeyOfSize: (unsigned)keySizeInBits
@@ -144,8 +142,8 @@ static CSSM_RETURN impExpCreatePassKey(
     SecKeyImportExportParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
         .flags = kSecKeySecurePassphrase,
-        .alertTitle = (CFStringRef)alertTitle,
-        .alertPrompt = (CFStringRef)prompt,
+        .alertTitle = (__bridge CFStringRef)alertTitle,
+        .alertPrompt = (__bridge CFStringRef)prompt,
         .keyUsage = CSSM_KEYUSE_ANY,
         .keyAttributes = CSSM_KEYATTR_EXTRACTABLE
     };
@@ -162,8 +160,7 @@ static CSSM_RETURN impExpCreatePassKey(
     Assert(keyData);
     NSString *passphrase = [[NSString alloc] initWithData: keyData
                                                  encoding: NSUTF8StringEncoding];
-    [key release];
-    return [passphrase autorelease];
+    return passphrase;
 }
 
 
@@ -182,8 +179,8 @@ static CSSM_RETURN impExpCreatePassKey(
     SecKeyImportExportParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
         .flags = kSecKeySecurePassphrase,
-        .alertTitle = (CFStringRef)alertTitle,
-        .alertPrompt = (CFStringRef)prompt,
+        .alertTitle = (__bridge CFStringRef)alertTitle,
+        .alertPrompt = (__bridge CFStringRef)prompt,
         .keyUsage = CSSM_KEYUSE_ANY,
         .keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_SENSITIVE
     };
@@ -222,7 +219,9 @@ static CSSM_RETURN impExpCreatePassKey(
                                      NULL, 
                                      cssmKey),
                       @"CSSM_DeriveKey")) {
-            generatedKey = [[[self alloc] _initWithCSSMKey: cssmKey] autorelease];
+            generatedKey = [[self alloc] _initWithCSSMKey: cssmKey];
+        } else {
+            free(cssmKey);
         }
     }
     CSSM_DeleteContext(ctx);
@@ -235,7 +234,6 @@ static CSSM_RETURN impExpCreatePassKey(
 {
     if(_ownedCSSMKey) 
         CSSM_FreeKey(self.cssmCSPHandle, NULL, _ownedCSSMKey, YES);
-    [super dealloc];
 }
 
 
@@ -451,7 +449,7 @@ static CSSM_DATA makeSalt( id salty, size_t length ) {
     if (![salty isKindOfClass: [NSData class]])
         salty = [[salty description] dataUsingEncoding: NSUTF8StringEncoding];
     // Repeat enough times to fill the desired length:
-    NSMutableData *salt = [[salty mutableCopy] autorelease];
+    NSMutableData *salt = [salty mutableCopy];
     CAssert(salt.length>0);
     while (salt.length < length) {
         [salt appendData: salt];

@@ -27,7 +27,7 @@
 /** The public key's SHA-1 digest. 
     This is a convenient short (20-byte) identifier for the key pair. You can store it in your
     application data, and then later look up either key using MYKeychain methods. */
-@property (readonly) MYSHA1Digest *publicKeyDigest;
+@property (weak, readonly) MYSHA1Digest *publicKeyDigest;
 
 
 /** Decrypts data that was encrypted using the public key.

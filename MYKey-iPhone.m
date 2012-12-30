@@ -27,14 +27,13 @@
 - (id) _initWithKeyData: (NSData*)data
             forKeychain: (SecKeychainRef)keychain
 {
-    NSMutableDictionary *info = $mdict({(id)kSecClass, (id)kSecClassKey},
-                                        {(id)kSecAttrKeyType, (id)self.keyType},
-                                        {(id)kSecValueData, data},
-                                        {(id)kSecAttrIsPermanent, (keychain ?$true :$false)},
-                                        {(id)kSecReturnPersistentRef, (keychain ?$true :$false)} );
+    NSMutableDictionary *info = $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassKey},
+                                        {(__bridge id)kSecAttrKeyType, (__bridge id)self.keyType},
+                                        {(__bridge id)kSecValueData, data},
+                                        {(__bridge id)kSecAttrIsPermanent, (keychain ?$true :$false)},
+                                        {(__bridge id)kSecReturnPersistentRef, (keychain ?$true :$false)} );
     SecKeyRef key = (SecKeyRef)[MYKeychain _addItemWithInfo: info];
     if (!key) {
-        [self release];
         return nil;
     }
     self = [self initWithKeyRef: (SecKeyRef)key];
@@ -50,12 +49,6 @@
 
 - (id) initWithKeyData: (NSData*)data {
     return [self _initWithKeyData: data forKeychain: nil];
-}
-
-- (void) dealloc
-{
-    [_keyData release];
-    [super dealloc];
 }
 
 
@@ -84,16 +77,16 @@
     if (_keyData)
         return _keyData;
     
-    NSDictionary *info = $dict( {(id)kSecValueRef, (id)self.keyRef},
-                              //{(id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
-                                {(id)kSecReturnData, $true} );
+    NSDictionary *info = $dict( {(__bridge id)kSecValueRef, (__bridge id)self.keyRef},
+                              //{(__bridge id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
+                                {(__bridge id)kSecReturnData, $true} );
     CFDataRef data;
-    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching")) {
+    if (!check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef*)&data), @"SecItemCopyMatching")) {
         Log(@"SecItemCopyMatching failed; input = %@", info);
         return nil;
     } else {
         Assert(data!=NULL);
-        _keyData = NSMakeCollectable(data);
+        _keyData = (NSData*)CFBridgingRelease(data);
         return _keyData;
     }
     // The format of this data is not documented. There's been some reverse-engineering:
@@ -116,14 +109,14 @@
 
 
 - (id) _attribute: (CFTypeRef)attribute {
-    NSDictionary *info = $dict({(id)kSecValueRef, (id)self.keyRef},
-            {(id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
-                               {(id)kSecReturnAttributes, $true});
+    NSDictionary *info = $dict({(__bridge id)kSecValueRef, (__bridge id)self.keyRef},
+            {(__bridge id)kSecAttrIsPermanent, (self.isPersistent ?$true :$false)},
+                               {(__bridge id)kSecReturnAttributes, $true});
     CFDictionaryRef attrs = NULL;
-    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
+    if (!check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
         return nil;
     CFTypeRef rawValue = CFDictionaryGetValue(attrs,attribute);
-    id value = rawValue ?[[(id)CFMakeCollectable(rawValue) retain] autorelease] :nil;
+    id value = rawValue ?(id)CFBridgingRelease(CFRetain(rawValue)) :nil;
     CFRelease(attrs);
     return value;
 }
@@ -131,9 +124,9 @@
 - (BOOL) setValue: (NSString*)value ofAttribute: (MYKeychainAttrType)attribute {
     if (!value)
         value = (id)[NSNull null];
-    NSDictionary *query = $dict( {(id)kSecValueRef, (id)self.keyRef} );
-    NSDictionary *attrs = $dict( {(id)attribute, value} );
-    return check(SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attrs), @"SecItemUpdate");
+    NSDictionary *query = $dict( {(__bridge id)kSecValueRef, (__bridge id)self.keyRef} );
+    NSDictionary *attrs = $dict( {(__bridge id)attribute, value} );
+    return check(SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)attrs), @"SecItemUpdate");
 }
 
 
@@ -175,7 +168,7 @@
                             outputBuf, &outputLength);
     if (err) {
         free(outputBuf);
-        Warn(@"%scrypting failed (%i)", (operation ?"En" :"De"), err);
+        Warn(@"%scrypting failed (%ld)", (operation ?"En" :"De"), err);
         // Note: One of the errors I've seen is -9809, which is errSSLCrypto (SecureTransport.h)
         return nil;
     } else

@@ -40,27 +40,27 @@
 @property (readonly) SecCertificateRef certificateRef;
 
 /** The certificate's data. */
-@property (readonly) NSData *certificateData;
+@property (weak, readonly) NSData *certificateData;
 
 /** The certificate's public key. */
-@property (readonly) MYPublicKey *publicKey;
+@property (weak, readonly) MYPublicKey *publicKey;
 
 /** The certificate's public key's SHA-1 digest.
     This is often used as a compact (20-byte) identifier for the certificate. */
-@property (readonly) MYSHA1Digest *publicKeyDigest;
+@property (weak, readonly) MYSHA1Digest *publicKeyDigest;
 
 /** The Identity (if any) that this Certificate is part of.
     In other words, if the matching private key is in the Keychain, this allows you to reach it. */
-@property (readonly) MYIdentity *identity;
+@property (weak, readonly) MYIdentity *identity;
 
 /** The metadata of the certificate, like the subject name, expiration date and capabilities. */
-@property (readonly) MYCertificateInfo *info;
+@property (weak, readonly) MYCertificateInfo *info;
 
 /** The common name of the subject (owner) of the certificate. */
-@property (readonly) NSString *commonName;
+@property (weak, readonly) NSString *commonName;
 
 /** The list (if any) of the subject's email addresses. */
-@property (readonly) NSArray *emailAddresses;
+@property (weak, readonly) NSArray *emailAddresses;
 
 /** Determines whether the certificate is trusted for general use.
     (This is really just a convenience that calls -evaluateTrustWithPolicy: using the X509Policy.

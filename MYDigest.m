@@ -7,6 +7,7 @@
 //
 
 #import "MYDigest.h"
+#import "Test.h"
 #import <CommonCrypto/CommonDigest.h>
 
 #if TARGET_OS_IPHONE
@@ -45,19 +46,13 @@
 - (void) dealloc
 {
     if(_rawDigest) free(_rawDigest);
-    [super dealloc];
 }
 
-- (void) finalize
-{
-    if(_rawDigest) free(_rawDigest);
-    [super finalize];
-}
 
 
 - (id) copyWithZone: (NSZone*)zone
 {
-    return [self retain];
+    return self;
 }
 
 - (id)initWithCoder:(NSCoder *)decoder
@@ -75,7 +70,7 @@
 
 
 + (id) digestFromDigestData: (NSData*)digestData {
-    return [[[self alloc] initWithRawDigest: digestData.bytes length: digestData.length] autorelease];
+    return [[self alloc] initWithRawDigest: digestData.bytes length: digestData.length];
 }
 
 + (id) digestFromHexString: (NSString*)hexString
@@ -90,7 +85,7 @@
             return nil;
         cStr += 2;
     }
-    return [[[self alloc] initWithRawDigest: &digest length: length] autorelease];
+    return [[self alloc] initWithRawDigest: &digest length: length];
 }
 
 + (id) digestOfData: (NSData*)data {
@@ -101,7 +96,7 @@
     const size_t digestLength = [self length];
     uint8_t digest[digestLength];
     [self computeDigest: digest ofBytes: bytes length: length];
-    return [[[self alloc] initWithRawDigest: &digest length: digestLength] autorelease];
+    return [[self alloc] initWithRawDigest: &digest length: digestLength];
 }
 
 - (uint32_t) algorithm {
@@ -155,8 +150,7 @@
     char *dst = &out[0];
     for( size_t i=0; i<length; i+=1 )
         dst += sprintf(dst,"%02X", bytes[i]);
-    return [[[NSString alloc] initWithBytes: out length: 2*length encoding: NSASCIIStringEncoding]
-            autorelease];
+    return [[NSString alloc] initWithBytes: out length: 2*length encoding: NSASCIIStringEncoding];
 }
 
 - (NSString*) abbreviatedHexString
@@ -190,7 +184,7 @@
 }
 
 + (MYSHA1Digest*) digestFromRawSHA1Digest: (const RawSHA1Digest*)rawDigest {
-    return [[[self alloc] initWithRawSHA1Digest: rawDigest] autorelease];
+    return [[self alloc] initWithRawSHA1Digest: rawDigest];
 }
 
 - (const RawSHA1Digest*) rawSHA1Digest {
@@ -222,7 +216,7 @@
 }
 
 + (MYSHA256Digest*) digestFromRawSHA256Digest: (const RawSHA256Digest*)rawDigest {
-    return [[[self alloc] initWithRawSHA256Digest: rawDigest] autorelease];
+    return [[self alloc] initWithRawSHA256Digest: rawDigest];
 }
 
 - (const RawSHA256Digest*) rawSHA256Digest {
@@ -258,7 +252,7 @@ static void testDigestOf( NSData *src, NSString *expectedSHA1Hex, NSString *expe
     CAssert(src, @"Couldn't load test file");
     MYSHA1Digest *d1 = [src my_SHA1Digest];
     NSString *hex = d1.hexString;
-    Log(@"Digesting %lu bytes to %@",src.length,hex);
+    Log(@"Digesting %lu bytes to %@",(unsigned long)src.length,hex);
     if( expectedSHA1Hex )
         CAssertEqual(hex,expectedSHA1Hex);
     MYSHA1Digest *d2 = (MYSHA1Digest*) [MYSHA1Digest digestFromHexString: hex];
@@ -267,7 +261,7 @@ static void testDigestOf( NSData *src, NSString *expectedSHA1Hex, NSString *expe
 
     MYSHA256Digest *d256 = [src my_SHA256Digest];
     hex = d256.hexString;
-    Log(@"Digesting %lu bytes to %@",src.length,hex);
+    Log(@"Digesting %lu bytes to %@",(unsigned long)src.length,hex);
     if( expectedSHA256Hex )
         CAssertEqual(hex,expectedSHA256Hex);
     MYSHA256Digest *d256_2 = (MYSHA256Digest*) [MYSHA256Digest digestFromHexString: hex];

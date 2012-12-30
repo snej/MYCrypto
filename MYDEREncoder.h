@@ -21,7 +21,7 @@
 - (id) initWithRootObject: (id)object;
 + (NSData*) encodeRootObject: (id)rootObject error: (NSError**)outError;
 
-@property (readonly) NSData* output;
-@property (readonly, retain) NSError *error;
+@property (weak, readonly) NSData* output;
+@property (readonly, strong) NSError *error;
 
 @end

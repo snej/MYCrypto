@@ -58,7 +58,6 @@ static MYCertificateInfo* testCertData(NSData *certData, BOOL selfSigned) {
     MYPublicKey *certKey = cert.publicKey;
     Log(@"MYCertificate public key = %@", certKey);
     CAssertEqual(certKey.keyData, pcert.subjectPublicKey.keyData);
-    [cert release];
     /*TEMP
     Log(@"Adding to keychain...");
     cert = [[MYKeychain defaultKeychain] importCertificate: certData];
@@ -198,8 +197,6 @@ TestCase(CreateCert) {
         CAssertEqual(identity.keychain, [MYKeychain defaultKeychain]);
         CAssertEqual(identity.privateKey.publicKeyDigest, privateKey.publicKeyDigest);
         CAssert([identity isEqualToCertificate: cert]);
-        
-        [pcert release];
         
     } @finally {
         // [privateKey removeFromKeychain];

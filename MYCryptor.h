@@ -70,11 +70,11 @@
 /** Setting this property tells the cryptor to send its output to the stream,
     instead of accumulating it in the outputData property.
     You can change this <i>before</i> the first call to -addData:, but not after. */
-@property (retain) NSOutputStream *outputStream;
+@property (strong) NSOutputStream *outputStream;
 
 /** The error state, if any, of this cryptor.
     After -addData: or -finish: returns NO, check this property. */
-@property (readonly, retain) NSError *error;
+@property (readonly, strong) NSError *error;
 
 /** Adds input data.
     @return  YES if the operation succeeded, NO if it failed. */
@@ -88,7 +88,7 @@
 /** The output of the cryptor. Accessing this property implicitly calls -finish, so don't
     do it until you've added all of the input. (And don't add any more input afterwards.)
     This property will be nil if the outputStream property has been set. */
-@property (readonly) NSData *outputData;
+@property (weak, readonly) NSData *outputData;
 
 @end
 

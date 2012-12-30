@@ -38,7 +38,7 @@ typedef SecKeychainItemRef MYKeychainItemRef;
 @property (readonly) MYKeychainItemRef keychainItemRef;
 
 /** The Keychain that contains this object, or nil. */
-@property (readonly) MYKeychain *keychain;
+@property (weak, readonly) MYKeychain *keychain;
 
 /** Removes the item from its keychain, if any. */
 - (BOOL) removeFromKeychain;

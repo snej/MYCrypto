@@ -27,7 +27,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
 
 
 @interface MYCryptor ()
-@property (readwrite, retain) NSError *error;
+@property (readwrite, strong) NSError *error;
 @end
 
 
@@ -98,18 +98,10 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
 {
     if (_cryptor)
         CCCryptorRelease(_cryptor);
-    [_key autorelease];
-    [_output autorelease];
-    [_outputStream release];
-    [super dealloc];
+    _key = _key;
+    _output = _output;
 }
 
-- (void) finalize
-{
-    if (_cryptor)
-        CCCryptorRelease(_cryptor);
-    [super finalize];
-}
 
 
 @synthesize key=_key, algorithm=_algorithm, options=_options,
@@ -221,7 +213,6 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
 - (NSData*) outputData {
     if (_cryptor) [self finish];
     if(_error) {
-        [_output release];
         _output = nil;
     }
     return _output;
@@ -231,7 +222,7 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
     NSData *output = self.outputData;
     if (output) {
         NSString *str = [[NSString alloc] initWithData: output encoding: NSUTF8StringEncoding];
-        return [str autorelease];
+        return str;
     } else
         return nil;
 }
@@ -292,7 +283,6 @@ TestCase(MYCryptor) {
     NSData *encrypted = enc.outputData;
     CAssertEqual(enc.error, nil);
     CAssert(encrypted.length > 0);
-    [enc release];
     Log(@"Encrypted = %@", encrypted);
     
     // Decryption:
@@ -301,7 +291,6 @@ TestCase(MYCryptor) {
     CAssert([dec addData: encrypted]);
     NSString *decrypted = dec.outputString;
     CAssertEqual(dec.error, nil);
-    [dec release];
     Log(@"Decrypted = '%@'", decrypted);
     CAssertEqual(decrypted, @"This is a test. This is only a test.");
     
@@ -316,9 +305,8 @@ TestCase(MYCryptor) {
     CAssert([enc addString: @"This is only a test."]);
     CAssert([enc finish]);
     CAssertEqual(enc.error, nil);
-    encrypted = [[enc.outputStream propertyForKey: NSStreamDataWrittenToMemoryStreamKey] retain];
+    encrypted = [enc.outputStream propertyForKey: NSStreamDataWrittenToMemoryStreamKey];
     CAssert(encrypted.length > 0);
-    [enc release];
     Log(@"Encrypted = %@", encrypted);
     
     dec = [[MYCryptor alloc] initDecryptorWithKey: key algorithm: kCCAlgorithmAES128];
@@ -329,13 +317,10 @@ TestCase(MYCryptor) {
     CAssert([dec finish]);
     CAssertEqual(dec.error, nil);
     NSData *decryptedData = [dec.outputStream propertyForKey: NSStreamDataWrittenToMemoryStreamKey];
-    [dec release];
     decrypted = [[NSString alloc] initWithData: decryptedData
                                                       encoding: NSUTF8StringEncoding];
     Log(@"Decrypted = '%@'", decrypted);
     CAssertEqual(decrypted, @"This is a test. This is only a test.");
-    [encrypted release];
-    [decrypted release];
 }
 
 

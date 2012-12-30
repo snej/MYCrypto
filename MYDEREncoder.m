@@ -14,6 +14,7 @@
 #import "MYBERParser.h"
 #import "MYOID.h"
 #import "MYErrorUtils.h"
+#import "Test.h"
 
 
 #define MYDEREncoderException @"MYDEREncoderException"
@@ -21,7 +22,7 @@
 
 @interface MYDEREncoder ()
 - (void) _encode: (id)object;
-@property (retain) NSError *error;
+@property (strong) NSError *error;
 
 /* Forces use of PrintableString tag for ASCII strings that contain characters not valid
     for that encoding (notably '@'). Provided to get byte-for-byte compatibility with certs
@@ -38,7 +39,7 @@
     Assert(rootObject != nil);
     self = [super init];
     if (self != nil) {
-        _rootObject = [rootObject retain];
+        _rootObject = rootObject;
     }
     return self;
 }
@@ -46,18 +47,10 @@
 + (NSData*) encodeRootObject: (id)rootObject error: (NSError**)outError {
     MYDEREncoder *encoder = [[self alloc] initWithRootObject: rootObject];
     NSData *output = [encoder.output copy];
-    if (outError) *outError = [[encoder.error retain] autorelease];
-    [encoder release];
-    return [output autorelease];
+    if (outError) *outError = encoder.error;
+    return output;
 }
 
-- (void) dealloc
-{
-    [_rootObject release];
-    [_output release];
-    [_error release];
-    [super dealloc];
-}
 
 static unsigned sizeOfUnsignedInt (UInt64 n) {
     unsigned bytes = 0;
@@ -195,7 +188,7 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
 - (void) _encodeString: (NSString*)string {
     static NSMutableCharacterSet *kNotPrintableCharSet;
     if (!kNotPrintableCharSet) {
-        kNotPrintableCharSet = [[NSMutableCharacterSet characterSetWithCharactersInString: @" '()+,-./:=?"] retain];
+        kNotPrintableCharSet = [NSMutableCharacterSet characterSetWithCharactersInString: @" '()+,-./:=?"];
         [kNotPrintableCharSet formUnionWithCharacterSet: [NSCharacterSet alphanumericCharacterSet]];
         [kNotPrintableCharSet invert];
     }
@@ -232,7 +225,6 @@ static unsigned encodeSignedInt (SInt64 n, UInt8 buf[]) {
     for (id object in collection)
         [subEncoder _encode: object];
     [self _writeTag: tag class: tagClass constructed: YES data: subEncoder.output];
-    [subEncoder release];
 }
 
 
@@ -369,7 +361,6 @@ TestCase(EncodeCert) {
     MYDEREncoder *encoder = [[MYDEREncoder alloc] initWithRootObject: certObjects];
     encoder._forcePrintableStrings = YES;       // hack for compatibility with the way CDSA writes ASN.1
     NSData *encoded = encoder.output;
-    [encoder release];
     CAssertNil(error);
     id reDecoded = MYBERParse(encoded, &error);
     CAssertNil(error);

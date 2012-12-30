@@ -30,15 +30,8 @@
 }
 
 
-- (void) dealloc
-{
-    [_keyData release];
-    [super dealloc];
-}
-
-
 - (NSString*) description {
-    NSString* keyStr = [[[NSString alloc] initWithData: _keyData encoding: NSUTF8StringEncoding] autorelease];
+    NSString* keyStr = [[NSString alloc] initWithData: _keyData encoding: NSUTF8StringEncoding];
     return $sprintf(@"%@[%@]", [self class], keyStr);
 }
 
@@ -54,7 +47,7 @@
 
 
 + (MYMockPrivateKey*) createKeyPair {
-    return [[[MYMockPrivateKey alloc] init] autorelease];
+    return [[MYMockPrivateKey alloc] init];
 }
 
 
@@ -71,13 +64,6 @@
 {
     NSString *key = [NSString stringWithFormat: @"MOCK_%08lX:", random()];
     return [self initWithKeyData: [key dataUsingEncoding:NSUTF8StringEncoding]];
-}
-
-
-- (void) dealloc
-{
-    [_publicKey release];
-    [super dealloc];
 }
 
 
@@ -153,7 +139,6 @@ TestCase(MYMockPrivateKey) {
     CAssertEqual(pub.keyData, pubKeyData);
     CAssertEqual(pub.publicKeyDigest, pubKeyDigest);
     CAssert( [pub verifySignature: sig ofData: data] );
-    [pub release];
     Log(@"Verified signature from reconstituted key.");
 }
 

@@ -37,15 +37,15 @@
 + (id) digestOfBytes: (const void*)bytes length: (size_t)length;
 
 /** Returns the digest as an NSData object. */
-@property (readonly) NSData *asData;
+@property (weak, readonly) NSData *asData;
 
 /** Returns the digest as a hex string. */
-@property (readonly) NSString *hexString;
+@property (weak, readonly) NSString *hexString;
 
 /** Returns the first 8 digits (32 bits) of the digest's hex string, followed by "...".
     This is intended only for use in log messages or object descriptions, since
     32 bits isn't nearly enough to provide any useful uniqueness. */
-@property (readonly) NSString *abbreviatedHexString;
+@property (weak, readonly) NSString *abbreviatedHexString;
 
 /** The algorithm that created this digest. There is no universal way to name these,
     so on Mac OS values are interpreted as CSSM_ALGORITHMS; on iOS, as CCHmacAlgorithm.

@@ -18,14 +18,13 @@
 
 /** Creates a MYIdentity object for an existing Keychain identity reference. */
 + (MYIdentity*) identityWithIdentityRef: (SecIdentityRef)identityRef {
-    return [[[self alloc] initWithIdentityRef: identityRef] autorelease];
+    return [[self alloc] initWithIdentityRef: identityRef];
 }
 
 - (id) initWithIdentityRef: (SecIdentityRef)identityRef {
     Assert(identityRef);
     SecCertificateRef certificateRef;
     if (!check(SecIdentityCopyCertificate(identityRef, &certificateRef), @"SecIdentityCopyCertificate")) {
-        [self release];
         return nil;
     }
     self = [super initWithCertificateRef: certificateRef];
@@ -44,20 +43,17 @@
 #if !MYCRYPTO_USE_IPHONE_API
         OSStatus err = SecIdentityCreateWithCertificate(NULL, certificateRef, &_identityRef);
         if (err == errKCItemNotFound || !check(err, @"SecIdentityCreateWithCertificate")) {
-            [self release];
             return nil;
         }
 #else
         MYSHA1Digest *keyDigest = self.publicKey.publicKeyDigest;
         if (!keyDigest) {
             Warn(@"MYIdentity: Couldn't get key digest of cert %@",certificateRef);
-            [self release];
             return nil;
         }
         _identityRef = [self.keychain identityWithDigest: keyDigest].identityRef;
         if (!_identityRef) {
             Warn(@"MYIdentity: Couldn't look up identity for cert %@ with %@",certificateRef, keyDigest);
-            [self release];
             return nil;
         }
         
@@ -65,7 +61,7 @@
         SecCertificateRef identitysCert = NULL;
         SecIdentityCopyCertificate(_identityRef, &identitysCert);
         CFDataRef identitysData = SecCertificateCopyData(identitysCert);
-        AssertEqual(self.certificateData, (NSData*)identitysData);
+        AssertEqual(self.certificateData, (__bridge NSData*)identitysData);
         CFRelease(identitysData);
         CFRelease(identitysCert);
         
@@ -93,7 +89,7 @@ static SecIdentityRef importIdentity(NSData *data,
                                        "Please enter it:";
     
     SecExternalItemType type = kSecItemTypeAggregate;
-    *outError = SecKeychainItemImport((CFDataRef)data, NULL, &inputFormat, &type,
+    *outError = SecKeychainItemImport((__bridge CFDataRef)data, NULL, &inputFormat, &type,
                                       0, &params, keychain, &items);
     if (!check(*outError, @"SecKeychainItemImport"))
         return NULL;
@@ -113,20 +109,21 @@ static SecIdentityRef importIdentity(NSData *data,
 }
 
 
-- (id) _initWithData: (NSData*)data
-              format: (SecExternalFormat)format
-            keychain: (MYKeychain*)keychain
-               error: (NSError**)outError
+- (id) initWithData: (NSData*)data
+             format: (SecExternalFormat)format
+           keychain: (MYKeychain*)keychain
+              error: (NSError**)outError
 {
     OSStatus err;
     SecIdentityRef idRef = importIdentity(data, keychain.keychainRef, format, &err);
     if (!idRef) {
-        [self release];
         MYReturnError(outError, err, NSOSStatusErrorDomain, @"%@", 
                       MYErrorName(NSOSStatusErrorDomain, err));
         return nil;
     }
-    return [self initWithIdentityRef: idRef];
+    self = [self initWithIdentityRef: idRef];
+    CFRelease(idRef);
+    return self;
 }
 #endif
 
@@ -134,14 +131,8 @@ static SecIdentityRef importIdentity(NSData *data,
 - (void) dealloc
 {
     if (_identityRef) CFRelease(_identityRef);
-    [super dealloc];
 }
 
-- (void) finalize
-{
-    if (_identityRef) CFRelease(_identityRef);
-    [super finalize];
-}
 
 
 @synthesize identityRef=_identityRef;
@@ -153,7 +144,7 @@ static SecIdentityRef importIdentity(NSData *data,
     MYPrivateKey *privateKey = [[MYPrivateKey alloc] _initWithKeyRef: keyRef
                                                            publicKey: self.publicKey];
     CFRelease(keyRef);
-    return [privateKey autorelease];
+    return privateKey;
 }
 
 
@@ -172,14 +163,14 @@ static SecIdentityRef importIdentity(NSData *data,
     SecItemImportExportKeyParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
         .flags = kSecKeySecurePassphrase,
-        .alertTitle = (CFStringRef)title,
-        .alertPrompt = (CFStringRef)prompt
+        .alertTitle = (__bridge CFStringRef)title,
+        .alertPrompt = (__bridge CFStringRef)prompt
     };
     CFDataRef data = NULL;
     if (check(SecItemExport(self.identityRef,
                             format, (withPEM ?kSecItemPemArmour :0),
                             &params, &data), @"SecItemExport"))
-        return [(id)CFMakeCollectable(data) autorelease];
+        return (NSData*)CFBridgingRelease(data);
     else
         return nil;
 }
@@ -189,7 +180,7 @@ static SecIdentityRef importIdentity(NSData *data,
 {
     Assert(name);
     SecIdentityRef identityRef;
-    OSStatus err = SecIdentityCopyPreference((CFStringRef)name, 0, NULL, &identityRef);
+    OSStatus err = SecIdentityCopyPreference((__bridge CFStringRef)name, 0, NULL, &identityRef);
     if (err==errKCItemNotFound || !check(err,@"SecIdentityCopyPreference") || !identityRef)
         return nil;
     return [self identityWithIdentityRef: identityRef];
@@ -197,7 +188,7 @@ static SecIdentityRef importIdentity(NSData *data,
 
 - (BOOL) makePreferredIdentityForName: (NSString*)name {
     Assert(name);
-    return check(SecIdentitySetPreference(_identityRef, (CFStringRef)name, 0),
+    return check(SecIdentitySetPreference(_identityRef, (__bridge CFStringRef)name, 0),
                  @"SecIdentitySetPreference");
 }
 

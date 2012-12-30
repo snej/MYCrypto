@@ -29,7 +29,6 @@
         if (outError)
             *outError = self.error;
         if( _error ) {
-            [self release];
             return nil;
         }
     }
@@ -42,7 +41,6 @@
     if (self != nil) {
         OSStatus err = CMSDecoderCreate(&_decoder);
         if( err ) {
-            [self release];
             self = nil;
         }
     }
@@ -53,7 +51,6 @@
 {
     if( _decoder ) CFRelease(_decoder);
     if (_policy) CFRelease(_policy);
-    [super dealloc];
 }
 
 
@@ -103,7 +100,7 @@
 {
     CFDataRef data=NULL;
     if( checksave( (*function)(_decoder, &data) ) )
-       return [(NSData*)CFMakeCollectable(data) autorelease];
+       return (NSData*)CFBridgingRelease(data);
     else
         return nil;
 }
@@ -117,7 +114,7 @@
 - (void) setDetachedContent: (NSData*)detachedContent
 {
     if( ! _error )
-        checksave( CMSDecoderSetDetachedContent(_decoder, (CFDataRef)detachedContent) );
+        checksave( CMSDecoderSetDetachedContent(_decoder, (__bridge CFDataRef)detachedContent) );
 }
 
 - (CSSM_OID) contentType
@@ -155,7 +152,6 @@
                                                        index: i
                                                       policy: _policy];
         [signers addObject: signer];
-        [signer release];
     }
     return signers;
 }
@@ -241,7 +237,6 @@
     if(_decoder) CFRelease(_decoder);
     if(_policy) CFRelease(_policy);
     if(_trust) CFRelease(_trust);
-    [super dealloc];
 }
 
 - (void) _getInfo {
@@ -280,7 +275,7 @@
     
     CFStringRef email=NULL;
     if( CMSDecoderCopySignerEmailAddress(_decoder, _index, &email) == noErr )
-        return [(NSString*)CFMakeCollectable(email) autorelease];
+        return (NSString*)CFBridgingRelease(email);
     return nil;
 }
 
@@ -295,7 +290,7 @@
     if( err == noErr )
         return [MYCertificate certificateWithCertificateRef: certRef];
     else {
-        Warn(@"CMSDecoderCopySignerCert returned err %i",err);
+        Warn(@"CMSDecoderCopySignerCert returned err %ld", (long)err);
         return nil;
     }
 }
@@ -336,7 +331,7 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
     Log(@"Testing MYEncoder/Decoder %@...",title);
     NSError *error;
     NSData *encoded = [MYEncoder encodeData: source signer: signer recipient: recipient error: &error];
-    CAssertEq(error,nil);
+    CAssertNil(error);
     CAssert([encoded length]);
     Log(@"MYEncoder encoded %lu bytes into %lu bytes", source.length,encoded.length);
     Log(@"Decoding...");
@@ -345,11 +340,11 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
     [d addData: encoded];
     [d finish];
 
-    CAssertEq(d.error,nil);
+    CAssertNil(d.error);
     Log(@"%@", d.dump);
     CAssert(d.content);
     CAssert([d.content isEqual: source]);
-    CAssertEq(d.detachedContent,nil);
+    CAssertNil(d.detachedContent);
     CAssertEq(d.isSigned,(signer!=nil));
     CAssertEq(d.isEncrypted,(recipient!=nil));
 
@@ -364,7 +359,6 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
         CAssertEq(d.certificates.count, 0U);
         CAssertEq(d.signers.count,0U);
     }
-    [d release];
 }
 
 

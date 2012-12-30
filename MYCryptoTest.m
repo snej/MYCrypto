@@ -38,7 +38,7 @@ TestCase(MYKeychain) {
     Log(@"All-keychains = %@", kc);
     CAssert(kc);
 #if !MYCRYPTO_USE_IPHONE_API
-    CAssertEq(kc.path,nil);
+    CAssertNil(kc.path);
 #endif
 }
 
@@ -155,7 +155,7 @@ TestCase(EnumerateIdentities) {
 
 
 static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeychain *inKeychain ) {
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    @autoreleasepool {
     MYSymmetricKey *key = nil;
     @try{
         Log(@"--- Testing %3u-bit #%i %s", sizeInBits, (int)algorithm,
@@ -181,7 +181,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
         Log(@"Testing encryption / decryption ...");
         NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
         NSData *encrypted = [key encryptData: cleartext];
-        Log(@"Encrypted = %u bytes: %@", encrypted.length, encrypted);
+        Log(@"Encrypted = %lu bytes: %@", (unsigned long)encrypted.length, encrypted);
         CAssert(encrypted.length >= cleartext.length);
         NSData *decrypted = [key decryptData: encrypted];
         CAssertEqual(decrypted, cleartext);
@@ -192,7 +192,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
             cleartext = [NSData dataWithContentsOfFile: @"/Library/Desktop Pictures/Nature/Zen Garden.jpg"];
         CAssert(cleartext, @"Oops, can't load desktop pic used by testSymmetricKey");
         encrypted = [key encryptData: cleartext];
-        Log(@"Encrypted = %u bytes", encrypted.length);
+        Log(@"Encrypted = %lu bytes", (unsigned long)encrypted.length);
         CAssert(encrypted.length >= cleartext.length);
         decrypted = [key decryptData: encrypted];
         CAssertEqual(decrypted, cleartext);
@@ -207,7 +207,6 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
         CAssertEq(key2.keySizeInBits, sizeInBits);
         decrypted = [key2 decryptData: encrypted];
         CAssertEqual(decrypted, cleartext);
-        [key2 release];
     #endif
 
     #if 0 // !TARGET_OS_IPHONE
@@ -235,7 +234,7 @@ static void testSymmetricKey( CCAlgorithm algorithm, unsigned sizeInBits, MYKeyc
     }@finally{
         [key removeFromKeychain];
     }
-    [pool drain];
+    }
 }
 
 
@@ -282,7 +281,7 @@ TestCase(MYSymmetricKeyPassphrase) {
     Log(@"Testing encryption / decryption ...");
     NSData *cleartext = [@"This is a test. This is only a test." dataUsingEncoding: NSUTF8StringEncoding];
     NSData *encrypted = [key encryptData: cleartext];
-    Log(@"Encrypted = %u bytes: %@", encrypted.length, encrypted);
+    Log(@"Encrypted = %lu bytes: %@", (unsigned long)encrypted.length, encrypted);
     CAssert(encrypted.length >= cleartext.length);
     NSData *decrypted = [key decryptData: encrypted];
     CAssertEqual(decrypted, cleartext);
@@ -313,7 +312,7 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     CAssert(publicKey.keyRef);
     
     NSData *pubKeyData = publicKey.keyData;
-    Log(@"Public key = %@ (%u bytes)",pubKeyData,pubKeyData.length);
+    Log(@"Public key = %@ (%lu bytes)",pubKeyData, (unsigned long)pubKeyData.length);
     CAssert(pubKeyData);
     
     NSData *modulus;
@@ -334,13 +333,13 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     // Let's sign data:
     NSData *data = [@"This is a test. This is only a test!" dataUsingEncoding: NSUTF8StringEncoding];
     NSData *sig = [pair signData: data];
-    Log(@"Signature = %@ (%u bytes)",sig,sig.length);
+    Log(@"Signature = %@ (%lu bytes)",sig,(unsigned long)sig.length);
     CAssert(sig);
     CAssert( [publicKey verifySignature: sig ofData: data] );
     
     // Now let's encrypt...
     NSData *crypted = [publicKey rawEncryptData: data];
-    Log(@"Encrypted = %@ (%u bytes)",crypted,crypted.length);
+    Log(@"Encrypted = %@ (%lu bytes)",crypted,(unsigned long)crypted.length);
     CAssert(crypted);
     CAssertEqual([pair rawDecryptData: crypted], data);
     Log(@"Verified decryption.");
@@ -348,7 +347,6 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     // Test creating a standalone public key:
     MYPublicKey *pub = [[MYPublicKey alloc] initWithKeyRef: publicKey.keyRef];
     CAssert( [pub verifySignature: sig ofData: data] );
-    [pub release];
     Log(@"Verified signature.");
     
     // Test creating a public key from data:
@@ -358,14 +356,12 @@ static void TestUseKeyPair(MYPrivateKey *pair) {
     CAssertEqual(pub.keyData, pubKeyData);
     CAssertEqual(pub.publicKeyDigest, pubKeyDigest);
     CAssert( [pub verifySignature: sig ofData: data] );
-    [pub release];
     Log(@"Verified signature from reconstituted key.");
     
     // Test creating a public key from modulus+exponent:
     Log(@"Reconstituting public key from modulus+exponent...");
     pub = [[MYPublicKey alloc] initWithModulus: modulus exponent: exponent];
     CAssertEqual(pub.keyData, pubKeyData);
-    [pub release];
 }
 
 
@@ -378,7 +374,7 @@ static void TestWrapSessionKey( MYPrivateKey *privateKey ) {
 
     Log(@"Wrapping session key %@, %@", sessionKey, sessionKey.keyData);
     NSData *wrapped = [privateKey.publicKey wrapSessionKey: sessionKey];
-    Log(@"Wrapped session key = %u bytes: %@", wrapped.length,wrapped);
+    Log(@"Wrapped session key = %lu bytes: %@", (unsigned long)wrapped.length,wrapped);
     CAssert(wrapped.length >= 128/8);
     
     MYSymmetricKey *unwrappedKey = [privateKey unwrapSessionKey: wrapped
@@ -492,7 +488,7 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
             privKeyData = [pair _exportKeyInFormat: kSecFormatWrappedOpenSSL
                                           withPEM: YES
                                        passphrase: passphrase];
-        Log(@"Exported data = %@ (%u bytes)", privKeyData,privKeyData.length);
+        Log(@"Exported data = %@ (%lu bytes)", privKeyData,(unsigned long)privKeyData.length);
         CAssert(privKeyData);
         [privKeyData writeToFile: @"ExportedPrivKey" atomically: YES];
 #endif
@@ -518,11 +514,10 @@ static void testKeyPairExportWithPrompt(BOOL withPrompt) {
             pair = [keychain importPublicKey: pubKeyData 
                                   privateKey: privKeyData];
         } else {
-            pair = [[[MYPrivateKey alloc] _initWithKeyData: privKeyData
-                                             publicKeyData: pubKeyData
-                                               forKeychain: keychain.keychainRefOrDefault
-                                                passphrase: passphrase]
-                    autorelease];
+            pair = [[MYPrivateKey alloc] _initWithKeyData: privKeyData
+                                            publicKeyData: pubKeyData
+                                              forKeychain: keychain.keychainRefOrDefault
+                                               passphrase: passphrase];
         }
         CAssert(pair);
         CAssertEqual(pair.publicKey.keyData, pubKeyData);

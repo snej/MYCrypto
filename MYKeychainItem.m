@@ -52,19 +52,13 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 - (void) dealloc
 {
     if (_itemRef) CFRelease(_itemRef);
-    [super dealloc];
 }
 
-- (void) finalize
-{
-    if (_itemRef) CFRelease(_itemRef);
-    [super finalize];
-}
 
 - (id) copyWithZone: (NSZone*)zone {
     // As keys are immutable, it's not necessary to make copies of them. This makes it more efficient
     // to use instances as NSDictionary keys or store them in NSSets.
-    return [self retain];
+    return self;
 }
 
 - (BOOL) isEqual: (id)obj {
@@ -82,7 +76,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 
 - (NSArray*) _itemList {
-    return $array((id)_itemRef);
+    return $array((__bridge id)_itemRef);
 }
 
 
@@ -94,7 +88,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
     SecKeychainRef keychainRef = NULL;
     if (check(SecKeychainItemCopyKeychain((SecKeychainItemRef)_itemRef, &keychainRef), @"SecKeychainItemCopyKeychain")) {
         if (keychainRef) {
-            keychain = [[[MYKeychain alloc] initWithKeychainRef: keychainRef] autorelease];
+            keychain = [[MYKeychain alloc] initWithKeychainRef: keychainRef];
             CFRelease(keychainRef);
         }
     }
@@ -105,7 +99,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 - (BOOL) removeFromKeychain {
     OSStatus err;
 #if MYCRYPTO_USE_IPHONE_API
-    err = SecItemDelete((CFDictionaryRef) $dict( {(id)kSecValueRef, (id)_itemRef} ));
+    err = SecItemDelete((__bridge CFDictionaryRef) $dict( {(__bridge id)kSecValueRef, (__bridge id)_itemRef} ));
     if (!err)
         _isPersistent = NO;
 #else
@@ -176,13 +170,13 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 + (NSData*) _getAttribute: (MYKeychainAttrType)attr ofItem: (MYKeychainItemRef)item {
     NSData *value = nil;
 #if MYCRYPTO_USE_IPHONE_API
-    NSDictionary *info = $dict( {(id)kSecValueRef, (id)item},
-                                {(id)kSecReturnAttributes, $true} );
+    NSDictionary *info = $dict( {(__bridge id)kSecValueRef, (__bridge id)item},
+                                {(__bridge id)kSecReturnAttributes, $true} );
     CFDictionaryRef attrs;
-    if (!check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
+    if (!check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef*)&attrs), @"SecItemCopyMatching"))
         return nil;
     CFTypeRef rawValue = CFDictionaryGetValue(attrs,attr);
-    value = rawValue ?[[(id)CFMakeCollectable(rawValue) retain] autorelease] :nil;
+    value = rawValue ? CFBridgingRelease(CFRetain(rawValue)) :nil;
     CFRelease(attrs);
     
 #else
@@ -217,7 +211,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
                                            encoding: NSUTF8StringEncoding];
     if (!str)
         Warn(@"MYKeychainItem: Couldn't decode attr value as string");
-    return [str autorelease];
+    return str;
 }
 
 - (NSString*) stringValueOfAttribute: (MYKeychainAttrType)attr {
@@ -234,9 +228,9 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 {
 #if MYCRYPTO_USE_IPHONE_API
     id value = stringValue ?(id)stringValue :(id)[NSNull null];
-    NSDictionary *query = $dict({(id)kSecValueRef, (id)item});
-    NSDictionary *attrs = $dict({(id)attr, value});
-    return check(SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attrs), @"SecItemUpdate");
+    NSDictionary *query = $dict({(__bridge id)kSecValueRef, (__bridge id)item});
+    NSDictionary *attrs = $dict({(__bridge id)attr, value});
+    return check(SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)attrs), @"SecItemUpdate");
     
 #else
     NSData *data = [stringValue dataUsingEncoding: NSUTF8StringEncoding];

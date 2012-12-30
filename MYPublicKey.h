@@ -25,7 +25,7 @@
 }
 
 /** The public key's SHA-1 digest. This is a convenient short (20-byte) identifier for the key. */
-@property (readonly) MYSHA1Digest *publicKeyDigest;
+@property (weak, readonly) MYSHA1Digest *publicKeyDigest;
 
 /** Encrypts a short piece of data using this key, returning the raw encrypted result.
     An RSA key can encrypt only blocks smaller than its own key size; this

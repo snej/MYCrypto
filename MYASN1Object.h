@@ -34,7 +34,7 @@
 @property (readonly) uint8_t tagClass;
 @property (readonly) BOOL constructed;
 @property (readonly) NSData *value;
-@property (readonly) NSString *ASCIIValue;
+@property (weak, readonly) NSString *ASCIIValue;
 @property (readonly) NSArray *components;
 
 + (NSString*) dump: (id)object;
@@ -48,7 +48,7 @@
 @interface MYASN1BigInteger : MYASN1Object
 - (id) initWithSignedData: (NSData*)signedData;
 - (id) initWithUnsignedData: (NSData*) unsignedData;
-@property (readonly) NSData *signedData, *unsignedData;
+@property (weak, readonly) NSData *signedData, *unsignedData;
 @end
 
 

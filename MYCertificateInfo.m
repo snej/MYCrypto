@@ -20,6 +20,8 @@
 #import "MYBERParser.h"
 #import "MYDEREncoder.h"
 #import "MYErrorUtils.h"
+#import "CollectionUtils.h"
+#import "Test.h"
 
 
 #define kDefaultExpirationTime (60.0 * 60.0 * 24.0 * 365.0)     /* that's 1 year */
@@ -43,7 +45,7 @@ static id $atIf(NSArray *array, NSUInteger index) {
 @end
 
 @interface MYCertificateInfo ()
-@property (retain) NSArray *_root;
+@property (strong) NSArray *_root;
 @end
 
 
@@ -109,7 +111,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 {
     self = [super init];
     if (self != nil) {
-        _root = [root retain];
+        _root = root;
     }
     return self;
 }
@@ -144,7 +146,6 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     if (errorMsg) {
         if (outError && !*outError)
             *outError = MYError(2, MYASN1ErrorDomain, @"Invalid certificate: %@", errorMsg);
-        [self release];
         return nil;
     }
 
@@ -155,12 +156,6 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     return self;
 }
 
-- (void) dealloc
-{
-    [_root release];
-    [_data release];
-    [super dealloc];
-}
 
 - (BOOL) isEqual: (id)object {
     return [object isKindOfClass: [MYCertificateInfo class]]
@@ -186,7 +181,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     if (info.count >= 7)
         return info;
     // If version field is missing, insert it explicitly so the array indices will be normal:
-    NSMutableArray* minfo = [[info mutableCopy] autorelease];
+    NSMutableArray* minfo = [info mutableCopy];
     [minfo insertObject: $object(0) atIndex: 0];
     return minfo;
 }
@@ -200,11 +195,11 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (NSDate*) validTo         {return $castIf(NSDate, $atIf(self._validDates, 1));}
 
 - (MYCertificateName*) subject {
-    return [[[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 5]] autorelease];
+    return [[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 5]];
 }
 
 - (MYCertificateName*) issuer {
-    return [[[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 3]] autorelease];
+    return [[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 3]];
 }
 
 - (BOOL) isSigned           {return [_root count] >= 3;}
@@ -226,7 +221,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (MYPublicKey*) subjectPublicKey {
     NSData *keyData = self.subjectPublicKeyData;
     if (!keyData) return nil;
-    return [[[MYPublicKey alloc] initWithKeyData: keyData] autorelease];
+    return [[MYPublicKey alloc] initWithKeyData: keyData];
 }
 
 - (NSData*) signedData {
@@ -478,19 +473,12 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
                                            [MYBitString bitStringWithData: publicKey.keyData] ),
                                     extensions) );
     self = [super initWithRoot: root];
-    [version release];
-    [extensions release];
     if (self) {
-        _publicKey = publicKey.retain;
+        _publicKey = publicKey;
     }
     return self;
 }
     
-- (void) dealloc
-{
-    [_publicKey release];
-    [super dealloc];
-}
 
 
 - (NSDate*) validFrom       {return [super validFrom];}
@@ -541,7 +529,6 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     [self setExtension: bitString 
             isCritical: YES 
                 forOID: kKeyUsageOID];
-    [bitString release];
 }
 
 
@@ -634,16 +621,11 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 {
     self = [super init];
     if (self != nil) {
-        _components = [components retain];
+        _components = components;
     }
     return self;
 }
 
-- (void) dealloc
-{
-    [_components release];
-    [super dealloc];
-}
 
 - (BOOL) isEqual: (id)object {
     return [object isKindOfClass: [MYCertificateName class]]

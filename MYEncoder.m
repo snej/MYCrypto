@@ -21,7 +21,6 @@
     self = [super init];
     if (self != nil) {
         if( ! checksave(CMSEncoderCreate(&_encoder)) ) {
-            [self release];
             return nil;
         }
     }
@@ -31,7 +30,6 @@
 - (void) dealloc
 {
     if(_encoder) CFRelease(_encoder);
-    [super dealloc];
 }
 
 
@@ -99,7 +97,7 @@
 {
     CFDataRef data=NULL;
     if( checksave( (*function)(_encoder, &data) ) )
-        return [(NSData*)CFMakeCollectable(data) autorelease];
+        return CFBridgingRelease(data);
     else
         return nil;
 }
@@ -146,9 +144,7 @@
     [e addData: data];
     if (outError)
         *outError = e.error;
-    NSData *result = e.encodedData;
-    [e release];
-    return result;
+    return e.encodedData;
 }
 
 
@@ -186,19 +182,19 @@ TestCase(MYEncoder) {
     
     Log(@"Testing signing...");
     encoded = [MYEncoder encodeData: source signer: me recipient: nil error: &error];
-    CAssertEq(error,nil);
+    CAssertNil(error);
     CAssert([encoded length]);
     Log(@"MYEncoder signed %lu bytes into %lu bytes", source.length,encoded.length);
     
     Log(@"Testing encryption...");
     encoded = [MYEncoder encodeData: source signer: nil recipient: me error: &error];
-    CAssertEq(error,nil);
+    CAssertNil(error);
     CAssert([encoded length]);
     Log(@"MYEncoder encrypted %lu bytes into %lu bytes", source.length,encoded.length);
     
     Log(@"Testing signing+encryption...");
     encoded = [MYEncoder encodeData: source signer: me recipient: me error: &error];
-    CAssertEq(error,nil);
+    CAssertNil(error);
     CAssert([encoded length]);
     Log(@"MYEncoder signed/encrypted %lu bytes into %lu bytes", source.length,encoded.length);
 }

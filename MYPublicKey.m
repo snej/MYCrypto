@@ -17,7 +17,7 @@
 
 
 @interface MYPublicKey ()
-@property (retain) MYCertificate *certificate;
+@property (strong) MYCertificate *certificate;
 @end
 
 
@@ -29,16 +29,10 @@
     // An RSA key is encoded in ASN.1 as a sequence of modulus and exponent, both as integers.
     MYASN1BigInteger *modulusInt = [[MYASN1BigInteger alloc] initWithUnsignedData: modulus];
     id asn1 = $array( modulusInt, $object(exponent) );
-    [modulusInt release];
     NSData *keyData = [MYDEREncoder encodeRootObject: asn1 error: nil];
     return [self initWithKeyData: keyData];
 }
 
-- (void) dealloc
-{
-    [_digest release];
-    [super dealloc];
-}
 
 @synthesize certificate=_certificate;
 
@@ -66,7 +60,7 @@
 
 - (MYSHA1Digest*) publicKeyDigest {
     if (!_digest)
-        _digest = [[self _keyDigest] retain];
+        _digest = [self _keyDigest];
     return _digest;
 }
 

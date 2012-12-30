@@ -54,23 +54,22 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
     unsigned keySizeInBits = keyData.length * 8;
-    NSMutableDictionary *keyAttrs = $mdict( {(id)kSecClass, (id)kSecClassKey},
-                                            {(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                            {(id)kSecAttrKeyType, $object(kCSSMAlgorithms[algorithm])},
-                                            {(id)kSecValueData, keyData},
-                                            {(id)kSecAttrKeySizeInBits, $object(keySizeInBits)},
-                                            {(id)kSecAttrEffectiveKeySize, $object(keySizeInBits)},
-                                            {(id)kSecAttrIsPermanent, keychain ?$true :$false},
-                                            {(id)kSecAttrCanEncrypt, $true},
-                                            {(id)kSecAttrCanDecrypt, $true},
-                                            {(id)kSecAttrCanWrap, $false},
-                                            {(id)kSecAttrCanUnwrap, $false},
-                                            {(id)kSecAttrCanDerive, $false},
-                                            {(id)kSecAttrCanSign, $false},
-                                            {(id)kSecAttrCanVerify, $false});
+    NSMutableDictionary *keyAttrs = $mdict( {(__bridge id)kSecClass, (__bridge id)kSecClassKey},
+                                            {(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassSymmetric},
+                                            {(__bridge id)kSecAttrKeyType, $object(kCSSMAlgorithms[algorithm])},
+                                            {(__bridge id)kSecValueData, keyData},
+                                            {(__bridge id)kSecAttrKeySizeInBits, $object(keySizeInBits)},
+                                            {(__bridge id)kSecAttrEffectiveKeySize, $object(keySizeInBits)},
+                                            {(__bridge id)kSecAttrIsPermanent, keychain ?$true :$false},
+                                            {(__bridge id)kSecAttrCanEncrypt, $true},
+                                            {(__bridge id)kSecAttrCanDecrypt, $true},
+                                            {(__bridge id)kSecAttrCanWrap, $false},
+                                            {(__bridge id)kSecAttrCanUnwrap, $false},
+                                            {(__bridge id)kSecAttrCanDerive, $false},
+                                            {(__bridge id)kSecAttrCanSign, $false},
+                                            {(__bridge id)kSecAttrCanVerify, $false});
     SecKeyRef keyRef = (SecKeyRef) [MYKeychain _addItemWithInfo: keyAttrs];
     if (!keyRef) {
-        [self release];
         return nil;
     }
     self = [self initWithKeyRef: keyRef];
@@ -92,10 +91,9 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
                                       algorithm: (CCAlgorithm)algorithm
                                      inKeychain: (MYKeychain*)keychain
 {
-    return [[[self alloc] _initWithKeyData: [MYCryptor randomKeyOfLength: keySizeInBits]
-                                 algorithm: algorithm
-                                inKeychain: keychain]
-                    autorelease];
+    return [[self alloc] _initWithKeyData: [MYCryptor randomKeyOfLength: keySizeInBits]
+                                algorithm: algorithm
+                               inKeychain: keychain];;
 }
 
 + (MYSymmetricKey*) generateSymmetricKeyOfSize: (unsigned)keySizeInBits

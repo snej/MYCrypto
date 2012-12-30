@@ -21,13 +21,12 @@
         // No public key given, so look it up:
         MYSHA1Digest *digest = self._keyDigest;
         if (digest)
-            _publicKey = [[self.keychain publicKeyWithDigest: digest] retain];
+            _publicKey = [self.keychain publicKeyWithDigest: digest];
         if (!_publicKey) {
             // The matching public key won't turn up if it's embedded in a certificate;
             // I'd have to search for certs if I wanted to look that up. Skip it for now.
             Log(@"MYPrivateKey(%p): Couldn't find matching public key for private key! digest=%@",
                 self, digest);
-            [self release];
             return nil;
         }
     }
@@ -41,7 +40,7 @@
     Assert(publicKey);
     self = [super initWithKeyRef: privateKey];
     if (self) {
-        _publicKey = [publicKey retain];
+        _publicKey = publicKey;
     }
     return self;
 }
@@ -51,7 +50,6 @@
 {
     MYPublicKey *publicKey = [[MYPublicKey alloc] initWithKeyRef: publicKeyRef];
     self = [self _initWithKeyRef: privateKey publicKey: publicKey];
-    [publicKey release];
     return self;
 }
 
@@ -60,12 +58,10 @@
            forKeychain: (SecKeychainRef)keychain 
 {
     if (!privateKey) {
-        [self release];
         return nil;
     }
     MYPublicKey *pubKey = [[MYPublicKey alloc] _initWithKeyData: pubKeyData forKeychain: keychain];
     if (!pubKey) {
-        [self release];
         return nil;
     }
     self = [super initWithKeyRef: privateKey];
@@ -73,7 +69,6 @@
         _publicKey = pubKey;
     } else {
         [pubKey removeFromKeychain];
-        [pubKey release];
     }
     return self;
 }
@@ -91,8 +86,8 @@
     // Try to import the private key first, since the user might cancel the passphrase alert.
     SecKeyImportExportParameters params = {
         .flags = kSecKeySecurePassphrase,
-        .alertTitle = (CFStringRef) title,
-        .alertPrompt = (CFStringRef) prompt
+        .alertTitle = (__bridge CFStringRef) title,
+        .alertPrompt = (__bridge CFStringRef) prompt
     };
     SecKeyRef privateKey = importKey(privKeyData,kSecItemTypePrivateKey,keychain,&params);
     return [self _initWithKeyRef: privateKey publicKeyData: pubKeyData forKeychain: keychain];
@@ -107,7 +102,7 @@
              passphrase: (NSString*)passphrase
 {
     SecKeyImportExportParameters params = {
-        .passphrase = (CFStringRef) passphrase,
+        .passphrase = (__bridge CFStringRef) passphrase,
     };
     SecKeyRef privateKey = importKey(privKeyData,kSecItemTypePrivateKey,keychain,&params);
     return [self _initWithKeyRef: privateKey publicKeyData: pubKeyData forKeychain: keychain];
@@ -117,11 +112,6 @@
 #endif
 
 
-- (void) dealloc
-{
-    [_publicKey release];
-    [super dealloc];
-}
 
 
 + (MYPrivateKey*) _generateRSAKeyPairOfSize: (unsigned)keySize
@@ -132,13 +122,13 @@
     OSStatus err;
     
 #if MYCRYPTO_USE_IPHONE_API
-    NSDictionary *pubKeyAttrs = $dict({(id)kSecAttrIsPermanent, $true});
-    NSDictionary *privKeyAttrs = $dict({(id)kSecAttrIsPermanent, $true});
-    NSDictionary *keyAttrs = $dict( {(id)kSecAttrKeyType, (id)kSecAttrKeyTypeRSA},
-                                    {(id)kSecAttrKeySizeInBits, $object(keySize)},
-                                    {(id)kSecPublicKeyAttrs, pubKeyAttrs},
-                                    {(id)kSecPrivateKeyAttrs, privKeyAttrs} );
-    err = SecKeyGeneratePair((CFDictionaryRef)keyAttrs,&pubKey,&privKey);
+    NSDictionary *pubKeyAttrs = $dict({(__bridge id)kSecAttrIsPermanent, $true});
+    NSDictionary *privKeyAttrs = $dict({(__bridge id)kSecAttrIsPermanent, $true});
+    NSDictionary *keyAttrs = $dict( {(__bridge id)kSecAttrKeyType, (__bridge id)kSecAttrKeyTypeRSA},
+                                    {(__bridge id)kSecAttrKeySizeInBits, $object(keySize)},
+                                    {(__bridge id)kSecPublicKeyAttrs, pubKeyAttrs},
+                                    {(__bridge id)kSecPrivateKeyAttrs, privKeyAttrs} );
+    err = SecKeyGeneratePair((__bridge CFDictionaryRef)keyAttrs,&pubKey,&privKey);
 #else
     err = SecKeyCreatePair(keychain.keychainRefOrDefault,
                            CSSM_ALGID_RSA, 
@@ -154,7 +144,7 @@
     if (!check(err, @"SecKeyCreatePair")) {
         return nil;
     } else
-        return [[[self alloc] initWithKeyRef: privKey publicKeyRef: pubKey] autorelease];
+        return [[self alloc] initWithKeyRef: privKey publicKeyRef: pubKey];
 }
 
 
@@ -242,7 +232,7 @@
                                  digest,sizeof(digest), //data.bytes, data.length,
                                  sigBuf, &sigLen);
     if(err) {
-        Warn(@"SecKeyRawSign failed: %i",err);
+        Warn(@"SecKeyRawSign failed: %ld", (long)err);
         return nil;
     } else
         return [NSData dataWithBytes: sigBuf length: sigLen];
@@ -271,15 +261,15 @@
     SecKeyImportExportParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
         .flags = kSecKeySecurePassphrase,
-        .alertTitle = (CFStringRef)title,
-        .alertPrompt = (CFStringRef)prompt
+        .alertTitle = (__bridge CFStringRef)title,
+        .alertPrompt = (__bridge CFStringRef)prompt
     };
     CFDataRef data = NULL;
     if (check(SecKeychainItemExport(self.keyRef,
                                     format, (withPEM ?kSecItemPemArmour :0), 
                                     &params, &data),
               @"SecKeychainItemExport"))
-        return [(id)CFMakeCollectable(data) autorelease];
+        return (NSData*)CFBridgingRelease(data);
     else
         return nil;
 }
@@ -300,14 +290,14 @@
 {
     SecKeyImportExportParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
-        .passphrase = (CFStringRef)passphrase
+        .passphrase = (__bridge CFStringRef)passphrase
     };
     CFDataRef data = NULL;
     if (check(SecKeychainItemExport(self.keyRef,
                                     format, (withPEM ?kSecItemPemArmour :0), 
                                     &params, &data),
               @"SecKeychainItemExport"))
-        return [(id)CFMakeCollectable(data) autorelease];
+        return (NSData*)CFBridgingRelease(data);
     else
         return nil;
 }
@@ -364,7 +354,7 @@
                                  unwrappedKey,
                                  &descriptiveData),
                   @"CSSM_UnwrapKey")) {
-        result = [[[MYSymmetricKey alloc] _initWithCSSMKey: unwrappedKey] autorelease];
+        result = [[MYSymmetricKey alloc] _initWithCSSMKey: unwrappedKey];
     }
     // Finally, delete the context
     if (!result)

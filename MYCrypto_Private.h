@@ -135,10 +135,10 @@ typedef OSType MYKeychainAttrType;
 
 #if !TARGET_OS_IPHONE
 @interface MYIdentity (Private)
-- (id) _initWithData: (NSData*)data
-              format: (SecExternalFormat)format
-            keychain:(MYKeychain*)keychain
-               error: (NSError**)outError;
+- (id) initWithData: (NSData*)data
+             format: (SecExternalFormat)format
+           keychain:(MYKeychain*)keychain
+              error: (NSError**)outError;
 @end
 #endif
 

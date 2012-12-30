@@ -28,7 +28,6 @@
     SecKeyImportExportParameters params = {};
     SecKeyRef key = importKey(keyData, self.keyClass, keychain, &params);
     if (!key) {
-        [self release];
         return nil;
     }
     self = [self initWithKeyRef: key];
@@ -105,7 +104,7 @@
     CFDataRef data = NULL;
     if (check(SecKeychainItemExport(self.keyRef, self._externalFormat, 0, NULL, &data),
               @"SecKeychainItemExport"))
-        return [(id)CFMakeCollectable(data) autorelease];
+        return (NSData*)CFBridgingRelease(data);
     else
         return nil;
 }
@@ -164,7 +163,7 @@ SecKeyRef importKey(NSData *data,
         else if (type==kSecItemTypePrivateKey)
             params->keyUsage = CSSM_KEYUSE_DECRYPT | CSSM_KEYUSE_SIGN;
     }
-    if (!check(SecKeychainItemImport((CFDataRef)data, NULL, &inputFormat, &type,
+    if (!check(SecKeychainItemImport((__bridge CFDataRef)data, NULL, &inputFormat, &type,
                                      0, params, keychain, &items),
                @"SecKeychainItemImport"))
         return nil;
@@ -184,8 +183,8 @@ SecKeyRef importKey(NSData *data,
         if (checkcssm(CSSM_CSP_PassThrough(context, CSSM_APPLECSP_KEYDIGEST, NULL, (void**)&keyDigest),
                       @"CSSM_CSP_PassThrough")) {
             if (keyDigest && keyDigest->Data) {
-                digest = [[[MYSHA1Digest alloc] initWithRawDigest: keyDigest->Data
-                                                           length: keyDigest->Length] autorelease];
+                digest = [[MYSHA1Digest alloc] initWithRawDigest: keyDigest->Data
+                                                           length: keyDigest->Length];
             }
         } else {
             SecKeyRef keyRef = self.keyRef;

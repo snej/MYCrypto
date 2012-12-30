@@ -10,6 +10,8 @@
 // <http://www.columbia.edu/~ariel/ssleay/layman.html> "Layman's Guide To ASN.1/BER/DER"
 
 #import "MYASN1Object.h"
+#import "CollectionUtils.h"
+#import "Test.h"
 
 
 @implementation MYASN1Object
@@ -46,19 +48,13 @@
     return self;
 }
 
-- (void) dealloc
-{
-    [_value release];
-    [_components release];
-    [super dealloc];
-}
 
 
 @synthesize tag=_tag, tagClass=_tagClass, constructed=_constructed, value=_value, components=_components;
 
 
 - (NSString*) ASCIIValue {
-    return [[[NSString alloc] initWithData: _value encoding: NSASCIIStringEncoding] autorelease];
+    return [[NSString alloc] initWithData: _value encoding: NSASCIIStringEncoding];
 }
 
 - (NSString*)description {
@@ -176,14 +172,9 @@ static void dump(id object, NSMutableString *output, NSString *indent) {
 }
 
 + (MYBitString*) bitStringWithData: (NSData*)bits {
-    return [[[self alloc] initWithBits: bits count: 8*bits.length] autorelease];
+    return [[self alloc] initWithBits: bits count: 8*bits.length];
 }
 
-- (void) dealloc
-{
-    [_bits release];
-    [super dealloc];
-}
 
 @synthesize bits=_bits, bitCount=_bitCount;
 

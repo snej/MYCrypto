@@ -7,6 +7,7 @@
 //
 
 #import "MYOID.h"
+#import "Test.h"
 
 
 @implementation MYOID
@@ -41,7 +42,6 @@
             UInt8 byte;
             do{
                 if (src >= end) {
-                    [self release];
                     return nil;
                 }
                 byte = *src++;
@@ -56,29 +56,23 @@
 }
 
 + (MYOID*) OIDWithEncoding: (NSData*)encoding {
-    return [[[self alloc] initWithBEREncoding: encoding] autorelease];
+    return [[self alloc] initWithBEREncoding: encoding];
 }
 
 #if !TARGET_OS_IPHONE
 + (MYOID*) OIDFromCSSM: (CSSM_OID)cssmOid
 {
     NSData *ber = [[NSData alloc] initWithBytesNoCopy: cssmOid.Data length: cssmOid.Length freeWhenDone: NO];
-    MYOID *oid = [[[self alloc] initWithBEREncoding: ber] autorelease];
-    [ber release];
+    MYOID *oid = [[self alloc] initWithBEREncoding: ber];
     return oid;
 }
 #endif
 
 
 - (id) copyWithZone: (NSZone*)zone {
-    return [self retain];
+    return self;
 }
 
-- (void) dealloc
-{
-    [_data release];
-    [super dealloc];
-}
 
 
 - (NSString*) description {
@@ -88,7 +82,7 @@
     for (unsigned i=0; i<count; i++) {
         if (i>0)
             [desc appendString: @" "];
-        [desc appendFormat: @"%u", components[i]];
+        [desc appendFormat: @"%u", (unsigned)components[i]];
     }
     [desc appendString: @"}"];
     return desc;
@@ -152,12 +146,12 @@ TestCase(OID) {
     CAssertEqual([[MYOID OIDWithEncoding: $data(0x2a,0x86,0x48,0x86,0xf7,0x0d,0x01,0x09,0x01)] description],
                  @"{1 2 840 113549 1 9 1}");
 
-    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] autorelease] description],
+    CAssertEqual([[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] description],
                  @"{1 2 840 113549 1 1 1}");
 
-    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] autorelease] DEREncoding],
+    CAssertEqual([[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] DEREncoding],
                  $data(0x2a, 0x86, 0x48, 0x86,  0xf7, 0x0d, 0x01, 0x01,  0x01));
-    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(2,5,4,4) count: 4] autorelease] DEREncoding],
+    CAssertEqual([[[MYOID alloc] initWithComponents: $components(2,5,4,4) count: 4] DEREncoding],
                  $data(0x55,0x04,0x04));
 }
 

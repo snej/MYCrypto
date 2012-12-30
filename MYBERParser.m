@@ -62,7 +62,7 @@ static NSString* readStringOrDie(InputData *input, size_t length, NSStringEncodi
                                            encoding: encoding];
     if (!str)
         [NSException raise: MYBERParserException format: @"Unparseable string"];
-    return [str autorelease];
+    return str;
 }    
 
 
@@ -159,9 +159,9 @@ static id parseBER(InputData *input) {
                     break;
             }
         }
-        return [[[MYASN1Object alloc] initWithTag: header.tag
+        return [[MYASN1Object alloc] initWithTag: header.tag
                                           ofClass: header.tagClass
-                                       components: items] autorelease];
+                                       components: items];
 
     } else if (header.tagClass == 0) {
         // Primitive:
@@ -187,8 +187,8 @@ static id parseBER(InputData *input) {
                 UInt8 unusedBits = *(const UInt8*) readOrDie(input, 1);
                 if (unusedBits > 7 || length < 1)
                     [NSException raise: MYBERParserException format: @"Bogus bit-string"];
-                return [[[MYBitString alloc] initWithBits: readDataOrDie(input, length-1)
-                                                    count: 8*(length-1) - unusedBits] autorelease];
+                return [[MYBitString alloc] initWithBits: readDataOrDie(input, length-1)
+                                                    count: 8*(length-1) - unusedBits];
             }
             case 4: // octetstring
                 return readDataOrDie(input, length);
@@ -196,7 +196,7 @@ static id parseBER(InputData *input) {
                 requireLength(length,0);
                 return [NSNull null];
             case 6: // OID
-                return [[[MYOID alloc] initWithBEREncoding: readDataOrDie(input, length)] autorelease];
+                return [[MYOID alloc] initWithBEREncoding: readDataOrDie(input, length)];
             case 12: // UTF8String
                 return readStringOrDie(input,length,NSUTF8StringEncoding);
             case 18: // numeric string
@@ -221,10 +221,10 @@ static id parseBER(InputData *input) {
     
     // Generic case -- create and return a MYASN1Object:
     NSData *value = readDataOrDie(input, length);
-    return [[[defaultClass alloc] initWithTag: header.tag
+    return [[defaultClass alloc] initWithTag: header.tag
                                       ofClass: header.tagClass 
                                   constructed: header.isConstructed
-                                        value: value] autorelease];
+                                        value: value];
 }
     
     
@@ -347,7 +347,6 @@ TestCase(ParseCert) {
     CAssert(myCert);
     id parsedPubKey = MYBERParse(myCert.publicKey.keyData, NULL);
     Log(@"Parsed public key:\n%@", [MYASN1Object dump: parsedPubKey]);
-    [myCert release];
 
     cert = [NSData dataWithContentsOfFile: @"iphonedev.cer"];
     parsed = MYBERParse(cert,&error);

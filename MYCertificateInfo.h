@@ -23,23 +23,23 @@
 - (id) initWithCertificateData: (NSData*)data error: (NSError**)outError;
 
 /** The date/time at which the certificate first becomes valid. */
-@property (retain, readonly) NSDate *validFrom;
+@property (strong, readonly) NSDate *validFrom;
 
 /** The date/time at which the certificate expires. */
-@property (retain, readonly) NSDate *validTo;
+@property (strong, readonly) NSDate *validTo;
 
 /** Information about the identity of the owner of this certificate. */
-@property (readonly) MYCertificateName *subject;
+@property (weak, readonly) MYCertificateName *subject;
 
 /** Information about the identity that signed/authorized this certificate. */
-@property (readonly) MYCertificateName *issuer;
+@property (weak, readonly) MYCertificateName *issuer;
 
 /** Returns YES if the issuer is the same as the subject. (Aka a "self-signed" certificate.) */
 @property (readonly) BOOL isRoot;
 
 
 /** The list of raw extension names, each a MYOID object. */
-@property (readonly) NSArray* extensionOIDs;
+@property (weak, readonly) NSArray* extensionOIDs;
 
 /** Looks up an extension by name.
     @param oid  The extension's name.
@@ -74,11 +74,11 @@
 /** The standard SubjectAlternativeName extension value parsed into an NSDictionary.
     The keys are the name types, including the strings "RFC822", "URI" and "DNS"; other name types are represented by NSNumbers whose value are the type's ASN.1 tag value.
     The dictionary values are parsed strings for the known types, and MYASN1Objects for the others. */
-@property (readonly) NSDictionary* subjectAlternativeName;
+@property (weak, readonly) NSDictionary* subjectAlternativeName;
 
 /** All email addresses for the subject of this cert, including the one in the subject structure
     and the ones in the SubjectAlternativeName. */
-@property (readonly) NSArray* emailAddresses;
+@property (weak, readonly) NSArray* emailAddresses;
 
 /** Verifies the certificate's signature, using the given public key.
     If the certificate is root/self-signed, use the cert's own subject public key. */
@@ -102,10 +102,10 @@
 - (id) initWithPublicKey: (MYPublicKey*)pubKey;
 
 /** The date/time at which the certificate first becomes valid. Settable. */
-@property (retain) NSDate *validFrom;
+@property (strong) NSDate *validFrom;
 
 /** The date/time at which the certificate expires. Settable */
-@property (retain) NSDate *validTo;
+@property (strong) NSDate *validTo;
 
 /** Sets the value of an extension.
     @param extension  The ASN.1 value of the extension. Could be an NSValue, NSString or any of the classes defined in MYASN1Object.h. Pass nil to remove the extension.

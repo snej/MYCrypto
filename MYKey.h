@@ -39,7 +39,7 @@
 - (id) initWithKeyData: (NSData*)data;
 
 /** The key's raw data. */
-@property (readonly) NSData *keyData;
+@property (weak, readonly) NSData *keyData;
 
 /** The key's size/length, in bits. */
 @property (readonly) unsigned keySizeInBits;

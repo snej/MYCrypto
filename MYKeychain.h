@@ -197,7 +197,7 @@
 @property (readonly) SecKeychainRef keychainRefOrDefault;
 
 /** The path of this keychain's file. */
-@property (readonly) NSString* path;
+@property (weak, readonly) NSString* path;
 
 /** The underlying CSSM storage handle; used when calling CSSM APIs. */
 @property (readonly) CSSM_CSP_HANDLE CSPHandle;

@@ -66,7 +66,7 @@ enum {
 - (id) copyWithZone: (NSZone*)zone {
     // It's not necessary to make copies of Keychain objects. This makes it more efficient
     // to use instances as NSDictionary keys or store them in NSSets.
-    return [self retain];
+    return self;
 }
 
 
@@ -77,64 +77,64 @@ enum {
 
 - (MYPublicKey*) publicKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPublic},
-                       {(id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
+                $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassPublic},
+                       {(__bridge id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
 }   
 
 - (NSEnumerator*) enumeratePublicKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPublic});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassPublic});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 
 - (MYPrivateKey*) privateKeyWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate},
-                       {(id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
+                $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassPrivate},
+                       {(__bridge id)kSecAttrApplicationLabel, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumeratePrivateKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassPrivate});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassPrivate});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 - (MYCertificate*) certificateWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecClass, (id)kSecClassCertificate},
-                       {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData})];
+                $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassCertificate},
+                       {(__bridge id)kSecAttrPublicKeyHash, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumerateCertificates {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassCertificate});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassCertificate});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 - (NSEnumerator*) enumerateCertificatesWithDigest: (MYSHA1Digest*)pubKeyDigest {
-    NSMutableDictionary* query = $mdict({(id)kSecClass, (id)kSecClassCertificate},
-                                        {(id)kSecAttrPublicKeyHash, pubKeyDigest.asData});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary* query = $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassCertificate},
+                                        {(__bridge id)kSecAttrPublicKeyHash, pubKeyDigest.asData});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 - (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
     return [MYKeyEnumerator firstItemWithQuery:
-                $mdict({(id)kSecClass, (id)kSecClassIdentity},
-                       {(id)kSecAttrApplicationLabel/*kSecAttrPublicKeyHash*/, pubKeyDigest.asData})];
+                $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassIdentity},
+                       {(__bridge id)kSecAttrApplicationLabel/*kSecAttrPublicKeyHash*/, pubKeyDigest.asData})];
 }
 
 - (NSEnumerator*) enumerateIdentities {
-    NSMutableDictionary *query = $mdict({(id)kSecClass, (id)kSecClassIdentity});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassIdentity});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 - (NSEnumerator*) enumerateSymmetricKeys {
-    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassSymmetric});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 - (NSEnumerator*) symmetricKeysWithAlias: (NSString*)alias {
-    NSMutableDictionary *query = $mdict({(id)kSecAttrKeyClass, (id)kSecAttrKeyClassSymmetric},
-                                        {(id)kSecAttrApplicationTag, alias});
-    return [[[MYKeyEnumerator alloc] initWithQuery: query] autorelease];
+    NSMutableDictionary *query = $mdict({(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassSymmetric},
+                                        {(__bridge id)kSecAttrApplicationTag, alias});
+    return [[MYKeyEnumerator alloc] initWithQuery: query];
 }
 
 
@@ -145,18 +145,18 @@ enum {
 + (CFTypeRef) _addItemWithInfo: (NSMutableDictionary*)info {
     // Generally SecItemAdd will fail (return paramErr) if asked to return a regular ref.
     // As a workaround ask for a persistent ref instead, then convert that to regular ref.
-    if (![[info objectForKey: (id)kSecReturnRef] boolValue])
-        [info setObject: $true forKey: (id)kSecReturnPersistentRef];
+    if (![[info objectForKey: (__bridge id)kSecReturnRef] boolValue])
+        [info setObject: $true forKey: (__bridge id)kSecReturnPersistentRef];
     
     CFDataRef itemPersistentRef;
     CFTypeRef item;
-    OSStatus err = SecItemAdd((CFDictionaryRef)info, (CFTypeRef*)&itemPersistentRef);
+    OSStatus err = SecItemAdd((__bridge CFDictionaryRef)info, (CFTypeRef*)&itemPersistentRef);
     if (err==errSecDuplicateItem) {
         Log(@"_addItemWithInfo: Keychain claims it's a dup, so look for existing item");
         // it's already in the keychain -- get a reference to it:
-		[info removeObjectForKey: (id)kSecReturnPersistentRef];
-		[info setObject: $true forKey: (id)kSecReturnRef];
-		if (check(SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&item), 
+		[info removeObjectForKey: (__bridge id)kSecReturnPersistentRef];
+		[info setObject: $true forKey: (__bridge id)kSecReturnRef];
+		if (check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef *)&item), 
                   @"SecItemCopyMatching")) {
             if (!item)
                 Warn(@"_addItemWithInfo: Couldn't find supposedly-duplicate item, info=%@",info);
@@ -165,12 +165,12 @@ enum {
         }
     } else if (check(err, @"SecItemAdd")) {
         // It was added
-        if ([[info objectForKey: (id)kSecReturnPersistentRef] boolValue]) {
+        if ([[info objectForKey: (__bridge id)kSecReturnPersistentRef] boolValue]) {
             // now get its item ref:
             Log(@"SecItemAdd added item; persistenRef=%@", itemPersistentRef);//TEMP
-            info = $mdict({(id)kSecValuePersistentRef, (id)itemPersistentRef},
-            {(id)kSecReturnRef, $true});
-            err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef *)&item);
+            info = $mdict({(__bridge id)kSecValuePersistentRef, (__bridge id)itemPersistentRef},
+            {(__bridge id)kSecReturnRef, $true});
+            err = SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef *)&item);
             CFRelease(itemPersistentRef);
             if (check(err,@"SecItemCopyMatching")) {
                 Assert(item!=nil);
@@ -187,9 +187,7 @@ enum {
 
 
 - (MYPublicKey*) importPublicKey: (NSData*)keyData {
-    return [[[MYPublicKey alloc] _initWithKeyData: keyData 
-                                      forKeychain: (void*)self]
-            autorelease];
+    return [[MYPublicKey alloc] _initWithKeyData: keyData forKeychain: (void*)self];
 }
 
 - (MYCertificate*) importCertificate: (NSData*)data
@@ -197,21 +195,21 @@ enum {
     Assert(data);
     
 #if 1
-    SecCertificateRef cert0 = SecCertificateCreateWithData(NULL, (CFDataRef)data);
+    SecCertificateRef cert0 = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)data);
     if (!cert0)
         return nil;
-    NSMutableDictionary *info = $mdict( {(id)kSecClass, (id)kSecClassCertificate},
-                                        {(id)kSecValueRef, (id)cert0});
+    NSMutableDictionary *info = $mdict( {(__bridge id)kSecClass, (__bridge id)kSecClassCertificate},
+                                        {(__bridge id)kSecValueRef, (__bridge id)cert0});
 #else
-    NSMutableDictionary *info = $mdict( {(id)kSecClass, (id)kSecClassCertificate},
-                                        {(id)kSecAttrCertificateType, $object(CSSM_CERT_X_509v3)},
-                                        {(id)kSecAttrCertificateEncoding, $object(CSSM_CERT_ENCODING_BER)},
-                                        {(id)kSecValueData, data} );
+    NSMutableDictionary *info = $mdict( {(__bridge id)kSecClass, (__bridge id)kSecClassCertificate},
+                                        {(__bridge id)kSecAttrCertificateType, $object(CSSM_CERT_X_509v3)},
+                                        {(__bridge id)kSecAttrCertificateEncoding, $object(CSSM_CERT_ENCODING_BER)},
+                                        {(__bridge id)kSecValueData, data} );
 #endif
     SecCertificateRef cert = (SecCertificateRef) [[self class] _addItemWithInfo: info];
     if (!cert)
         return nil;
-    MYCertificate *myCert = [[[MYCertificate alloc] initWithCertificateRef: cert] autorelease];
+    MYCertificate *myCert = [[MYCertificate alloc] initWithCertificateRef: cert];
     AssertEqual(data, myCert.certificateData);  //TEMP for debugging
     return myCert;
 }
@@ -238,13 +236,13 @@ enum {
 
 
 - (BOOL) removeAllCertificates {
-    NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassCertificate});
-    return check(SecItemDelete((CFDictionaryRef)query),  @"SecItemDelete");
+    NSDictionary *query = $dict({(__bridge id)kSecClass, (__bridge id)kSecClassCertificate});
+    return check(SecItemDelete((__bridge CFDictionaryRef)query),  @"SecItemDelete");
 }
 
 - (BOOL) removeAllKeys {
-    NSDictionary *query = $dict({(id)kSecClass, (id)kSecClassKey});
-    return check(SecItemDelete((CFDictionaryRef)query), @"SecItemDelete");
+    NSDictionary *query = $dict({(__bridge id)kSecClass, (__bridge id)kSecClassKey});
+    return check(SecItemDelete((__bridge CFDictionaryRef)query), @"SecItemDelete");
 }
 
 
@@ -258,27 +256,26 @@ enum {
 - (id) initWithQuery: (NSMutableDictionary*)query {
     self = [super init];
     if (self) {
-        _itemClass = (CFTypeRef)[query objectForKey: (id)kSecAttrKeyClass];
+        _itemClass = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecAttrKeyClass];
         if (_itemClass)
-            [query setObject: (id)kSecClassKey forKey: (id)kSecClass];
+            [query setObject: (__bridge id)kSecClassKey forKey: (__bridge id)kSecClass];
         else
-            _itemClass = (CFTypeRef)[query objectForKey: (id)kSecClass];
+            _itemClass = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecClass];
         Assert(_itemClass);
         CFRetain(_itemClass);
 
         // Ask for all results unless caller specified fewer:
-        CFTypeRef limit = [query objectForKey: (id)kSecMatchLimit];
+        CFTypeRef limit = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecMatchLimit];
         if (! limit) {
             limit = kSecMatchLimitAll;
-            [query setObject: (id)limit forKey: (id)kSecMatchLimit];
+            [query setObject: (__bridge id)limit forKey: (__bridge id)kSecMatchLimit];
         }
         
-        [query setObject: $true forKey: (id)kSecReturnRef];
+        [query setObject: $true forKey: (__bridge id)kSecReturnRef];
         
-        OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef*)&_results);
+        OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef*)&_results);
         if (err && err != errSecItemNotFound) {
             check(err,@"SecItemCopyMatching");
-            [self release];
             return nil;
         }
         //Log(@"Enumerator results = %@", _results);
@@ -295,19 +292,15 @@ enum {
 }
 
 + (id) firstItemWithQuery: (NSMutableDictionary*)query {
-    [query setObject: (id)kSecMatchLimitOne forKey: (id)kSecMatchLimit];
+    [query setObject: (__bridge id)kSecMatchLimitOne forKey: (__bridge id)kSecMatchLimit];
     MYKeyEnumerator *e = [[self alloc] initWithQuery: query];
-    MYKeychainItem *item = [e.nextObject retain];
-    [e release];
-    return [item autorelease];
+    return e.nextObject;
 }    
 
 - (void) dealloc
 {
-    [_currentObject release];
     CFRelease(_itemClass);
     if (_results) CFRelease(_results);
-    [super dealloc];
 }
 
 
@@ -315,10 +308,10 @@ enum {
     // Enumerating the keychain sometimes returns public-key refs that give not-found errors
     // when you try to use them for anything. As a workaround, detect these early on before
     // even creating a MYPublicKey:
-    NSDictionary *info = $dict({(id)kSecValueRef, (id)itemRef},
-                               {(id)kSecReturnAttributes, $true});
+    NSDictionary *info = $dict({(__bridge id)kSecValueRef, (__bridge id)itemRef},
+                               {(__bridge id)kSecReturnAttributes, $true});
     CFDictionaryRef attrs = NULL;
-    OSStatus err = SecItemCopyMatching((CFDictionaryRef)info, (CFTypeRef*)&attrs);
+    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef*)&attrs);
     if (attrs) CFRelease(attrs);
     if (err == errSecItemNotFound) {
         Log(@"MYKeyEnumerator: Ignoring bogus(?) key with ref %p", itemRef);
@@ -330,7 +323,7 @@ enum {
 - (id) nextObject {
     if (!_results)
         return nil;
-    setObj(&_currentObject,nil);
+    _currentObject = nil;
     while (_currentObject==nil && _index < CFArrayGetCount(_results)) {
         CFTypeRef found = CFArrayGetValueAtIndex(_results, _index++); 
         if (_itemClass == kSecAttrKeyClassPrivate) {

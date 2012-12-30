@@ -24,7 +24,7 @@
 @property (readonly) SecIdentityRef identityRef;
 
 /** The identity's associated private key. */
-@property (readonly) MYPrivateKey *privateKey;
+@property (weak, readonly) MYPrivateKey *privateKey;
 
 
 /** @name Mac-Only

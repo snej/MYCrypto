@@ -29,12 +29,10 @@
     if (self) {
         _certificateRef = certificateRef;     // superclass has already CFRetained it
         if (self.certificateData.length == 0) {
-            [self release];
             return nil;
         }
         if (![self _verify]) {
             Log(@"Self-signed cert failed signature verification (%@)", self);
-            [self release];
             return nil;
         }
     }
@@ -42,7 +40,7 @@
 }
 
 + (MYCertificate*) certificateWithCertificateRef: (SecCertificateRef)certificateRef {
-    return [[[self alloc] initWithCertificateRef: certificateRef] autorelease];
+    return [[self alloc] initWithCertificateRef: certificateRef];
 }
 
 /** Creates a MYCertificate object from exported key data, but does not add it to any keychain. */
@@ -55,7 +53,7 @@
     Assert(data);
     SecCertificateRef certificateRef = NULL;
 #if MYCRYPTO_USE_IPHONE_API
-    certificateRef = SecCertificateCreateWithData(NULL, (CFDataRef)data);
+    certificateRef = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)data);
 #else
     CSSM_DATA cssmData = {.Data=(void*)data.bytes, .Length=data.length};
     if (!check(SecCertificateCreateFromData(&cssmData, type, encoding, &certificateRef),
@@ -63,7 +61,6 @@
         certificateRef = NULL;
 #endif
     if (!certificateRef) {
-        [self release];
         return nil;
     }
     self = [self initWithCertificateRef: certificateRef];
@@ -71,7 +68,6 @@
     
     if (self && ![self _verify]) {
           Log(@"Self-signed cert failed signature verification (%@)", self);
-          [self release];
           return nil;
     }
     
@@ -86,11 +82,6 @@
 }
 #endif
 
-- (void) dealloc
-{
-    [_info release];
-    [super dealloc];
-}
 
 
 
@@ -111,14 +102,14 @@
 #if !TARGET_OS_IPHONE
 + (MYCertificate*) preferredCertificateForName: (NSString*)name {
     SecCertificateRef certRef = NULL;
-    if (!check(SecCertificateCopyPreference((CFStringRef)name, 0, &certRef),
+    if (!check(SecCertificateCopyPreference((__bridge CFStringRef)name, 0, &certRef),
                @"SecCertificateCopyPreference"))
         return nil;
-    return [[[MYCertificate alloc] initWithCertificateRef: certRef] autorelease];
+    return [[MYCertificate alloc] initWithCertificateRef: certRef];
 }
 
 - (BOOL) setPreferredCertificateForName: (NSString*)name {
-    return check(SecCertificateSetPreference(_certificateRef, (CFStringRef)name, 0, NULL),
+    return check(SecCertificateSetPreference(_certificateRef, (__bridge CFStringRef)name, 0, NULL),
                  @"SecCertificateSetPreference");
 }
 #endif //TARGET_OS_IPHONE
@@ -128,7 +119,7 @@
 
 - (NSData*) certificateData {
     CFDataRef data = SecCertificateCopyData(_certificateRef);
-    return data ?[NSMakeCollectable(data) autorelease] :nil;
+    return data ? (id)CFBridgingRelease(data) :nil;
 }
 
 - (MYPublicKey*) publicKey {
@@ -136,7 +127,8 @@
 #if MYCRYPTO_USE_IPHONE_API
     SecTrustRef trust = NULL;
     SecPolicyRef policy = SecPolicyCreateBasicX509();
-    OSStatus err = SecTrustCreateWithCertificates((CFArrayRef)$array((id)_certificateRef),
+    NSArray* certs = @[(__bridge id)_certificateRef];
+    OSStatus err = SecTrustCreateWithCertificates((__bridge CFArrayRef)certs,
                                                   policy,
                                                   &trust);
     CFRelease(policy);
@@ -156,7 +148,7 @@
 #endif
     if (!keyRef)
         return nil;
-    MYPublicKey *key = [[[MYPublicKey alloc] initWithKeyRef: keyRef] autorelease];
+    MYPublicKey *key = [[MYPublicKey alloc] initWithKeyRef: keyRef];
     CFRelease(keyRef);
 #if MYCRYPTO_USE_IPHONE_API
     key.certificate = self;
@@ -170,7 +162,7 @@
 }
 
 - (MYIdentity*) identity {
-    return [[[MYIdentity alloc] initWithCertificateRef: _certificateRef] autorelease];
+    return [[MYIdentity alloc] initWithCertificateRef: _certificateRef];
 }
 
 - (MYCertificateInfo*) info {
@@ -196,7 +188,7 @@
                @"SecCertificateCopyCommonName"))
         return nil;
 #endif
-    return name ?[NSMakeCollectable(name) autorelease] :nil;
+    return name ? (NSString*)CFBridgingRelease(name) : nil;
 }
 
 - (NSArray*) emailAddresses {
@@ -208,7 +200,7 @@
     if (!check(SecCertificateCopyEmailAddresses(_certificateRef, &addrs),
                @"SecCertificateCopyEmailAddresses") || !addrs)
         return nil;
-    return [(id)CFMakeCollectable(addrs) autorelease];
+    return (NSArray*)CFBridgingRelease(addrs);
 #endif
 }
 
@@ -225,7 +217,7 @@
 
     SecExternalItemType type = kSecItemTypeAggregate;
     CFArrayRef items;
-    if (!check(SecKeychainItemImport((CFDataRef)data, NULL, &format, &type,
+    if (!check(SecKeychainItemImport((__bridge CFDataRef)data, NULL, &format, &type,
                                      0, &params, NULL, &items),
                @"SecKeychainItemImport"))
         return NULL;
@@ -248,7 +240,6 @@
         }
         if (object)
             [result addObject: object];
-        [object release];
     }
     CFRelease(items);
     return result;       
@@ -273,7 +264,8 @@
 
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy {
     SecTrustRef trust;
-    if (!check(SecTrustCreateWithCertificates((CFArrayRef)$array((id)_certificateRef), policy, &trust), 
+    NSArray* certs = @[(__bridge id)_certificateRef];
+    if (!check(SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, policy, &trust),
                @"SecTrustCreateWithCertificates"))
         return kSecTrustResultOtherError;
     SecTrustResultType result;
@@ -363,7 +355,7 @@
                                                      &settings);
     if (err == errSecItemNotFound || !check(err,@"SecTrustSettingsCopyTrustSettings") || !settings)
         return nil;
-    return [(id)CFMakeCollectable(settings) autorelease];
+    return (NSArray*)CFBridgingRelease(settings);
 }
 
 - (SecTrustSettingsResult) userTrustSettingsForPolicy: (SecPolicyRef)policy
@@ -371,7 +363,7 @@
                                               options: (NSStringCompareOptions)compareOptions
 {
     for( NSDictionary* setting in [self trustSettings]) {
-        if (![[setting objectForKey: (id)kSecTrustSettingsPolicy] isEqual: (id)policy])
+        if (![[setting objectForKey: (id)kSecTrustSettingsPolicy] isEqual: (__bridge id)policy])
             continue;
         if (policyString) {
             // Policy string may end with a NUL byte, so trim it
@@ -411,12 +403,13 @@
     if (policy) {
         SecTrustSettingsResult result = self.info.isRoot ? kSecTrustSettingsResultTrustRoot
                                                          : kSecTrustSettingsResultTrustAsRoot;
-        settings = $dict({(id)kSecTrustSettingsPolicy, (id)policy},
+        settings = $dict({(id)kSecTrustSettingsPolicy, (__bridge id)policy},
                          {(id)kSecTrustSettingsPolicyString, string},
                          {(id)kSecTrustSettingsResult, $object(result)});
     }
     OSStatus err = SecTrustSettingsSetTrustSettings(_certificateRef, 
-                                                    kSecTrustSettingsDomainUser, settings);
+                                                    kSecTrustSettingsDomainUser,
+                                                    (__bridge CFTypeRef)(settings));
     return err != errAuthorizationCanceled && check(err, @"SecTrustSettingsSetTrustSettings");
 }
 
@@ -450,7 +443,7 @@ NSString* MYTrustResultDescribe( SecTrustResultType result ) {
     if (result <=kSecTrustResultOtherError)
         return kTrustResultNames[result];
     else
-        return $sprintf(@"(Unknown trust result %i)", result);
+        return $sprintf(@"(Unknown trust result %lu)", (unsigned long)result);
 }
 
 

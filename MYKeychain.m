@@ -68,7 +68,7 @@
     }
     MYKeychain *keychain = nil;
     if (ok)
-        keychain = [[[self alloc] initWithKeychainRef: keychainRef] autorelease];
+        keychain = [[self alloc] initWithKeychainRef: keychainRef];
     CFRelease(keychainRef);
     return keychain;
 }
@@ -108,14 +108,8 @@
 - (void) dealloc
 {
     if (_keychain) CFRelease(_keychain);
-    [super dealloc];
 }
 
-- (void) finalize
-{
-    if (_keychain) CFRelease(_keychain);
-    [super finalize];
-}
 
 
 + (MYKeychain*) allKeychains
@@ -166,7 +160,7 @@
 - (id) copyWithZone: (NSZone*)zone {
     // It's not necessary to make copies of Keychain objects. This makes it more efficient
     // to use instances as NSDictionary keys or store them in NSSets.
-    return [self retain];
+    return self;
 }
 
 - (BOOL) isEqual: (id)obj {
@@ -221,9 +215,9 @@
     SecKeychainAttribute attr = {.tag= (itemClass==kSecCertificateItemClass ?kSecPublicKeyHashItemAttr :kSecKeyLabel), 
                                  .length= (UInt32)pubKeyDigest.length, 
                                  .data= (void*) pubKeyDigest.bytes};
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: itemClass
-                                           attributes: &attr count: 1] autorelease];
+                                           attributes: &attr count: 1];
 }
 
 - (MYKeychainItem*) itemOfClass: (SecItemClass)itemClass 
@@ -237,17 +231,17 @@
 }   
 
 - (NSEnumerator*) enumeratePublicKeys {
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecPublicKeyItemClass
-                                           attributes: NULL count: 0] autorelease];
+                                           attributes: NULL count: 0];
 }
 
 - (NSEnumerator*) publicKeysWithAlias: (NSString*)alias {
     NSData *utf8 = [alias dataUsingEncoding: NSUTF8StringEncoding];
     SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=(UInt32)utf8.length, .data=(void*)utf8.bytes};
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecPublicKeyItemClass
-                                           attributes: &attr count: 1] autorelease];
+                                           attributes: &attr count: 1];
 }
 
 
@@ -256,9 +250,9 @@
 }
 
 - (NSEnumerator*) enumeratePrivateKeys {
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecPrivateKeyItemClass
-                                           attributes: NULL count: 0] autorelease];
+                                           attributes: NULL count: 0];
 }
 
 - (MYCertificate*) certificateWithDigest: (MYSHA1Digest*)pubKeyDigest {
@@ -270,9 +264,9 @@
 }
 
 - (NSEnumerator*) enumerateCertificates {
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecCertificateItemClass
-                                           attributes: NULL count: 0] autorelease];
+                                           attributes: NULL count: 0];
 }
 
 - (MYIdentity*) identityWithDigest: (MYSHA1Digest*)pubKeyDigest {
@@ -289,21 +283,21 @@
 }
 
 - (NSEnumerator*) enumerateIdentitiesWithKeyUsage: (CSSM_KEYUSE)keyUsage {
-    return [[[MYIdentityEnumerator alloc] initWithKeychain: self keyUsage: keyUsage] autorelease];
+    return [[MYIdentityEnumerator alloc] initWithKeychain: self keyUsage: keyUsage];
 }
 
 - (NSEnumerator*) enumerateSymmetricKeys {
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecSymmetricKeyItemClass
-                                           attributes: NULL count: 0] autorelease];
+                                           attributes: NULL count: 0];
 }
 
 - (NSEnumerator*) symmetricKeysWithAlias: (NSString*)alias {
     NSData *utf8 = [alias dataUsingEncoding: NSUTF8StringEncoding];
     SecKeychainAttribute attr = {.tag=kSecKeyAlias, .length=(UInt32)utf8.length, .data=(void*)utf8.bytes};
-    return [[[MYKeyEnumerator alloc] initWithKeychain: self
+    return [[MYKeyEnumerator alloc] initWithKeychain: self
                                             itemClass: kSecSymmetricKeyItemClass
-                                           attributes: &attr count: 1] autorelease];
+                                           attributes: &attr count: 1];
 }
 
 
@@ -313,21 +307,19 @@
 
 
 - (MYPublicKey*) importPublicKey: (NSData*)keyData {
-    return [[[MYPublicKey alloc] _initWithKeyData: keyData 
-                                      forKeychain: self.keychainRefOrDefault]
-            autorelease];
+    return [[MYPublicKey alloc] _initWithKeyData: keyData 
+                                      forKeychain: self.keychainRefOrDefault];
 }
 
 - (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
                     privateKey: (NSData*)privKeyData 
                     alertTitle: (NSString*)title
                    alertPrompt: (NSString*)prompt {
-    return [[[MYPrivateKey alloc] _initWithKeyData: privKeyData
+    return [[MYPrivateKey alloc] _initWithKeyData: privKeyData
                                      publicKeyData: pubKeyData
                                        forKeychain: self.keychainRefOrDefault
                                         alertTitle: (NSString*)title
-                                       alertPrompt: (NSString*)prompt]
-            autorelease];
+                                       alertPrompt: (NSString*)prompt];
 }
 
 - (MYPrivateKey*) importPublicKey: (NSData*)pubKeyData 
@@ -343,10 +335,9 @@
                                 type: (CSSM_CERT_TYPE) type
                             encoding: (CSSM_CERT_ENCODING) encoding;
 {
-    MYCertificate *cert = [[[MYCertificate alloc] initWithCertificateData: data 
+    MYCertificate *cert = [[MYCertificate alloc] initWithCertificateData: data 
                                                                     type: type
-                                                                encoding: encoding]
-                           autorelease];
+                                                                encoding: encoding];
     if (cert) {
         if (!check(SecCertificateAddToKeychain(cert.certificateRef, self.keychainRefOrDefault),
                    @"SecCertificateAddToKeychain"))
@@ -372,8 +363,7 @@
                       inFormat: (SecExternalFormat)format
                          error: (NSError**)outError
 {
-    return [[[MYIdentity alloc] _initWithData: data format: format keychain: self error:outError]
-                autorelease];
+    return [[MYIdentity alloc] initWithData: data format: format keychain: self error:outError];
 }
 
 
@@ -409,7 +399,7 @@
                   count: (unsigned)count {
     self = [super init];
     if (self) {
-        _keychain = [keychain retain];
+        _keychain = keychain;
         _itemClass = itemClass;
         SecKeychainAttributeList list = {.count=count, .attr=attributes};
         if (!check(SecKeychainSearchCreateFromAttributes(keychain.keychainRef,
@@ -417,7 +407,6 @@
                                                          &list,
                                                          &_search),
                    @"SecKeychainSearchCreateFromAttributes")) {
-            [self release];
             return nil;
         }
     }
@@ -426,17 +415,9 @@
 
 - (void) dealloc
 {
-    [_keychain release];
     if (_search) CFRelease(_search);
-    [super dealloc];
 }
 
-- (void) finalize
-{
-    [_keychain release];
-    if (_search) CFRelease(_search);
-    [super finalize];
-}
 
 
 - (id) nextObject {
@@ -456,14 +437,14 @@
         
         switch (_itemClass) {
             case kSecPrivateKeyItemClass: {
-                item = [[[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+                item = [[MYPrivateKey alloc] initWithKeyRef: (SecKeyRef)found];
                 break;
             }
             case kSecCertificateItemClass:
-                item = [[[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found] autorelease];
+                item = [[MYCertificate alloc] initWithCertificateRef: (SecCertificateRef)found];
                 break;
             case kSecPublicKeyItemClass:
-                item = [[[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found] autorelease];
+                item = [[MYPublicKey alloc] initWithKeyRef: (SecKeyRef)found];
                 break;
         }
         CFRelease(found);
@@ -482,7 +463,6 @@
     if (self) {
         if (!check(SecIdentitySearchCreate(keychain.keychainRef, keyUsage, &_searchRef),
                    @"SecIdentitySearchCreate")) {
-            [self release];
             return nil;
         }
     }
@@ -496,20 +476,15 @@
         OSStatus err = SecIdentitySearchCopyNext(_searchRef, &identityRef);
         if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
             break;
-        identity = [[[MYIdentity alloc] initWithIdentityRef: identityRef] autorelease];
+        identity = [[MYIdentity alloc] initWithIdentityRef: identityRef];
     } while (!identity);
     return identity;
 }
 
 - (void) dealloc {
     if (_searchRef) CFRelease(_searchRef);
-    [super dealloc];
 }
 
-- (void) finalize {
-    if (_searchRef) CFRelease(_searchRef);
-    [super finalize];
-}
 
 @end
 
