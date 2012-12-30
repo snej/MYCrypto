@@ -351,7 +351,7 @@ static void TestRoundTrip( NSString *title, NSData *source, MYIdentity *signer, 
     if( signer ) {
         CAssert(d.certificates.count >= 1);     // may include extra parent certs
         CAssertEq(d.signers.count,1U);
-        MYSigner *outSigner = [d.signers objectAtIndex: 0];
+        MYSigner *outSigner = (d.signers)[0];
         CAssertEq(outSigner.status,(CMSSignerStatus)kCMSSignerValid);
         CAssertEq(outSigner.verifyResult,noErr);
         CAssert([outSigner.certificate isEqualToCertificate: signer]);

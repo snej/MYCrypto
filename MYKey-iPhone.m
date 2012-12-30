@@ -28,10 +28,10 @@
             forKeychain: (SecKeychainRef)keychain
 {
     NSMutableDictionary *info = $mdict({(__bridge id)kSecClass, (__bridge id)kSecClassKey},
-                                        {(__bridge id)kSecAttrKeyType, (__bridge id)self.keyType},
-                                        {(__bridge id)kSecValueData, data},
-                                        {(__bridge id)kSecAttrIsPermanent, (keychain ?$true :$false)},
-                                        {(__bridge id)kSecReturnPersistentRef, (keychain ?$true :$false)} );
+                                       {(__bridge id)kSecAttrKeyType, (__bridge id)self.keyType},
+                                       {(__bridge id)kSecValueData, data},
+                                       {(__bridge id)kSecAttrIsPermanent, (keychain ?$true :$false)},
+                                       {(__bridge id)kSecReturnPersistentRef, (keychain ?$true :$false)} );
     SecKeyRef key = (SecKeyRef)[MYKeychain _addItemWithInfo: info];
     if (!key) {
         return nil;

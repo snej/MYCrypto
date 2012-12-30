@@ -301,31 +301,31 @@ TestCase(DEREncoder) {
                  $data(0x01, 0x01, 0x00));
 
     // Integers:
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(0) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(0) error: nil],
                  $data(0x02, 0x01, 0x00));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(1) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(1) error: nil],
                  $data(0x02, 0x01, 0x01));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-1) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-1) error: nil],
                  $data(0x02, 0x01, 0xFF));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(72) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(72) error: nil],
                   $data(0x02, 0x01, 0x48));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-128) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-128) error: nil],
                  $data(0x02, 0x01, 0x80));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(128) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(128) error: nil],
                  $data(0x02, 0x02, 0x00, 0x80));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(255) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(255) error: nil],
                  $data(0x02, 0x02, 0x00, 0xFF));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-256) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-256) error: nil],
                  $data(0x02, 0x02, 0xFF, 0x00));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(12345) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(12345) error: nil],
                  $data(0x02, 0x02, 0x30,0x39));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-12345) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-12345) error: nil],
                  $data(0x02, 0x02, 0xCF, 0xC7));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(123456789) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(123456789) error: nil],
                  $data(0x02, 0x04, 0x07, 0x5B, 0xCD, 0x15));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-123456789) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-123456789) error: nil],
                  $data(0x02, 0x04, 0xF8, 0xA4, 0x32, 0xEB));
-    CAssertEqual([MYDEREncoder encodeRootObject: $object(-123456789) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: @(-123456789) error: nil],
                  $data(0x02, 0x04, 0xF8, 0xA4, 0x32, 0xEB));
 
     // Strings:
@@ -340,10 +340,10 @@ TestCase(DEREncoder) {
                  $data(0x18, 0x0F, '2', '0', '0', '9', '0', '5', '3', '0', '0', '0', '3', '6', '1', '6', 'Z'));
 
     // Sequences:
-    CAssertEqual([MYDEREncoder encodeRootObject: $array($object(72), $true) error: nil],
+    CAssertEqual([MYDEREncoder encodeRootObject: $array(@(72), $true) error: nil],
                  $data(0x30, 0x06,  0x02, 0x01, 0x48,  0x01, 0x01, 0xFF));
-    CAssertEqual([MYDEREncoder encodeRootObject: $array( $array($object(72), $true), 
-                                                         $array($object(72), $true))
+    CAssertEqual([MYDEREncoder encodeRootObject: $array( $array(@(72), $true), 
+                                                         $array(@(72), $true))
                                           error: nil],
                  $data(0x30, 0x10,  
                        0x30, 0x06,  0x02, 0x01, 0x48,  0x01, 0x01, 0xFF,

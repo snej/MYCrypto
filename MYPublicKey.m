@@ -28,7 +28,7 @@
 - (id) initWithModulus: (NSData*)modulus exponent: (unsigned)exponent {
     // An RSA key is encoded in ASN.1 as a sequence of modulus and exponent, both as integers.
     MYASN1BigInteger *modulusInt = [[MYASN1BigInteger alloc] initWithUnsignedData: modulus];
-    id asn1 = $array( modulusInt, $object(exponent) );
+    id asn1 = @[ modulusInt, @(exponent) ];
     NSData *keyData = [MYDEREncoder encodeRootObject: asn1 error: nil];
     return [self initWithKeyData: keyData];
 }
@@ -87,8 +87,8 @@
     NSArray *asn1 = $castIf(NSArray, MYBERParse(self.keyData, nil));
     if (!asn1 || asn1.count != 2)
         return NO;
-    *outModulus = $castIf(MYASN1BigInteger, [asn1 objectAtIndex: 0]).unsignedData;
-    *outExponent = $castIf(NSNumber, [asn1 objectAtIndex: 1]).unsignedIntValue;
+    *outModulus = $castIf(MYASN1BigInteger, asn1[0]).unsignedData;
+    *outExponent = $castIf(NSNumber, asn1[1]).unsignedIntValue;
     return (*outModulus!=nil && *outExponent>=3);
 }
 

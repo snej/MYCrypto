@@ -175,7 +175,7 @@ static id parseBER(InputData *input) {
             {
                 if (length <= 4) {
                     int32_t value = NSSwapBigIntToHost(readBigEndianSignedInteger(input,length));
-                    return [NSNumber numberWithInteger: value];
+                    return @(value);
                 } else {
                     // Big integer!
                     defaultClass = [MYASN1BigInteger class];
@@ -293,23 +293,23 @@ TestCase(ParseBER) {
     
     // integers:
     CAssertEqual(MYBERParse($data(0x02, 0x01, 0x00), nil),
-                 $object(0));
+                 @(0));
     CAssertEqual(MYBERParse($data(0x02, 0x01, 0x48), nil),
-                 $object(72));
+                 @(72));
     CAssertEqual(MYBERParse($data(0x02, 0x01, 0x80), nil),
-                 $object(-128));
+                 @(-128));
     CAssertEqual(MYBERParse($data(0x02, 0x02, 0x00, 0x80), nil),
-                 $object(128));
+                 @(128));
     CAssertEqual(MYBERParse($data(0x02, 0x02, 0x30,0x39), nil),
-                 $object(12345));
+                 @(12345));
     CAssertEqual(MYBERParse($data(0x02, 0x02, 0xCF, 0xC7), nil),
-                 $object(-12345));
+                 @(-12345));
     CAssertEqual(MYBERParse($data(0x02, 0x04, 0x07, 0x5B, 0xCD, 0x15), nil),
-                 $object(123456789));
+                 @(123456789));
     CAssertEqual(MYBERParse($data(0x02, 0x04, 0xF8, 0xA4, 0x32, 0xEB), nil),
-                 $object(-123456789));
+                 @(-123456789));
     CAssertEqual(MYBERParse($data(0x02, 0x04, 0xF8, 0xA4, 0x32, 0xEB), nil),
-                 $object(-123456789));
+                 @(-123456789));
     
     // octet strings:
     CAssertEqual(MYBERParse($data(0x04, 0x05, 'h', 'e', 'l', 'l', 'o'), nil),
@@ -321,11 +321,11 @@ TestCase(ParseBER) {
     
     // sequences:
     CAssertEqual(MYBERParse($data(0x30, 0x06,  0x02, 0x01, 0x48,  0x01, 0x01, 0xFF), nil),
-                 $array($object(72), $true));
+                 (@[@(72), $true]));
     CAssertEqual(MYBERParse($data(0x30, 0x10,  
                                   0x30, 0x06,  0x02, 0x01, 0x48,  0x01, 0x01, 0xFF,
                                   0x30, 0x06,  0x02, 0x01, 0x48,  0x01, 0x01, 0xFF), nil),
-                 $array( $array($object(72), $true), $array($object(72), $true)));
+                 (@[ @[@(72), $true], @[@(72), $true]]));
 }
 
 

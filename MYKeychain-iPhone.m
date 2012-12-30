@@ -145,8 +145,8 @@ enum {
 + (CFTypeRef) _addItemWithInfo: (NSMutableDictionary*)info {
     // Generally SecItemAdd will fail (return paramErr) if asked to return a regular ref.
     // As a workaround ask for a persistent ref instead, then convert that to regular ref.
-    if (![[info objectForKey: (__bridge id)kSecReturnRef] boolValue])
-        [info setObject: $true forKey: (__bridge id)kSecReturnPersistentRef];
+    if (![info[(__bridge id)kSecReturnRef] boolValue])
+        info[(__bridge id)kSecReturnPersistentRef] = $true;
     
     CFDataRef itemPersistentRef;
     CFTypeRef item;
@@ -155,8 +155,8 @@ enum {
         Log(@"_addItemWithInfo: Keychain claims it's a dup, so look for existing item");
         // it's already in the keychain -- get a reference to it:
 		[info removeObjectForKey: (__bridge id)kSecReturnPersistentRef];
-		[info setObject: $true forKey: (__bridge id)kSecReturnRef];
-		if (check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef *)&item), 
+		info[(__bridge id)kSecReturnRef] = $true;
+		if (check(SecItemCopyMatching((__bridge CFDictionaryRef)info, (CFTypeRef *)&item),
                   @"SecItemCopyMatching")) {
             if (!item)
                 Warn(@"_addItemWithInfo: Couldn't find supposedly-duplicate item, info=%@",info);
@@ -165,7 +165,7 @@ enum {
         }
     } else if (check(err, @"SecItemAdd")) {
         // It was added
-        if ([[info objectForKey: (__bridge id)kSecReturnPersistentRef] boolValue]) {
+        if ([info[(__bridge id)kSecReturnPersistentRef] boolValue]) {
             // now get its item ref:
             Log(@"SecItemAdd added item; persistenRef=%@", itemPersistentRef);//TEMP
             info = $mdict({(__bridge id)kSecValuePersistentRef, (__bridge id)itemPersistentRef},
@@ -202,8 +202,8 @@ enum {
                                         {(__bridge id)kSecValueRef, (__bridge id)cert0});
 #else
     NSMutableDictionary *info = $mdict( {(__bridge id)kSecClass, (__bridge id)kSecClassCertificate},
-                                        {(__bridge id)kSecAttrCertificateType, $object(CSSM_CERT_X_509v3)},
-                                        {(__bridge id)kSecAttrCertificateEncoding, $object(CSSM_CERT_ENCODING_BER)},
+                                        {(__bridge id)kSecAttrCertificateType, @(CSSM_CERT_X_509v3)},
+                                        {(__bridge id)kSecAttrCertificateEncoding, @(CSSM_CERT_ENCODING_BER)},
                                         {(__bridge id)kSecValueData, data} );
 #endif
     SecCertificateRef cert = (SecCertificateRef) [[self class] _addItemWithInfo: info];
@@ -256,22 +256,22 @@ enum {
 - (id) initWithQuery: (NSMutableDictionary*)query {
     self = [super init];
     if (self) {
-        _itemClass = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecAttrKeyClass];
+        _itemClass = (__bridge CFTypeRef)query[(__bridge id)kSecAttrKeyClass];
         if (_itemClass)
-            [query setObject: (__bridge id)kSecClassKey forKey: (__bridge id)kSecClass];
+            query[(__bridge id)kSecClass] = (__bridge id)kSecClassKey;
         else
-            _itemClass = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecClass];
+            _itemClass = (__bridge CFTypeRef)query[(__bridge id)kSecClass];
         Assert(_itemClass);
         CFRetain(_itemClass);
 
         // Ask for all results unless caller specified fewer:
-        CFTypeRef limit = (__bridge CFTypeRef)[query objectForKey: (__bridge id)kSecMatchLimit];
+        CFTypeRef limit = (__bridge CFTypeRef)query[(__bridge id)kSecMatchLimit];
         if (! limit) {
             limit = kSecMatchLimitAll;
-            [query setObject: (__bridge id)limit forKey: (__bridge id)kSecMatchLimit];
+            query[(__bridge id)kSecMatchLimit] = (__bridge id)limit;
         }
         
-        [query setObject: $true forKey: (__bridge id)kSecReturnRef];
+        query[(__bridge id)kSecReturnRef] = $true;
         
         OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef*)&_results);
         if (err && err != errSecItemNotFound) {
@@ -292,7 +292,7 @@ enum {
 }
 
 + (id) firstItemWithQuery: (NSMutableDictionary*)query {
-    [query setObject: (__bridge id)kSecMatchLimitOne forKey: (__bridge id)kSecMatchLimit];
+    query[(__bridge id)kSecMatchLimit] = (__bridge id)kSecMatchLimitOne;
     MYKeyEnumerator *e = [[self alloc] initWithQuery: query];
     return e.nextObject;
 }    

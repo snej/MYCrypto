@@ -785,6 +785,7 @@
 					"DEBUG=1",
 				);
 				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 				PRODUCT_NAME = MYCrypto;
 				SDKROOT = macosx;
 			};
@@ -796,6 +797,7 @@
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				GCC_PREPROCESSOR_DEFINITIONS = "MYERRORUTILS_USE_SECURITY_API=1";
 				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 				PRODUCT_NAME = MYCrypto;
 				SDKROOT = macosx;
 			};

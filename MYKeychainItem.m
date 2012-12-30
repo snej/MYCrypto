@@ -76,7 +76,7 @@ NSString* const MYCSSMErrorDomain = @"CSSMErrorDomain";
 
 
 - (NSArray*) _itemList {
-    return $array((__bridge id)_itemRef);
+    return @[(__bridge id)_itemRef];
 }
 
 

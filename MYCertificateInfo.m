@@ -36,7 +36,7 @@
 
 /* "Safe" NSArray accessor -- returns nil if out of range. */
 static id $atIf(NSArray *array, NSUInteger index) {
-    return index < array.count ?[array objectAtIndex: index] :nil;
+    return index < array.count ?array[index] :nil;
 }
 
 
@@ -120,17 +120,17 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     NSArray *top = $castIf(NSArray,root);
     if (top.count < 3)
         return @"Too few top-level components";
-    NSArray *info = $castIf(NSArray, [top objectAtIndex: 0]);
+    NSArray *info = $castIf(NSArray, top[0]);
     if (info.count < 6) {
         return @"Too few identity components";      // there should be 7, but version has a default
     } else if (info.count > 6) {
-        MYASN1Object *version = $castIf(MYASN1Object, [info objectAtIndex: 0]);
+        MYASN1Object *version = $castIf(MYASN1Object, info[0]);
         if (!version || version.tag != 0)
             return @"Missing or invalid version";
         NSArray *versionComps = $castIf(NSArray, version.components);
         if (!versionComps || versionComps.count != 1)
             return @"Invalid version";
-        NSNumber *versionNum = $castIf(NSNumber, [versionComps objectAtIndex: 0]);
+        NSNumber *versionNum = $castIf(NSNumber, versionComps[0]);
         if (!versionNum || versionNum.intValue < 0 || versionNum.intValue > 2)
             return @"Unrecognized version number";
     }
@@ -182,11 +182,11 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
         return info;
     // If version field is missing, insert it explicitly so the array indices will be normal:
     NSMutableArray* minfo = [info mutableCopy];
-    [minfo insertObject: $object(0) atIndex: 0];
+    [minfo insertObject: @(0) atIndex: 0];
     return minfo;
 }
 
-- (NSArray*) _validDates {return $castIf(NSArray, [self._info objectAtIndex: 4]);}
+- (NSArray*) _validDates {return $castIf(NSArray, (self._info)[4]);}
 
 @synthesize _root;
 
@@ -195,18 +195,18 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (NSDate*) validTo         {return $castIf(NSDate, $atIf(self._validDates, 1));}
 
 - (MYCertificateName*) subject {
-    return [[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 5]];
+    return [[MYCertificateName alloc] _initWithComponents: (self._info)[5]];
 }
 
 - (MYCertificateName*) issuer {
-    return [[MYCertificateName alloc] _initWithComponents: [self._info objectAtIndex: 3]];
+    return [[MYCertificateName alloc] _initWithComponents: (self._info)[3]];
 }
 
 - (BOOL) isSigned           {return [_root count] >= 3;}
 
 - (BOOL) isRoot {
     id issuer = $atIf(self._info,3);
-    return $equal(issuer, $atIf(self._info,5)) || $equal(issuer, $array());
+    return $equal(issuer, $atIf(self._info,5)) || $equal(issuer, @[]);
 }
 
 
@@ -293,7 +293,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
         // it comes after the 7 fixed info fields, and is identified by a tag value of 3.
         NSArray* info = self._info;
         for (NSUInteger i=7; i<info.count; i++) {
-            MYASN1Object* obj = $castIf(MYASN1Object, [info objectAtIndex:i]);
+            MYASN1Object* obj = $castIf(MYASN1Object, info[i]);
             if (obj.tag == 3) {
                 _extensions = $castIf(NSArray, $atIf(obj.components, 0));
                 break;
@@ -332,7 +332,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
         return nil;
     if (outIsCritical)
         *outIsCritical = extension.count >= 3 &&
-                            [$castIf(NSNumber, [extension objectAtIndex: 1]) boolValue];
+                            [$castIf(NSNumber, extension[1]) boolValue];
     NSData* ber = $castIf(NSData, [extension lastObject]);
     if (!ber)
         return nil;
@@ -347,7 +347,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     Assert(!(ext && !constraints)); // type mismatch
     if (!constraints || [constraints count] < 1)
         return NO;
-    return [$castIf(NSNumber, [constraints objectAtIndex: 0]) boolValue];
+    return [$castIf(NSNumber, constraints[0]) boolValue];
 }
 
 
@@ -415,14 +415,14 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
                     value = name.ASCIIValue;
                     break;
                 default:
-                    key = $object(name.tag);
+                    key = @(name.tag);
                     value = name;
             }
             if (value) {
-                NSMutableArray* values = [result objectForKey: key];
+                NSMutableArray* values = result[key];
                 if (!values) {
                     values = $marray();
-                    [result setObject: values forKey: key];
+                    result[key] = values;
                 }
                 [values addObject: value];
             }
@@ -433,7 +433,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 
 
 - (NSArray*) emailAddresses {
-    NSMutableArray* addrs = [[self subjectAlternativeName] objectForKey: @"RFC822"];
+    NSMutableArray* addrs = [self subjectAlternativeName][@"RFC822"];
     NSString* subjectEmail = self.subject.emailAddress;
     if (subjectEmail) {
         if (addrs)
@@ -459,18 +459,18 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     id empty = [NSNull null];
     id version = [[MYASN1Object alloc] initWithTag: 0 
                                            ofClass: 2
-                                        components: $array($object(kCertRequestVersionNumber - 1))];
+                                        components: @[@(kCertRequestVersionNumber - 1)]];
     id extensions = [[MYASN1Object alloc] initWithTag:3
                                               ofClass:2
-                                           components: $array($marray())];
+                                           components: @[$marray()]];
     NSArray *root = $array( $marray(version,
                                     empty,       // serial #
-                                    $array(kRSAAlgorithmID),
+                                    @[kRSAAlgorithmID],
                                     $marray(),
                                     $marray(empty, empty),
                                     $marray(),
-                                    $array( $array(kRSAAlgorithmID, empty),
-                                           [MYBitString bitStringWithData: publicKey.keyData] ),
+                                    @[ @[kRSAAlgorithmID, empty],
+                                           [MYBitString bitStringWithData: publicKey.keyData] ],
                                     extensions) );
     self = [super initWithRoot: root];
     if (self) {
@@ -485,11 +485,11 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (NSDate*) validTo         {return [super validTo];}
 
 - (void) setValidFrom: (NSDate*)validFrom {
-    [(NSMutableArray*)self._validDates replaceObjectAtIndex: 0 withObject: validFrom];
+    ((NSMutableArray*)self._validDates)[0] = validFrom;
 }
 
 - (void) setValidTo: (NSDate*)validTo {
-    [(NSMutableArray*)self._validDates replaceObjectAtIndex: 1 withObject: validTo];
+    ((NSMutableArray*)self._validDates)[1] = validTo;
 }
 
 
@@ -544,9 +544,9 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 - (void) fillInValues {
     NSMutableArray *info = (NSMutableArray*)self._info;
     // Set serial number if there isn't one yet:
-    if (!$castIf(NSNumber, [info objectAtIndex: 1])) {
+    if (!$castIf(NSNumber, info[1])) {
         UInt64 serial = floor(CFAbsoluteTimeGetCurrent() * 1000);
-        [info replaceObjectAtIndex: 1 withObject: $object(serial)];
+        info[1] = @(serial);
     }
     
     // Set up valid date range if there isn't one yet:
@@ -577,7 +577,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     
     // Copy subject to issuer:
     NSMutableArray *info = (NSMutableArray*)self._info;
-    [info replaceObjectAtIndex: 3 withObject: [info objectAtIndex: 5]];
+    info[3] = info[5];
     
     // Sign the request:
     NSData *dataToSign = [self requestData: outError];
@@ -587,7 +587,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     
     // Generate and encode the certificate:
     NSArray *root = $array(info, 
-                           $array(kRSAWithSHA1AlgorithmID, [NSNull null]),
+                           @[kRSAWithSHA1AlgorithmID, [NSNull null]],
                            signature);
     return [MYDEREncoder encodeRootObject: root error: outError];
 }
@@ -636,7 +636,7 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
     for (id nameEntry in _components) {
         for (id pair in $castIf(NSSet,nameEntry)) {
             if ([pair isKindOfClass: [NSArray class]] && [pair count] == 2) {
-                if ($equal(oid, [pair objectAtIndex: 0]))
+                if ($equal(oid, pair[0]))
                     return pair;
             }
         }
@@ -645,14 +645,14 @@ MYOID *kBasicConstraintsOID, *kKeyUsageOID, *kExtendedKeyUsageOID,
 }
 
 - (NSString*) stringForOID: (MYOID*)oid {
-    return [[self _pairForOID: oid] objectAtIndex: 1];
+    return [self _pairForOID: oid][1];
 }
 
 - (void) setString: (NSString*)value forOID: (MYOID*)oid {
     NSMutableArray *pair = (NSMutableArray*) [self _pairForOID: oid];
     if (pair) {
         if (value)
-            [pair replaceObjectAtIndex: 1 withObject: value];
+            pair[1] = value;
         else
             Assert(NO,@"-setString:forOID: removing strings is unimplemented");//FIX
     } else {

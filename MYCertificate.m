@@ -194,7 +194,7 @@
 - (NSArray*) emailAddresses {
 #if MYCRYPTO_USE_IPHONE_API
     NSString *email = self.info.subject.emailAddress;
-    return email ?$array(email) :nil;
+    return email ?@[email] :nil;
 #else
     CFArrayRef addrs = NULL;
     if (!check(SecCertificateCopyEmailAddresses(_certificateRef, &addrs),
@@ -363,11 +363,11 @@
                                               options: (NSStringCompareOptions)compareOptions
 {
     for( NSDictionary* setting in [self trustSettings]) {
-        if (![[setting objectForKey: (id)kSecTrustSettingsPolicy] isEqual: (__bridge id)policy])
+        if (![setting[(id)kSecTrustSettingsPolicy] isEqual: (__bridge id)policy])
             continue;
         if (policyString) {
             // Policy string may end with a NUL byte, so trim it
-            NSString* certPolicy = [setting objectForKey: (id)kSecTrustSettingsPolicyString];
+            NSString* certPolicy = setting[(id)kSecTrustSettingsPolicyString];
             if (!certPolicy)
                 continue;
             certPolicy = [certPolicy stringByTrimmingCharactersInSet: [NSCharacterSet controlCharacterSet]];
@@ -375,7 +375,7 @@
                 continue;
         }
         // OK, this entry matches, so check the result:
-        NSNumber* result = [setting objectForKey: (id)kSecTrustSettingsResult];
+        NSNumber* result = setting[(id)kSecTrustSettingsResult];
         if (result != nil)
             return [result intValue];
         else
@@ -405,7 +405,7 @@
                                                          : kSecTrustSettingsResultTrustAsRoot;
         settings = $dict({(id)kSecTrustSettingsPolicy, (__bridge id)policy},
                          {(id)kSecTrustSettingsPolicyString, string},
-                         {(id)kSecTrustSettingsResult, $object(result)});
+                         {(id)kSecTrustSettingsResult, @(result)});
     }
     OSStatus err = SecTrustSettingsSetTrustSettings(_certificateRef, 
                                                     kSecTrustSettingsDomainUser,

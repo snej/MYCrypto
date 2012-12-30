@@ -135,8 +135,8 @@
             // As a convenience, create one if necessary:
             if (err == errSecNoDefaultKeychain) {
                 Log(@"No default keychain in simulator; creating one...");
-                NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
-                                                                      NSUserDomainMask, YES) objectAtIndex: 0];
+                NSString *path = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+                                                                     NSUserDomainMask, YES)[0];
                 path = [path stringByAppendingPathComponent: @"MYCrypto.keychain"];
                 sDefaultKeychain = [[self createKeychainAtPath: path withPassword: nil] retain];
                 Assert(sDefaultKeychain, @"Couldn't create default keychain");

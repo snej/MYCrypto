@@ -143,7 +143,7 @@ TestCase(CreateCert) {
         CAssertEqual(subject.emailAddress, @"testcase@example.com");
         
         Log(@"---- Extensions...");
-        CAssertEqual(pcert.extensionOIDs, $array());
+        CAssertEqual(pcert.extensionOIDs, @[]);
         CAssertEq(pcert.keyUsage, kKeyUsageUnspecified);
         CAssertEqual(pcert.extendedKeyUsage, nil);
         pcert.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment;

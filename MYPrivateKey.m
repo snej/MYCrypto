@@ -125,7 +125,7 @@
     NSDictionary *pubKeyAttrs = $dict({(__bridge id)kSecAttrIsPermanent, $true});
     NSDictionary *privKeyAttrs = $dict({(__bridge id)kSecAttrIsPermanent, $true});
     NSDictionary *keyAttrs = $dict( {(__bridge id)kSecAttrKeyType, (__bridge id)kSecAttrKeyTypeRSA},
-                                    {(__bridge id)kSecAttrKeySizeInBits, $object(keySize)},
+                                    {(__bridge id)kSecAttrKeySizeInBits, @(keySize)},
                                     {(__bridge id)kSecPublicKeyAttrs, pubKeyAttrs},
                                     {(__bridge id)kSecPrivateKeyAttrs, privKeyAttrs} );
     err = SecKeyGeneratePair((__bridge CFDictionaryRef)keyAttrs,&pubKey,&privKey);

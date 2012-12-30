@@ -56,10 +56,10 @@ static const char *kCCAlgorithmNames[] = {"AES", "DES", "DES^3", "CAST", "RC4"};
     unsigned keySizeInBits = keyData.length * 8;
     NSMutableDictionary *keyAttrs = $mdict( {(__bridge id)kSecClass, (__bridge id)kSecClassKey},
                                             {(__bridge id)kSecAttrKeyClass, (__bridge id)kSecAttrKeyClassSymmetric},
-                                            {(__bridge id)kSecAttrKeyType, $object(kCSSMAlgorithms[algorithm])},
+                                            {(__bridge id)kSecAttrKeyType, @(kCSSMAlgorithms[algorithm])},
                                             {(__bridge id)kSecValueData, keyData},
-                                            {(__bridge id)kSecAttrKeySizeInBits, $object(keySizeInBits)},
-                                            {(__bridge id)kSecAttrEffectiveKeySize, $object(keySizeInBits)},
+                                            {(__bridge id)kSecAttrKeySizeInBits, @(keySizeInBits)},
+                                            {(__bridge id)kSecAttrEffectiveKeySize, @(keySizeInBits)},
                                             {(__bridge id)kSecAttrIsPermanent, keychain ?$true :$false},
                                             {(__bridge id)kSecAttrCanEncrypt, $true},
                                             {(__bridge id)kSecAttrCanDecrypt, $true},
