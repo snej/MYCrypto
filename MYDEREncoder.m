@@ -369,6 +369,7 @@ TestCase(EncodeCert) {
     MYDEREncoder *encoder = [[MYDEREncoder alloc] initWithRootObject: certObjects];
     encoder._forcePrintableStrings = YES;       // hack for compatibility with the way CDSA writes ASN.1
     NSData *encoded = encoder.output;
+    [encoder release];
     CAssertNil(error);
     id reDecoded = MYBERParse(encoded, &error);
     CAssertNil(error);

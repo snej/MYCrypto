@@ -169,17 +169,16 @@ static SecIdentityRef importIdentity(NSData *data,
                 alertTitle: (NSString*)title
                alertPrompt: (NSString*)prompt
 {
-    SecKeyImportExportParameters params = {
+    SecItemImportExportKeyParameters params = {
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,
         .flags = kSecKeySecurePassphrase,
         .alertTitle = (CFStringRef)title,
         .alertPrompt = (CFStringRef)prompt
     };
     CFDataRef data = NULL;
-    if (check(SecKeychainItemExport(self.identityRef,
-                                    format, (withPEM ?kSecItemPemArmour :0), 
-                                    &params, &data),
-              @"SecKeychainItemExport"))
+    if (check(SecItemExport(self.identityRef,
+                            format, (withPEM ?kSecItemPemArmour :0),
+                            &params, &data), @"SecItemExport"))
         return [(id)CFMakeCollectable(data) autorelease];
     else
         return nil;

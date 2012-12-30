@@ -152,12 +152,12 @@ TestCase(OID) {
     CAssertEqual([[MYOID OIDWithEncoding: $data(0x2a,0x86,0x48,0x86,0xf7,0x0d,0x01,0x09,0x01)] description],
                  @"{1 2 840 113549 1 9 1}");
 
-    CAssertEqual([[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] description],
+    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] autorelease] description],
                  @"{1 2 840 113549 1 1 1}");
 
-    CAssertEqual([[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] DEREncoding],
+    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(1,2,840,113549,1,1,1) count: 7] autorelease] DEREncoding],
                  $data(0x2a, 0x86, 0x48, 0x86,  0xf7, 0x0d, 0x01, 0x01,  0x01));
-    CAssertEqual([[[MYOID alloc] initWithComponents: $components(2,5,4,4) count: 4] DEREncoding],
+    CAssertEqual([[[[MYOID alloc] initWithComponents: $components(2,5,4,4) count: 4] autorelease] DEREncoding],
                  $data(0x55,0x04,0x04));
 }
 

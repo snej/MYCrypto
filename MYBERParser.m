@@ -347,6 +347,7 @@ TestCase(ParseCert) {
     CAssert(myCert);
     id parsedPubKey = MYBERParse(myCert.publicKey.keyData, NULL);
     Log(@"Parsed public key:\n%@", [MYASN1Object dump: parsedPubKey]);
+    [myCert release];
 
     cert = [NSData dataWithContentsOfFile: @"iphonedev.cer"];
     parsed = MYBERParse(cert,&error);
