@@ -98,8 +98,6 @@ static BOOL generateRandomBytes(CSSM_CSP_HANDLE module, size_t lengthInBytes, vo
 {
     if (_cryptor)
         CCCryptorRelease(_cryptor);
-    _key = _key;
-    _output = _output;
 }
 
 

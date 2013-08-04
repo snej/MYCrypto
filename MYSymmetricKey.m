@@ -93,8 +93,11 @@ static CSSM_RETURN impExpCreatePassKey(
 {
     Assert(algorithm <= kCCAlgorithmRC4);
     Assert(keyData);
-    CSSM_KEY *key = cssmKeyFromData(keyData, CSSMFromCCAlgorithm(algorithm), keychain);
-    return [self _initWithCSSMKey: key];
+    CSSM_KEY *cssmKey = cssmKeyFromData(keyData, CSSMFromCCAlgorithm(algorithm), keychain);
+    MYSymmetricKey* key = [self _initWithCSSMKey: cssmKey];
+    if (!key)
+        free(cssmKey);
+    return key;
 }
 
 - (id) initWithKeyData: (NSData*)keyData
@@ -220,9 +223,9 @@ static CSSM_RETURN impExpCreatePassKey(
                                      cssmKey),
                       @"CSSM_DeriveKey")) {
             generatedKey = [[self alloc] _initWithCSSMKey: cssmKey];
-        } else {
-            free(cssmKey);
         }
+        if (!generatedKey)
+            free(cssmKey);
     }
     CSSM_DeleteContext(ctx);
     CSSM_FreeKey(cspHandle, &credentials, passphraseKey, YES);
