@@ -51,15 +51,7 @@
 #endif
 {
     Assert(data);
-    SecCertificateRef certificateRef = NULL;
-#if MYCRYPTO_USE_IPHONE_API
-    certificateRef = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)data);
-#else
-    CSSM_DATA cssmData = {.Data=(void*)data.bytes, .Length=data.length};
-    if (!check(SecCertificateCreateFromData(&cssmData, type, encoding, &certificateRef),
-               @"SecCertificateCreateFromData"))
-        certificateRef = NULL;
-#endif
+    SecCertificateRef certificateRef = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)data);
     if (!certificateRef) {
         return nil;
     }
@@ -77,7 +69,7 @@
 #if !MYCRYPTO_USE_IPHONE_API
 - (id) initWithCertificateData: (NSData*)data {
     return [self initWithCertificateData: data 
-                                    type: CSSM_CERT_X_509v3 
+                                    type: CSSM_CERT_X_509v3
                                 encoding: CSSM_CERT_ENCODING_BER];
 }
 #endif
@@ -105,7 +97,9 @@
     if (!check(SecCertificateCopyPreference((__bridge CFStringRef)name, 0, &certRef),
                @"SecCertificateCopyPreference"))
         return nil;
-    return [[MYCertificate alloc] initWithCertificateRef: certRef];
+    MYCertificate* result = [[MYCertificate alloc] initWithCertificateRef: certRef];
+    CFRelease(certRef);
+    return result;
 }
 
 - (BOOL) setPreferredCertificateForName: (NSString*)name {
@@ -259,7 +253,7 @@
     // signed by a different cert. Seems like a bad decision to me, so I'll add the check:
     MYCertificateInfo *info = self.info;
     return info && (!info.isRoot || [info verifySignatureWithKey: self.publicKey]);
-}  
+}
 
 
 - (SecTrustResultType) evaluateTrustWithPolicy: (SecPolicyRef)policy {

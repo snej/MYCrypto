@@ -21,6 +21,7 @@
     return [[self alloc] initWithIdentityRef: identityRef];
 }
 
+
 - (id) initWithIdentityRef: (SecIdentityRef)identityRef {
     Assert(identityRef);
     SecCertificateRef certificateRef;
@@ -56,7 +57,8 @@
             Warn(@"MYIdentity: Couldn't look up identity for cert %@ with %@",certificateRef, keyDigest);
             return nil;
         }
-        
+        CFRetain(_identityRef);
+
         // Debugging: Make sure the cert is correct
         SecCertificateRef identitysCert = NULL;
         SecIdentityCopyCertificate(_identityRef, &identitysCert);
@@ -64,8 +66,6 @@
         AssertEqual(self.certificateData, (__bridge NSData*)identitysData);
         CFRelease(identitysData);
         CFRelease(identitysCert);
-        
-        CFRetain(_identityRef);
 #endif
     }
     return self;
@@ -134,8 +134,8 @@ static SecIdentityRef importIdentity(NSData *data,
 }
 
 
-
 @synthesize identityRef=_identityRef;
+
 
 - (MYPrivateKey*) privateKey {
     SecKeyRef keyRef = NULL;

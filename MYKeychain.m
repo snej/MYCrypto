@@ -477,6 +477,7 @@
         if (err==errKCItemNotFound || !check(err, @"SecIdentitySearchCopyNext"))
             break;
         identity = [[MYIdentity alloc] initWithIdentityRef: identityRef];
+        CFRelease(identityRef);
     } while (!identity);
     return identity;
 }
